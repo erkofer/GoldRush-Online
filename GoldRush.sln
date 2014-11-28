@@ -7,6 +7,19 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoldRush", "GoldRush\GoldRu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoldRushTesting", "GoldRushTesting\GoldRushTesting.csproj", "{AF6318B6-3414-41F3-B366-03310F3EA858}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caroline", "Caroline\Caroline.csproj", "{5CC5B959-EB6C-4BBA-A388-247A83039003}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PublishScripts", "PublishScripts", "{74EFAE0E-D7A9-418B-9116-3AEC28FF89A1}"
+	ProjectSection(SolutionItems) = preProject
+		PublishScripts\AzureWebsitePublishModule.psm1 = PublishScripts\AzureWebsitePublishModule.psm1
+		PublishScripts\Publish-WebApplicationWebsite.ps1 = PublishScripts\Publish-WebApplicationWebsite.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Configurations", "Configurations", "{5EB1BA73-FC45-41A3-9007-C7A0E8FD0A14}"
+	ProjectSection(SolutionItems) = preProject
+		PublishScripts\Configurations\Caroline-WAWS-dev.json = PublishScripts\Configurations\Caroline-WAWS-dev.json
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,8 +34,15 @@ Global
 		{AF6318B6-3414-41F3-B366-03310F3EA858}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF6318B6-3414-41F3-B366-03310F3EA858}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AF6318B6-3414-41F3-B366-03310F3EA858}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5CC5B959-EB6C-4BBA-A388-247A83039003}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5CC5B959-EB6C-4BBA-A388-247A83039003}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5CC5B959-EB6C-4BBA-A388-247A83039003}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5CC5B959-EB6C-4BBA-A388-247A83039003}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5EB1BA73-FC45-41A3-9007-C7A0E8FD0A14} = {74EFAE0E-D7A9-418B-9116-3AEC28FF89A1}
 	EndGlobalSection
 EndGlobal
