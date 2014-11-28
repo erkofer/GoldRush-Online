@@ -10,7 +10,7 @@ namespace GoldRushTesting
     {
 
         [TestMethod]
-        public void RecipeWithPrerequisites()
+        public void CraftWithPrerequisites()
         {
             var game = new Game();
             game.objs.Items.Copper.Quantity = 1000;
@@ -21,7 +21,7 @@ namespace GoldRushTesting
         }
 
         [TestMethod]
-        public void RecipeWithoutPrerequisites()
+        public void CraftWithoutPrerequisites()
         {
             var game = new Game();
             game.objs.Items.CopperWire.Craft();
@@ -29,7 +29,7 @@ namespace GoldRushTesting
         }
 
         [TestMethod]
-        public void RecipeManyWithPrerequisites()
+        public void CraftManyWithPrerequisites()
         {
             var game = new Game();
             game.objs.Items.Copper.Quantity = 5000;
@@ -43,7 +43,7 @@ namespace GoldRushTesting
         }
 
         [TestMethod]
-        public void RecipeManyWithoutPrerequisites()
+        public void CraftManyWithoutPrerequisites()
         {
             var game = new Game();
             game.objs.Items.CopperWire.Craft(5);
@@ -72,7 +72,7 @@ namespace GoldRushTesting
         }
 
         [TestMethod]
-        public void ItemDoNotSell()
+        public void ItemNoSell()
         {
             var game = new Game();
             game.objs.Items.Diamond.Sell();

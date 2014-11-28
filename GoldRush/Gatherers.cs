@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -89,11 +90,17 @@ namespace GoldRush
             /// <summary>
             /// The total probability of all possible resources.
             /// </summary>
-            private int totalProbability;
+            private List<int> totalProbability;
 
             public void RecalculateMiningStuff()
             {
-                totalProbability = PossibleResources.Sum(resource=>resource.Probability);
+                totalProbability =new List<int>();
+                var total = 0;
+                foreach (var resource in PossibleResources)
+                {
+                    totalProbability.Add(resource.Probability+total);
+                    total += resource.Probability;
+                }
             }
 
             /// <summary>
@@ -112,31 +119,20 @@ namespace GoldRush
                 resourcesGained = Math.Floor(resourcesGained);
                
                 if (GuaranteedResources.Count > 0)
-                {
-                    // Guaranteed Resources
                     foreach (var resource in GuaranteedResources)
                         resource.Quantity += (int) resourcesGained;
-                }
 
-                if (PossibleResources.Count > 0)
+                if (PossibleResources.Count <= 0) return;
+                
+                for (var i = 0; i < resourcesGained; i++)
                 {
-                    for (var i = 0; i < resourcesGained; i++)
-                    {
-                        var chance = game.Random.Next(1, totalProbability);
-                        var probabilitySoFar = 0;
-                        foreach (Items.Resource t in PossibleResources)
-                        {
-                            if (chance < t.Probability+probabilitySoFar)
-                            {
-                                t.Quantity++;
-                                break;
-                            }
-                            probabilitySoFar += t.Probability;
-                        }
-                    }
+                    var chance = game.Random.Next(1, totalProbability[totalProbability.Count - 1]);
+                    var roll = Array.BinarySearch(totalProbability.ToArray(), chance);
+                    if (roll < 0)
+                        roll = ~roll;
+                    PossibleResources[roll].Quantity++;
                 }
             }
         }
-
     }
 }

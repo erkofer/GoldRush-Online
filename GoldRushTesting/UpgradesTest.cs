@@ -44,5 +44,15 @@ namespace GoldRushTesting
 
             Assert.AreEqual(5, game.objs.Items.Copper.Value);
         }
+
+        [TestMethod]
+        public void BuffNoDecay()
+        {
+            var game = new Game();
+            game.objs.Upgrades.SpeechBuff.Activate();
+            game.objs.Upgrades.SpeechBuff.Update(44000);
+
+            Assert.AreEqual(6, game.objs.Items.Copper.Value);
+        }
     }
 }

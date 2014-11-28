@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using GoldRush;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -50,6 +51,20 @@ namespace GoldRushTesting
             };
             game.objs.Gatherers.Miner.Mine(1999);
             Assert.AreEqual(0, baseResources.Sum(resource => resource.Quantity));
+        }
+
+        [TestMethod]
+        public void ResourceBuffer()
+        {
+            var game = new Game();
+            var baseResources = new[]
+            {
+                game.objs.Items.Stone, game.objs.Items.Copper, game.objs.Items.Iron, game.objs.Items.Silver,
+                game.objs.Items.Gold, game.objs.Items.Opal, game.objs.Items.Jade, game.objs.Items.Topaz
+            };
+            game.objs.Gatherers.Miner.Mine(1000);
+            game.objs.Gatherers.Miner.Mine(1000);
+            Assert.AreEqual(1, baseResources.Sum(resource => resource.Quantity));
         }
     }
 }
