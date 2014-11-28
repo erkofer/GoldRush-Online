@@ -10,3 +10,6 @@
 /TestResults
 *.user
 *.suo
+/Caroline/App_Data
+/Caroline/bin
+/Caroline/obj/Debug
