@@ -18,7 +18,7 @@ namespace GoldRushTesting
         }
 
         [TestMethod]
-        public void GuaranteeedNotCollect()
+        public void GuaranteeedNoCollect()
         {
             Game game = new Game();
             game.objs.Gatherers.Pumpjack.Mine(1000);

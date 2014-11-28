@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -9,13 +9,13 @@ namespace GoldRush
         public Items(GameObjects objs)
         {
             #region Recipe Creation
-            CopperWireRecipe.Ingredients.Add(new Ingredient(Copper,1000));
-            CopperWireRecipe.Ingredients.Add(new Ingredient(BronzeBar,10));
-            CopperWireRecipe.Resultants.Add(new Ingredient(CopperWire,100));
+            CopperWireRecipe.Ingredients.Add(new Ingredient(Copper, 1000));
+            CopperWireRecipe.Ingredients.Add(new Ingredient(BronzeBar, 10));
+            CopperWireRecipe.Resultants.Add(new Ingredient(CopperWire, 100));
 
-            TntRecipe.Ingredients.Add(new Ingredient(Gunpowder,100));
-            TntRecipe.Ingredients.Add(new Ingredient(CopperWire,25));
-            TntRecipe.Resultants.Add(new Ingredient(Tnt,1));
+            TntRecipe.Ingredients.Add(new Ingredient(Gunpowder, 100));
+            TntRecipe.Ingredients.Add(new Ingredient(CopperWire, 25));
+            TntRecipe.Resultants.Add(new Ingredient(Tnt, 1));
             #endregion
 
             #region Item Creation
@@ -114,7 +114,7 @@ namespace GoldRush
             Diamond.Probability = 7;
             Diamond.Currency = Coins;
             items.Add(Diamond);
-            
+
             BronzeBar.Name = "Bronze bar";
             BronzeBar.Worth = 250;
             BronzeBar.Currency = Coins;
@@ -208,6 +208,20 @@ namespace GoldRush
             Coins.Currency = Coins;
 
             //TODO: Add potion items.
+            ClickingPotion.Name = "Clicking Potion";
+            ClickingPotion.Worth = 25000;
+            ClickingPotion.Currency = Coins;
+            
+
+            SmeltingPotion.Name = "Smelting Potion";
+            SmeltingPotion.Worth = 25000;
+            SmeltingPotion.Currency = Coins;
+            
+
+            SpeechPotion.Name = "Speech Potion";
+            SpeechPotion.Worth = 25000;
+            SpeechPotion.Currency = Coins;
+            
 
             CopperWire.Name = "Copper wire";
             CopperWire.Worth = 250;
@@ -272,10 +286,10 @@ namespace GoldRush
         public Resource Logs = new Resource();
         public Resource Oil = new Resource();
         public Item Coins = new Item();
-        public Item ClickingPotion = new Item();
-        public Item SmeltingPotion = new Item();
-        public Item SpeechPotion = new Item();
-        public Item AlchemyPotion = new Item();
+        public Potion ClickingPotion = new Potion();
+        public Potion SmeltingPotion = new Potion();
+        public Potion SpeechPotion = new Potion();
+        public Potion AlchemyPotion = new Potion();
         public Item CopperWire = new Item();
         public Item Tnt = new Item();
 
@@ -350,7 +364,7 @@ namespace GoldRush
 
             public void Craft(int iterations)
             {
-                if(Recipe.Has(iterations))
+                if (Recipe.Has(iterations))
                     Recipe.Craft(iterations);
             }
 
@@ -363,21 +377,34 @@ namespace GoldRush
             {
                 iterations = Math.Min(Quantity, iterations);
                 Quantity -= iterations;
-                Currency.Quantity += Value*iterations;
+                Currency.Quantity += Value * iterations;
             }
         }
 
         /// <summary>
-        /// A collectable GameObject that is show in the players inventory and gathered by a machine.
+        /// A collectable GameObject that is shown in the players inventory and gathered by a machine.
         /// </summary>
         public class Resource : Item
         {
             public int Probability { get; set; }
         }
 
+        /// <summary>
+        /// A collectable GameObject that is shown in the players inventory and can be consumed for a buff.
+        /// </summary>
         public class Potion : Item
         {
-            // TODO: Implement buffs.
+            /// <summary>
+            /// Consumes the potion. Set and forget, will be managed by Upgrades class.
+            /// </summary>
+            public void Consume()
+            {
+                if (Quantity <= 0) return;
+                Effect.Activate();
+                Quantity--;
+            }
+
+            public Upgrades.Upgrade Effect;
         }
 
         /// <summary>
@@ -418,7 +445,7 @@ namespace GoldRush
             {
                 foreach (Ingredient ingredient in Ingredients)
                 {
-                    if (ingredient.Item.Quantity < ingredient.Quantity*iterations) return false;
+                    if (ingredient.Item.Quantity < ingredient.Quantity * iterations) return false;
                 }
                 return true;
             }

@@ -8,16 +8,28 @@ namespace GoldRush
 {
     public class Upgrades
     {
-        public GameObjects Game;
+        public GameObjects game;
 
         public Upgrades(GameObjects game)
         {
-            Game = game;
-            ExpensiveItems = new Upgrade(new ItemValueUpgradeEffect(game,1));
-            ExpensiveItems.Name = "Expensive Items";
+            this.game = game;
+            #region Buffs
+            SpeechBuff = new Buff(new ItemValueUpgradeEffect(game, 0.2));
+            SpeechBuff.Name = "Speech Buff";
+            SpeechBuff.Duration = 45;
+            game.Items.SpeechPotion.Effect = SpeechBuff;
+            #endregion
         }
 
-        public Upgrade ExpensiveItems;
+        /// <summary>
+        /// Updates the duration on all buffs.
+        /// </summary>
+        public void Update()
+        {
+            
+        }
+
+        public Buff SpeechBuff;
 
         public class Upgrade : GameObjects.GameObject
         {
@@ -26,7 +38,7 @@ namespace GoldRush
                 Effect = effect;
             }
 
-            public void Activate()
+            public virtual void Activate()
             {
                 if (!Active)
                 {
@@ -35,7 +47,7 @@ namespace GoldRush
                 }
             }
 
-            public void Deactivate()
+            public virtual void Deactivate()
             {
                 if (Active)
                 {
@@ -47,15 +59,42 @@ namespace GoldRush
             public UpgradeEffect Effect { get; set; }
         }
 
-        public class Buff
+        public class Buff : Upgrade
         {
-            public Buff()
+            public Buff(UpgradeEffect effect):base(effect)
             {
                 
             }
 
-            public Upgrade Upgrade;
-            public int Duration;
+            public override void Activate()
+            {
+                TimeActive = 0;
+                base.Activate();
+            }
+
+            public override void Deactivate()
+            {
+                TimeActive = 0;
+                base.Deactivate();
+            }
+
+            public void Update(double ms)
+            {
+                TimeActive += (ms/1000);
+                if(TimeActive>Duration)
+                    Deactivate();
+            }
+
+            /// <summary>
+            /// The length of time this buff will last for.
+            /// </summary>
+            public double Duration;
+
+            /// <summary>
+            /// The time the buff has been active for.
+            /// </summary>
+            private double TimeActive;
+
         }
 
         #region UpgradeEffects
