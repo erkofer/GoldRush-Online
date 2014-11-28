@@ -1,0 +1,12 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/GoldRush/bin/Debug
+/GoldRush/obj/Debug
+/GoldRushTesting/bin/Debug
+/GoldRushTesting/obj/Debug
+/packages
+/TestResults
+*.user
+*.suo
