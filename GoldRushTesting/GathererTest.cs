@@ -15,7 +15,7 @@ namespace GoldRushTesting
             Game game = new Game();
             game.objs.Gatherers.Pumpjack.Mine(4000);
 
-            Assert.AreEqual(2, game.objs.Items.Oil.Quantity);
+            Assert.AreEqual(1, game.objs.Items.Oil.Quantity);
         }
 
         [TestMethod]
@@ -36,8 +36,13 @@ namespace GoldRushTesting
                 game.objs.Items.Stone, game.objs.Items.Copper, game.objs.Items.Iron, game.objs.Items.Silver,
                 game.objs.Items.Gold, game.objs.Items.Opal, game.objs.Items.Jade, game.objs.Items.Topaz
             };
+            foreach (var resource in baseResources)
+                Debug.WriteLine(resource.Quantity);
+            
+
             game.objs.Gatherers.Miner.Mine(10000);
             Assert.AreEqual(5,baseResources.Sum(resource => resource.Quantity));
+            
         }
 
         [TestMethod]

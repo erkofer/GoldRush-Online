@@ -24,15 +24,17 @@ namespace GoldRush
             Miner.PossibleResources.AddRange(baseResources);
             Miner.BaseResourcesPerSecond = 0.5;
 
+            Lumberjack = new Gatherer(game);
+            Lumberjack.GuaranteedResources.Add(game.Items.Logs);
+            Lumberjack.BaseResourcesPerSecond = 0.5;
+
             Pumpjack = new Gatherer(game);
             Pumpjack.GuaranteedResources.Add(game.Items.Oil);
-            Pumpjack.BaseResourcesPerSecond = 0.5;
-            
+            Pumpjack.BaseResourcesPerSecond = 0.25;
         }
         
-       
-
         public Gatherer Miner;
+        public Gatherer Lumberjack;
         public Gatherer Pumpjack;
 
         public class Gatherer : GameObjects.GameObject
@@ -46,6 +48,11 @@ namespace GoldRush
             }
 
             private GameObjects game;
+
+            /// <summary>
+            /// The odds of no resources being gathered.
+            /// </summary>
+            public int ChanceOfNothing { get; set; }
 
             /// <summary>
             /// The percentage increase of resources gathered per second by upgrades.
@@ -62,8 +69,7 @@ namespace GoldRush
             /// </summary>
             public double BaseResourcesPerSecond { get; set; }
 
-            public double TotalBaseResourcesPerSecond { get
-            {
+            public double TotalBaseResourcesPerSecond { get { 
                 return BaseResourcesPerSecond + ResourcesPerSecondBaseIncrease;
             } }
 
@@ -75,7 +81,7 @@ namespace GoldRush
             /// <summary>
             /// A buffer to hold left over efficiency.
             /// </summary>
-            public double ResourceBuffer=0;
+            private double resourceBuffer;
 
             /// <summary>
             /// The resources the Gatherer will collect.
@@ -94,13 +100,10 @@ namespace GoldRush
 
             public void RecalculateMiningStuff()
             {
-                totalProbability =new List<int>();
+                totalProbability = new List<int>();
                 var total = 0;
                 foreach (var resource in PossibleResources)
-                {
-                    totalProbability.Add(resource.Probability+total);
-                    total += resource.Probability;
-                }
+                    totalProbability.Add(total+=resource.Probability);
             }
 
             /// <summary>
@@ -112,10 +115,10 @@ namespace GoldRush
                 RecalculateMiningStuff();
 
                 var resourcesGained = ResourcesPerSecond;
-                resourcesGained += ResourceBuffer;
+                resourcesGained += resourceBuffer;
                 resourcesGained *= (ms / 1000); // gathers resources based on time passed.
                 // Stores excess resources in the resource buffer.
-                ResourceBuffer = resourcesGained - Math.Floor(resourcesGained);
+                resourceBuffer = resourcesGained - Math.Floor(resourcesGained);
                 resourcesGained = Math.Floor(resourcesGained);
                
                 if (GuaranteedResources.Count > 0)
@@ -126,10 +129,11 @@ namespace GoldRush
                 
                 for (var i = 0; i < resourcesGained; i++)
                 {
+                    if (ChanceOfNothing != game.Random.Next(ChanceOfNothing+1)) continue;
+
                     var chance = game.Random.Next(1, totalProbability[totalProbability.Count - 1]);
                     var roll = Array.BinarySearch(totalProbability.ToArray(), chance);
-                    if (roll < 0)
-                        roll = ~roll;
+                    if (roll < 0) roll = ~roll;
                     PossibleResources[roll].Quantity++;
                 }
             }

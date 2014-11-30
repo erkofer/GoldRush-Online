@@ -7,6 +7,7 @@ namespace GoldRushTesting
     [TestClass]
     public class UpgradesTest
     {
+
         /// <summary>
         /// Copper is worth 5 base. With a 20% increase in value it is worth 6.
         /// </summary>
@@ -31,6 +32,45 @@ namespace GoldRushTesting
 
             Assert.AreEqual(5, game.objs.Items.Copper.Value);
         }
+
+        [TestMethod]
+        public void ResourceActivate()
+        {
+            Game game = new Game();
+            game.objs.Upgrades.Researcher.Activate();
+
+            Assert.IsTrue(game.objs.Gatherers.Miner.PossibleResources.Contains(game.objs.Items.Ruby));
+        }
+
+        [TestMethod]
+        public void ResourceDeactivate()
+        {
+            Game game = new Game();
+            game.objs.Upgrades.Researcher.Activate();
+            game.objs.Upgrades.Researcher.Deactivate();
+
+            Assert.IsTrue(!game.objs.Gatherers.Miner.PossibleResources.Contains(game.objs.Items.Ruby));
+        }
+
+        [TestMethod]
+        public void BaseEfficiencyActivate()
+        {
+            Game game = new Game();
+            game.objs.Upgrades.ChainsawsT1.Activate();
+
+            Assert.AreEqual(0.75,game.objs.Gatherers.Lumberjack.ResourcesPerSecond);
+        }
+
+        [TestMethod]
+        public void BaseEfficiencyDeactivate()
+        {
+            Game game = new Game();
+            game.objs.Upgrades.ChainsawsT1.Activate();
+            game.objs.Upgrades.ChainsawsT1.Deactivate();
+            
+            Assert.AreEqual(0.5, game.objs.Gatherers.Lumberjack.ResourcesPerSecond);
+        }
+        
 
         /// <summary>
         /// The Speech Potion lasts 45 seconds. We ensure it is correctly deactivated.

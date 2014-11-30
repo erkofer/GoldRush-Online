@@ -37,6 +37,11 @@ namespace GoldRush
             public readonly int Id;
 
             /// <summary>
+            /// The prerequisite for this GameObject.
+            /// </summary>
+            public GameObject Requires { get; set; }
+
+            /// <summary>
             /// A user facing identifier.
             /// </summary>
             public virtual string Name { get; set; }
@@ -51,15 +56,11 @@ namespace GoldRush
                 set
                 {
                     if (value)
-                    {
                         if (Quantity <= 0)
                             Quantity = 1;
-                    }
                     else
-                    {
                         if (Quantity > 0)
                             Quantity = 0;
-                    }
                 }
             }
         }

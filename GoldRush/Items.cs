@@ -21,31 +21,31 @@ namespace GoldRush
             #region Item Creation
             Stone.Name = "Stone";
             Stone.Worth = 1;
-            Stone.Probability = 2000000;
+            Stone.Probability = 3500000;//
             Stone.Currency = Coins;
             items.Add(Stone);
 
             Copper.Name = "Copper";
             Copper.Worth = 5;
-            Copper.Probability = 1500000;
+            Copper.Probability = 2000000;
             Copper.Currency = Coins;
             items.Add(Copper);
 
             Iron.Name = "Iron";
             Iron.Worth = 20;
-            Iron.Probability = 1000000;
+            Iron.Probability = 1500000;
             Iron.Currency = Coins;
             items.Add(Iron);
 
             Silver.Name = "Silver";
             Silver.Worth = 100;
-            Silver.Probability = 500000;
+            Silver.Probability = 1000000;
             Silver.Currency = Coins;
             items.Add(Silver);
 
             Gold.Name = "Gold";
             Gold.Worth = 1000;
-            Gold.Probability = 125000;
+            Gold.Probability = 500000;
             Gold.Currency = Coins;
             items.Add(Gold);
 
@@ -63,55 +63,55 @@ namespace GoldRush
 
             Opal.Name = "Opal";
             Opal.Worth = 2000;
-            Opal.Probability = 5000;
+            Opal.Probability = 25000;
             Opal.Currency = Coins;
             items.Add(Opal);
 
             Jade.Name = "Jade";
             Jade.Worth = 5000;
-            Jade.Probability = 4000;
+            Jade.Probability = 20000;
             Jade.Currency = Coins;
             items.Add(Jade);
 
             Topaz.Name = "Topaz";
             Topaz.Worth = 10000;
-            Topaz.Probability = 3000;
+            Topaz.Probability = 15000;
             Topaz.Currency = Coins;
             items.Add(Topaz);
 
             Sapphire.Name = "Sapphire";
             Sapphire.Worth = 25000;
-            Sapphire.Probability = 2000;
+            Sapphire.Probability = 10000;
             Sapphire.Currency = Coins;
             items.Add(Sapphire);
 
             Emerald.Name = "Emerald";
             Emerald.Worth = 50000;
-            Emerald.Probability = 1000;
+            Emerald.Probability = 5000;
             Emerald.Currency = Coins;
             items.Add(Emerald);
 
             Ruby.Name = "Ruby";
             Ruby.Worth = 100000;
-            Ruby.Probability = 750;
+            Ruby.Probability = 2500;
             Ruby.Currency = Coins;
             items.Add(Ruby);
 
             Onyx.Name = "Onyx";
             Onyx.Worth = 250000;
-            Onyx.Probability = 200;
+            Onyx.Probability = 1000;
             Onyx.Currency = Coins;
             items.Add(Onyx);
 
             Quartz.Name = "Quartz";
             Quartz.Worth = 500000;
-            Quartz.Probability = 20;
+            Quartz.Probability = 50;
             Quartz.Currency = Coins;
             items.Add(Quartz);
 
             Diamond.Name = "Diamond";
             Diamond.Worth = 5000000;
-            Diamond.Probability = 7;
+            Diamond.Probability = 20;
             Diamond.Currency = Coins;
             items.Add(Diamond);
 

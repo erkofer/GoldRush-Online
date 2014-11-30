@@ -35,7 +35,7 @@ namespace GoldRushTesting
             game.objs.Items.Copper.Quantity = 5000;
             game.objs.Items.BronzeBar.Quantity = 50;
             game.objs.Items.CopperWire.Craft(5);
-          
+         
 
             Assert.AreEqual(500, game.objs.Items.CopperWire.Quantity);
             Assert.AreEqual(0,game.objs.Items.BronzeBar.Quantity);

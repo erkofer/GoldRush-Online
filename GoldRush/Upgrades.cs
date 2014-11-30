@@ -13,6 +13,20 @@ namespace GoldRush
         public Upgrades(GameObjects game)
         {
             this.game = game;
+            #region Upgrades
+            Researcher = new Upgrade(new ResourceUpgradeEffect(game,
+                new []{game.Gatherers.Miner},
+                new []{game.Items.Sapphire,
+                    game.Items.Emerald,
+                    game.Items.Ruby}));
+            Researcher.Name = "Researcher";
+
+            ChainsawsT1 = new Upgrade(new EfficiencyUpgradeEffect(game,
+                new []{game.Gatherers.Lumberjack},
+                0.25));
+            ChainsawsT1.Name = "Chainsaws";
+            #endregion
+
             #region Buffs
             SpeechBuff = new Buff(new ItemValueUpgradeEffect(game, 0.2));
             SpeechBuff.Name = "Speech Buff";
@@ -30,6 +44,8 @@ namespace GoldRush
         }
 
         public Buff SpeechBuff;
+        public Upgrade Researcher;
+        public Upgrade ChainsawsT1;
 
         public class Upgrade : GameObjects.GameObject
         {
@@ -117,7 +133,8 @@ namespace GoldRush
         {
             private double value;
 
-            public ItemValueUpgradeEffect(GameObjects game, double value):base(game)
+            public ItemValueUpgradeEffect(GameObjects game, double value)
+                :base(game)
             {
                 this.value = value;
             }
@@ -130,6 +147,59 @@ namespace GoldRush
             public override void Deactivate()
             {
                 Game.Items.WorthModifier -= value;
+            }
+        }
+
+        /// <summary>
+        /// Adds new resources to gatherers.
+        /// </summary>
+        public class ResourceUpgradeEffect : UpgradeEffect
+        {
+            private Items.Resource[] resources;
+            private Gatherers.Gatherer[] gatherers;
+            public ResourceUpgradeEffect(GameObjects game, Gatherers.Gatherer[] gatherers, Items.Resource[] resources)
+                :base(game)
+            {
+                this.resources = resources;
+                this.gatherers = gatherers;
+            }
+
+            public override void Activate()
+            {
+                foreach (var gatherer in gatherers)
+                    gatherer.PossibleResources.AddRange(resources);
+            }
+
+            public override void Deactivate()
+            {
+                foreach (var gatherer in gatherers)
+                    foreach (var resource in resources)
+                        gatherer.PossibleResources.Remove(resource);
+            }
+        }
+
+        public class EfficiencyUpgradeEffect : UpgradeEffect
+        {
+            private Gatherers.Gatherer[] gatherers;
+            private double efficiency;
+
+            public EfficiencyUpgradeEffect(GameObjects game, Gatherers.Gatherer[] gatherers, double efficiency)
+                :base(game)
+            {
+                this.gatherers = gatherers;
+                this.efficiency = efficiency;
+            }
+
+            public override void Activate()
+            {
+                foreach (var gatherer in gatherers)
+                    gatherer.ResourcesPerSecondBaseIncrease += efficiency;
+            }
+
+            public override void Deactivate()
+            {
+                foreach (var gatherer in gatherers)
+                    gatherer.ResourcesPerSecondBaseIncrease -= efficiency;
             }
         }
         #endregion
