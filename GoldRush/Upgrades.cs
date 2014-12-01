@@ -193,20 +193,16 @@ namespace GoldRush
             public override void Activate()
             {
                 foreach (var gatherer in gatherers)
-                {
                     gatherer.PossibleResources.AddRange(resources);
-                    gatherer.RecalculateMiningStuff();
-                }
+                  
             }
 
             public override void Deactivate()
             {
                 foreach (var gatherer in gatherers)
-                {
-                    gatherer.RecalculateMiningStuff();
                     foreach (var resource in resources)
                         gatherer.PossibleResources.Remove(resource);
-                }
+                
             }
         }
 
@@ -228,19 +224,15 @@ namespace GoldRush
             public override void Activate()
             {
                 foreach (var gatherer in gatherers)
-                {
                     gatherer.ResourcesPerSecondBaseIncrease += efficiency;
-                    gatherer.RecalculateMiningStuff();
-                }
+                   
             }
 
             public override void Deactivate()
             {
                 foreach (var gatherer in gatherers)
-                {
                     gatherer.ResourcesPerSecondBaseIncrease -= efficiency;
-                    gatherer.RecalculateMiningStuff();
-                }
+                   
             }
         }
 
@@ -261,19 +253,15 @@ namespace GoldRush
             public override void Activate()
             {
                 foreach (var gatherer in gatherers)
-                {
                     gatherer.ResourcesPerSecondEfficiency += magnitude;
-                    gatherer.RecalculateMiningStuff();
-                }
+                    
             }
 
             public override void Deactivate()
             {
                 foreach (var gatherer in gatherers)
-                {
                     gatherer.ResourcesPerSecondEfficiency -= magnitude;
-                    gatherer.RecalculateMiningStuff();
-                }
+                    
             }
         }
 
@@ -297,19 +285,15 @@ namespace GoldRush
             public override void Activate()
             {
                 foreach (var gatherer in gatherers)
-                {
                     gatherer.ProbabilityModifier += probability;
-                    gatherer.RecalculateMiningStuff();
-                }
+                   
             }
 
             public override void Deactivate()
             {
                 foreach (var gatherer in gatherers)
-                {
                     gatherer.ProbabilityModifier -= probability;
-                    gatherer.RecalculateMiningStuff();
-                }
+                  
             }
         }
         #endregion

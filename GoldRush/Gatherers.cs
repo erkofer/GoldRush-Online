@@ -54,15 +54,19 @@ namespace GoldRush
             /// </summary>
             public int ChanceOfNothing { get; set; }
 
+            private double resourcesPerSecondEfficiency;
             /// <summary>
             /// The percentage increase of resources gathered per second by upgrades.
             /// </summary>
-            public double ResourcesPerSecondEfficiency { get; set; }
+            public double ResourcesPerSecondEfficiency { get { return resourcesPerSecondEfficiency; } 
+                set { resourcesPerSecondEfficiency = value; RecalculateMiningStuff(); } }
 
+            private double resourcesPerSecondBaseIncrease;
             /// <summary>
             /// The flat increase of resources gathered per second by upgrades.
             /// </summary>
-            public double ResourcesPerSecondBaseIncrease { get; set; }
+            public double ResourcesPerSecondBaseIncrease { get { return resourcesPerSecondBaseIncrease; } 
+                set { resourcesPerSecondBaseIncrease = value; RecalculateMiningStuff(); } }
 
             /// <summary>
             /// The base quantity of resources gathered per second.
@@ -73,10 +77,12 @@ namespace GoldRush
                 return BaseResourcesPerSecond + ResourcesPerSecondBaseIncrease;
             } }
 
+            private double probabilityModifier;
             /// <summary>
             /// The increased chance of finding rarer ores.
             /// </summary>
-            public double ProbabilityModifier { get; set; }
+            public double ProbabilityModifier { get { return probabilityModifier; } 
+                set { probabilityModifier = value; RecalculateMiningStuff(); } }
 
             /// <summary>
             /// The quantity of resources gathered per second.
@@ -93,10 +99,12 @@ namespace GoldRush
             /// </summary>
             public List<Items.Resource> GuaranteedResources { get; set; }
 
+            private List<Items.Resource> possibleResources; 
             /// <summary>
             /// The resources the Gatherer can collect.
             /// </summary>
-            public List<Items.Resource> PossibleResources { get; set; }
+            public List<Items.Resource> PossibleResources { get { return possibleResources; } 
+                set { possibleResources = value; RecalculateMiningStuff(); } }
 
             /// <summary>
             /// The total probability of all possible resources.
@@ -108,6 +116,9 @@ namespace GoldRush
             /// </summary>
             private bool recalculate=true;
 
+            /// <summary>
+            /// Forces the gatherer to recalculate its mining variables next update.
+            /// </summary>
             public void RecalculateMiningStuff()
             {
                 recalculate = true;
