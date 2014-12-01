@@ -193,14 +193,20 @@ namespace GoldRush
             public override void Activate()
             {
                 foreach (var gatherer in gatherers)
+                {
                     gatherer.PossibleResources.AddRange(resources);
+                    gatherer.RecalculateMiningStuff();
+                }
             }
 
             public override void Deactivate()
             {
                 foreach (var gatherer in gatherers)
+                {
+                    gatherer.RecalculateMiningStuff();
                     foreach (var resource in resources)
                         gatherer.PossibleResources.Remove(resource);
+                }
             }
         }
 
@@ -222,13 +228,19 @@ namespace GoldRush
             public override void Activate()
             {
                 foreach (var gatherer in gatherers)
+                {
                     gatherer.ResourcesPerSecondBaseIncrease += efficiency;
+                    gatherer.RecalculateMiningStuff();
+                }
             }
 
             public override void Deactivate()
             {
                 foreach (var gatherer in gatherers)
+                {
                     gatherer.ResourcesPerSecondBaseIncrease -= efficiency;
+                    gatherer.RecalculateMiningStuff();
+                }
             }
         }
 
@@ -249,13 +261,55 @@ namespace GoldRush
             public override void Activate()
             {
                 foreach (var gatherer in gatherers)
+                {
                     gatherer.ResourcesPerSecondEfficiency += magnitude;
+                    gatherer.RecalculateMiningStuff();
+                }
             }
 
             public override void Deactivate()
             {
                 foreach (var gatherer in gatherers)
+                {
                     gatherer.ResourcesPerSecondEfficiency -= magnitude;
+                    gatherer.RecalculateMiningStuff();
+                }
+            }
+        }
+
+        // TODO: Find an elegant way to test probability upgrades.
+
+        /// <summary>
+        /// Increases the chance of finding rarer ores and decreases the chance of finding more common ores.
+        /// </summary>
+        public class ProbabilityUpgradeEffect : UpgradeEffect
+        {
+            private Gatherers.Gatherer[] gatherers;
+            private double probability;
+
+            public ProbabilityUpgradeEffect(GameObjects game, Gatherers.Gatherer[] gatherers, double probability) 
+                : base(game)
+            {
+                this.gatherers = gatherers;
+                this.probability = probability;
+            }
+
+            public override void Activate()
+            {
+                foreach (var gatherer in gatherers)
+                {
+                    gatherer.ProbabilityModifier += probability;
+                    gatherer.RecalculateMiningStuff();
+                }
+            }
+
+            public override void Deactivate()
+            {
+                foreach (var gatherer in gatherers)
+                {
+                    gatherer.ProbabilityModifier -= probability;
+                    gatherer.RecalculateMiningStuff();
+                }
             }
         }
         #endregion

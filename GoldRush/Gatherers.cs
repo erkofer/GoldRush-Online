@@ -74,6 +74,11 @@ namespace GoldRush
             } }
 
             /// <summary>
+            /// The increased chance of finding rarer ores.
+            /// </summary>
+            public double ProbabilityModifier { get; set; }
+
+            /// <summary>
             /// The quantity of resources gathered per second.
             /// </summary>
             public double ResourcesPerSecond { get { return (TotalBaseResourcesPerSecond * (ResourcesPerSecondEfficiency+1))*Quantity; } }
@@ -98,12 +103,30 @@ namespace GoldRush
             /// </summary>
             private List<int> totalProbability;
 
+            /// <summary>
+            /// Determines when we must recalculate mining stuff.
+            /// </summary>
+            private bool recalculate=true;
+
             public void RecalculateMiningStuff()
+            {
+                recalculate = true;
+            }
+
+            private void recalculateMiningStuff()
             {
                 totalProbability = new List<int>();
                 var total = 0;
                 foreach (var resource in PossibleResources)
                     totalProbability.Add(total+=resource.Probability);
+
+                if (ProbabilityModifier <= 0) return;
+                
+                for (var i = 0; i < totalProbability.Count; i++)
+                    if (totalProbability[i] < (total/2))
+                        totalProbability[i] *= (int) Math.Floor(ProbabilityModifier + 1);
+                    else
+                        totalProbability[i] /= (int) Math.Floor(ProbabilityModifier + 1);
             }
 
             /// <summary>
@@ -113,8 +136,12 @@ namespace GoldRush
             public void Mine(double ms)
             {
                 if(ResourcesPerSecond<=0) return;
-                
-                RecalculateMiningStuff();
+
+                if (recalculate)
+                {
+                    recalculateMiningStuff();
+                    recalculate = false;
+                }
 
                 var resourcesGained = ResourcesPerSecond;
                 resourcesGained += resourceBuffer;

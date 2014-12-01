@@ -95,6 +95,7 @@ namespace GoldRushTesting
             Assert.AreEqual(0.5, game.objs.Gatherers.Miner.ResourcesPerSecond);
         }
 
+
         /// <summary>
         /// The Speech Potion lasts 45 seconds. We ensure it is correctly deactivated.
         /// </summary>
