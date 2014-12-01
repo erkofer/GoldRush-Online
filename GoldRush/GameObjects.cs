@@ -49,18 +49,13 @@ namespace GoldRush
 
             public virtual bool Active
             {
-                get
-                {
-                    return Quantity > 0;
-                }
+                get { return Quantity > 0; }
                 set
                 {
                     if (value)
-                        if (Quantity <= 0)
-                            Quantity = 1;
+                        if (Quantity <= 0) Quantity = 1;
                     else
-                        if (Quantity > 0)
-                            Quantity = 0;
+                        if (Quantity > 0) Quantity = 0;
                 }
             }
         }

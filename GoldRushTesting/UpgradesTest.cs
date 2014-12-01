@@ -57,6 +57,7 @@ namespace GoldRushTesting
         {
             Game game = new Game();
             game.objs.Upgrades.ChainsawsT1.Activate();
+            game.objs.Gatherers.Lumberjack.Quantity = 1;
 
             Assert.AreEqual(0.75,game.objs.Gatherers.Lumberjack.ResourcesPerSecond);
         }
@@ -67,10 +68,32 @@ namespace GoldRushTesting
             Game game = new Game();
             game.objs.Upgrades.ChainsawsT1.Activate();
             game.objs.Upgrades.ChainsawsT1.Deactivate();
+            game.objs.Gatherers.Lumberjack.Quantity = 1;
             
             Assert.AreEqual(0.5, game.objs.Gatherers.Lumberjack.ResourcesPerSecond);
         }
-        
+
+
+        [TestMethod]
+        public void PercEfficiencyActivate()
+        {
+            var game = new Game();
+            game.objs.Upgrades.Foreman.Activate();
+            game.objs.Gatherers.Miner.Quantity = 1;
+
+            Assert.AreEqual(0.575,game.objs.Gatherers.Miner.ResourcesPerSecond);
+        }
+
+        [TestMethod]
+        public void PercEfficiencyDeactivate()
+        {
+            var game = new Game();
+            game.objs.Upgrades.Foreman.Activate();
+            game.objs.Upgrades.Foreman.Deactivate();
+            game.objs.Gatherers.Miner.Quantity = 1;
+
+            Assert.AreEqual(0.5, game.objs.Gatherers.Miner.ResourcesPerSecond);
+        }
 
         /// <summary>
         /// The Speech Potion lasts 45 seconds. We ensure it is correctly deactivated.

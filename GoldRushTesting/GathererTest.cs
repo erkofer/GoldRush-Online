@@ -13,6 +13,7 @@ namespace GoldRushTesting
         public void GuaranteedCollect()
         {
             Game game = new Game();
+            game.objs.Gatherers.Pumpjack.Quantity = 1;
             game.objs.Gatherers.Pumpjack.Mine(4000);
 
             Assert.AreEqual(1, game.objs.Items.Oil.Quantity);
@@ -38,8 +39,8 @@ namespace GoldRushTesting
             };
             foreach (var resource in baseResources)
                 Debug.WriteLine(resource.Quantity);
-            
 
+            game.objs.Gatherers.Miner.Quantity = 1;
             game.objs.Gatherers.Miner.Mine(10000);
             Assert.AreEqual(5,baseResources.Sum(resource => resource.Quantity));
             
@@ -67,6 +68,7 @@ namespace GoldRushTesting
                 game.objs.Items.Stone, game.objs.Items.Copper, game.objs.Items.Iron, game.objs.Items.Silver,
                 game.objs.Items.Gold, game.objs.Items.Opal, game.objs.Items.Jade, game.objs.Items.Topaz
             };
+            game.objs.Gatherers.Miner.Quantity = 1;
             game.objs.Gatherers.Miner.Mine(1000);
             game.objs.Gatherers.Miner.Mine(1000);
             Assert.AreEqual(1, baseResources.Sum(resource => resource.Quantity));

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,6 +15,28 @@ namespace GoldRush
         {
             this.game = game;
             #region Upgrades
+            Foreman = new Upgrade(new EfficiencyMagnitudeUpgradeEffect(game,
+                new [] {game.Gatherers.Miner,
+                    game.Gatherers.Lumberjack},
+                0.15));
+            Foreman.Name = "Foreman";
+
+            Backpack = new Upgrade(new ResourceUpgradeEffect(game,
+                new []{game.Gatherers.Lumberjack},
+                new[]{game.Items.Cubicula,
+                    game.Items.BitterRoot,
+                    game.Items.Thornberries,
+                    game.Items.Transfruit}));
+            Backpack.Name = "Backpack";
+
+            Botanist = new Upgrade(new ResourceUpgradeEffect(game,
+                new []{game.Gatherers.Lumberjack},
+                new [] {game.Items.IronFlower,
+                    game.Items.TongtwistaFlower,
+                    game.Items.MeltingNuts}));
+            Botanist.Requires = Backpack;
+            Botanist.Name = "Botanist";
+
             Researcher = new Upgrade(new ResourceUpgradeEffect(game,
                 new []{game.Gatherers.Miner},
                 new []{game.Items.Sapphire,
@@ -44,7 +67,10 @@ namespace GoldRush
         }
 
         public Buff SpeechBuff;
+        public Upgrade Backpack;
+        public Upgrade Botanist;
         public Upgrade Researcher;
+        public Upgrade Foreman;
         public Upgrade ChainsawsT1;
 
         public class Upgrade : GameObjects.GameObject
@@ -178,6 +204,9 @@ namespace GoldRush
             }
         }
 
+        /// <summary>
+        /// Increases the base efficiency of gatherers.
+        /// </summary>
         public class EfficiencyUpgradeEffect : UpgradeEffect
         {
             private Gatherers.Gatherer[] gatherers;
@@ -200,6 +229,33 @@ namespace GoldRush
             {
                 foreach (var gatherer in gatherers)
                     gatherer.ResourcesPerSecondBaseIncrease -= efficiency;
+            }
+        }
+
+        /// <summary>
+        /// Increases the efficiency of gatherers by a percentage.
+        /// </summary>
+        public class EfficiencyMagnitudeUpgradeEffect : UpgradeEffect
+        {
+            private Gatherers.Gatherer[] gatherers;
+            private double magnitude;
+
+            public EfficiencyMagnitudeUpgradeEffect(GameObjects game, Gatherers.Gatherer[] gatherers, double magnitude)
+                : base(game)
+            {
+                this.gatherers = gatherers;
+                this.magnitude = magnitude;
+            }
+            public override void Activate()
+            {
+                foreach (var gatherer in gatherers)
+                    gatherer.ResourcesPerSecondEfficiency += magnitude;
+            }
+
+            public override void Deactivate()
+            {
+                foreach (var gatherer in gatherers)
+                    gatherer.ResourcesPerSecondEfficiency -= magnitude;
             }
         }
         #endregion

@@ -26,6 +26,7 @@ namespace GoldRush
 
             Lumberjack = new Gatherer(game);
             Lumberjack.GuaranteedResources.Add(game.Items.Logs);
+            Lumberjack.ChanceOfNothing = 300;
             Lumberjack.BaseResourcesPerSecond = 0.5;
 
             Pumpjack = new Gatherer(game);
@@ -43,7 +44,6 @@ namespace GoldRush
             {
                 PossibleResources = new List<Items.Resource>();
                 GuaranteedResources = new List<Items.Resource>();
-                ResourcesPerSecondEfficiency = 1;
                 this.game = game;
             }
 
@@ -76,7 +76,7 @@ namespace GoldRush
             /// <summary>
             /// The quantity of resources gathered per second.
             /// </summary>
-            public double ResourcesPerSecond { get { return TotalBaseResourcesPerSecond * ResourcesPerSecondEfficiency; } }
+            public double ResourcesPerSecond { get { return (TotalBaseResourcesPerSecond * (ResourcesPerSecondEfficiency+1))*Quantity; } }
 
             /// <summary>
             /// A buffer to hold left over efficiency.
@@ -112,6 +112,8 @@ namespace GoldRush
             /// <param name="ms">Time that has passed since last mine.</param>
             public void Mine(double ms)
             {
+                if(ResourcesPerSecond<=0) return;
+                
                 RecalculateMiningStuff();
 
                 var resourcesGained = ResourcesPerSecond;
