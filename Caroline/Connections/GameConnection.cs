@@ -11,8 +11,9 @@ namespace Caroline.Connections
     public class GameConnection : PersistentConnection
     {
         readonly object _lock = new object();
-        readonly BiDictionary<string, Game> _gamesByConnectionId = new BiDictionary<string, Game>();
-        readonly Dictionary<string, Game> _gamesByUserId = new Dictionary<string, Game>(100);
+        GameFactory _gameFactory = new GameFactory();
+        readonly BiDictionary<string, IGoldRushGame> _gamesByConnectionId = new BiDictionary<string, IGoldRushGame>();
+        readonly Dictionary<string, IGoldRushGame> _gamesByUserId = new Dictionary<string, IGoldRushGame>(100);
 
         protected override async Task OnConnected(IRequest request, string connectionId)
         {
@@ -25,7 +26,7 @@ namespace Caroline.Connections
                 return;
             }
 
-            Game game;
+            IGoldRushGame game;
             lock (_lock)
             {
                 // if the game exists for the same session (for some reason)
@@ -43,19 +44,19 @@ namespace Caroline.Connections
                 }
 
                 // game doesn't exist, create it
-                game = new Game();
+                game = _gameFactory.Create();
                 _gamesByConnectionId.Add(connectionId, game);
                 _gamesByUserId.Add(id, game);
             }
             // TODO: load game
         }
 
-        protected override Task OnDisconnected(IRequest request, string connectionId, bool stopCalled)
+        protected override async Task OnDisconnected(IRequest request, string connectionId, bool stopCalled)
         {
             var id = UserIdProvider.GetUserId(request);
             lock (_lock)
             {
-                Game game;
+                IGoldRushGame game;
                 if (id != null)
                     _gamesByUserId.Remove(id);
                 _gamesByConnectionId.Remove(connectionId);
@@ -64,7 +65,7 @@ namespace Caroline.Connections
 
         protected override async Task OnReceived(IRequest request, string connectionId, string data)
         {
-            Game game;
+            IGoldRushGame game;
             if (!_gamesByConnectionId.TryGetValue(connectionId, out game))
             {
                 // game doesn't exist ?
@@ -83,30 +84,5 @@ namespace Caroline.Connections
         {
 
         }
-    }
-
-    interface IGoldRushGame
-    {
-        OutputState Update(InputState message, UpdateFlags flags);
-        GameSave Save();
-        void Load(GameSave save);
-    }
-
-    class OutputState { }
-    class InputState { }
-    class GameSave { }
-
-    [Flags]
-    internal enum UpdateFlags
-    {
-        SendAllState = 1
-    }
-
-    internal interface IModifiedState
-    {
-    }
-
-    internal interface IInput
-    {
     }
 }
