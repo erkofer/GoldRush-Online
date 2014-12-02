@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace GoldRush
 {
-    public class Gatherers
+    class Gatherers
     {
         public GameObjects Game;
 
@@ -38,7 +38,7 @@ namespace GoldRush
         public Gatherer Lumberjack;
         public Gatherer Pumpjack;
 
-        public class Gatherer : GameObjects.GameObject
+        internal class Gatherer : GameObjects.GameObject
         {
             public Gatherer(GameObjects game)
             {

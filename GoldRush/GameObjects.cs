@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GoldRush
 {
-    public class GameObjects
+    class GameObjects
     {
         public GameObjects()
         {
@@ -22,7 +22,7 @@ namespace GoldRush
         public Upgrades Upgrades;
         public Gatherers Gatherers;
 
-        public abstract class GameObject
+        internal abstract class GameObject
         {
             protected GameObject()
             {
