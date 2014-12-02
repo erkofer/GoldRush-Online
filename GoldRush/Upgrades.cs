@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,16 +9,69 @@ namespace GoldRush
 {
     public class Upgrades
     {
-        public GameObjects Game;
+        public GameObjects game;
 
         public Upgrades(GameObjects game)
         {
-            Game = game;
-            ExpensiveItems = new Upgrade(new ItemValueUpgradeEffect(game,1));
-            ExpensiveItems.Name = "Expensive Items";
+            this.game = game;
+            #region Upgrades
+            Foreman = new Upgrade(new EfficiencyMagnitudeUpgradeEffect(game,
+                new [] {game.Gatherers.Miner,
+                    game.Gatherers.Lumberjack},
+                0.15));
+            Foreman.Name = "Foreman";
+
+            Backpack = new Upgrade(new ResourceUpgradeEffect(game,
+                new []{game.Gatherers.Lumberjack},
+                new[]{game.Items.Cubicula,
+                    game.Items.BitterRoot,
+                    game.Items.Thornberries,
+                    game.Items.Transfruit}));
+            Backpack.Name = "Backpack";
+
+            Botanist = new Upgrade(new ResourceUpgradeEffect(game,
+                new []{game.Gatherers.Lumberjack},
+                new [] {game.Items.IronFlower,
+                    game.Items.TongtwistaFlower,
+                    game.Items.MeltingNuts}));
+            Botanist.Requires = Backpack;
+            Botanist.Name = "Botanist";
+
+            Researcher = new Upgrade(new ResourceUpgradeEffect(game,
+                new []{game.Gatherers.Miner},
+                new []{game.Items.Sapphire,
+                    game.Items.Emerald,
+                    game.Items.Ruby}));
+            Researcher.Name = "Researcher";
+
+            ChainsawsT1 = new Upgrade(new EfficiencyUpgradeEffect(game,
+                new []{game.Gatherers.Lumberjack},
+                0.25));
+            ChainsawsT1.Name = "Chainsaws";
+            #endregion
+
+            #region Buffs
+            SpeechBuff = new Buff(new ItemValueUpgradeEffect(game, 0.2));
+            SpeechBuff.Name = "Speech Buff";
+            SpeechBuff.Duration = 45;
+            game.Items.SpeechPotion.Effect = SpeechBuff;
+            #endregion
         }
 
-        public Upgrade ExpensiveItems;
+        /// <summary>
+        /// Updates the duration on all buffs.
+        /// </summary>
+        public void Update()
+        {
+            
+        }
+
+        public Buff SpeechBuff;
+        public Upgrade Backpack;
+        public Upgrade Botanist;
+        public Upgrade Researcher;
+        public Upgrade Foreman;
+        public Upgrade ChainsawsT1;
 
         public class Upgrade : GameObjects.GameObject
         {
@@ -26,7 +80,7 @@ namespace GoldRush
                 Effect = effect;
             }
 
-            public void Activate()
+            public virtual void Activate()
             {
                 if (!Active)
                 {
@@ -35,7 +89,7 @@ namespace GoldRush
                 }
             }
 
-            public void Deactivate()
+            public virtual void Deactivate()
             {
                 if (Active)
                 {
@@ -47,15 +101,42 @@ namespace GoldRush
             public UpgradeEffect Effect { get; set; }
         }
 
-        public class Buff
+        public class Buff : Upgrade
         {
-            public Buff()
+            public Buff(UpgradeEffect effect):base(effect)
             {
                 
             }
 
-            public Upgrade Upgrade;
-            public int Duration;
+            public override void Activate()
+            {
+                TimeActive = 0;
+                base.Activate();
+            }
+
+            public override void Deactivate()
+            {
+                TimeActive = 0;
+                base.Deactivate();
+            }
+
+            public void Update(double ms)
+            {
+                TimeActive += (ms/1000);
+                if(TimeActive>Duration)
+                    Deactivate();
+            }
+
+            /// <summary>
+            /// The length of time this buff will last for.
+            /// </summary>
+            public double Duration;
+
+            /// <summary>
+            /// The time the buff has been active for.
+            /// </summary>
+            private double TimeActive;
+
         }
 
         #region UpgradeEffects
@@ -78,7 +159,8 @@ namespace GoldRush
         {
             private double value;
 
-            public ItemValueUpgradeEffect(GameObjects game, double value):base(game)
+            public ItemValueUpgradeEffect(GameObjects game, double value)
+                :base(game)
             {
                 this.value = value;
             }
@@ -91,6 +173,127 @@ namespace GoldRush
             public override void Deactivate()
             {
                 Game.Items.WorthModifier -= value;
+            }
+        }
+
+        /// <summary>
+        /// Adds new resources to gatherers.
+        /// </summary>
+        public class ResourceUpgradeEffect : UpgradeEffect
+        {
+            private Items.Resource[] resources;
+            private Gatherers.Gatherer[] gatherers;
+            public ResourceUpgradeEffect(GameObjects game, Gatherers.Gatherer[] gatherers, Items.Resource[] resources)
+                :base(game)
+            {
+                this.resources = resources;
+                this.gatherers = gatherers;
+            }
+
+            public override void Activate()
+            {
+                foreach (var gatherer in gatherers)
+                    gatherer.PossibleResources.AddRange(resources);
+                  
+            }
+
+            public override void Deactivate()
+            {
+                foreach (var gatherer in gatherers)
+                    foreach (var resource in resources)
+                        gatherer.PossibleResources.Remove(resource);
+                
+            }
+        }
+
+        /// <summary>
+        /// Increases the base efficiency of gatherers.
+        /// </summary>
+        public class EfficiencyUpgradeEffect : UpgradeEffect
+        {
+            private Gatherers.Gatherer[] gatherers;
+            private double efficiency;
+
+            public EfficiencyUpgradeEffect(GameObjects game, Gatherers.Gatherer[] gatherers, double efficiency)
+                :base(game)
+            {
+                this.gatherers = gatherers;
+                this.efficiency = efficiency;
+            }
+
+            public override void Activate()
+            {
+                foreach (var gatherer in gatherers)
+                    gatherer.ResourcesPerSecondBaseIncrease += efficiency;
+                   
+            }
+
+            public override void Deactivate()
+            {
+                foreach (var gatherer in gatherers)
+                    gatherer.ResourcesPerSecondBaseIncrease -= efficiency;
+                   
+            }
+        }
+
+        /// <summary>
+        /// Increases the efficiency of gatherers by a percentage.
+        /// </summary>
+        public class EfficiencyMagnitudeUpgradeEffect : UpgradeEffect
+        {
+            private Gatherers.Gatherer[] gatherers;
+            private double magnitude;
+
+            public EfficiencyMagnitudeUpgradeEffect(GameObjects game, Gatherers.Gatherer[] gatherers, double magnitude)
+                : base(game)
+            {
+                this.gatherers = gatherers;
+                this.magnitude = magnitude;
+            }
+            public override void Activate()
+            {
+                foreach (var gatherer in gatherers)
+                    gatherer.ResourcesPerSecondEfficiency += magnitude;
+                    
+            }
+
+            public override void Deactivate()
+            {
+                foreach (var gatherer in gatherers)
+                    gatherer.ResourcesPerSecondEfficiency -= magnitude;
+                    
+            }
+        }
+
+        // TODO: Find an elegant way to test probability upgrades.
+
+        /// <summary>
+        /// Increases the chance of finding rarer ores and decreases the chance of finding more common ores.
+        /// </summary>
+        public class ProbabilityUpgradeEffect : UpgradeEffect
+        {
+            private Gatherers.Gatherer[] gatherers;
+            private double probability;
+
+            public ProbabilityUpgradeEffect(GameObjects game, Gatherers.Gatherer[] gatherers, double probability) 
+                : base(game)
+            {
+                this.gatherers = gatherers;
+                this.probability = probability;
+            }
+
+            public override void Activate()
+            {
+                foreach (var gatherer in gatherers)
+                    gatherer.ProbabilityModifier += probability;
+                   
+            }
+
+            public override void Deactivate()
+            {
+                foreach (var gatherer in gatherers)
+                    gatherer.ProbabilityModifier -= probability;
+                  
             }
         }
         #endregion

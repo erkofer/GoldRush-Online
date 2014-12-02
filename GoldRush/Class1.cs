@@ -15,7 +15,8 @@ namespace GoldRush
         {
             objs = new GameObjects();
         }
-
         public GameObjects objs;
+    
+
     }
 }
