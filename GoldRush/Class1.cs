@@ -1,22 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
-using ProtoBuf;
-
-namespace GoldRush
+﻿namespace GoldRush
 {
-    public class Game
+    public class Game : IGoldRushGame
     {
         public Game()
         {
             objs = new GameObjects();
         }
         public GameObjects objs;
-    
 
+
+        public OutputState Update(InputState message, UpdateFlags flags)
+        {
+            // TODO
+            return new OutputState();
+        }
+
+        public GameSave Save()
+        {
+            //TODO
+            return new GameSave();
+        }
+
+        public void Load(GameSave save)
+        {
+            //TODO
+        }
     }
 }
