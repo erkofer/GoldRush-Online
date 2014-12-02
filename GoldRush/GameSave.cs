@@ -1,7 +1,7 @@
 ﻿namespace GoldRush
 {
     /// <summary>
-    /// Represents all state of a GoldRushGame
+    /// A GameSave representing all unique internal and external state of a game.
     /// </summary>
     public class GameSave
     {
