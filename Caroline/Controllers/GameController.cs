@@ -6,7 +6,7 @@ using System.Web.Mvc;
 
 namespace Caroline.Controllers
 {
-    public class HomeController : Controller
+    public class GameController : Controller
     {
         public ActionResult Index()
         {
