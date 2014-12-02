@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace GoldRush
 {
-    public class Upgrades
+    class Upgrades
     {
         public GameObjects game;
 
@@ -73,7 +73,7 @@ namespace GoldRush
         public Upgrade Foreman;
         public Upgrade ChainsawsT1;
 
-        public class Upgrade : GameObjects.GameObject
+        internal class Upgrade : GameObjects.GameObject
         {
             public Upgrade(UpgradeEffect effect)
             {
@@ -101,7 +101,7 @@ namespace GoldRush
             public UpgradeEffect Effect { get; set; }
         }
 
-        public class Buff : Upgrade
+        internal class Buff : Upgrade
         {
             public Buff(UpgradeEffect effect):base(effect)
             {
@@ -140,7 +140,8 @@ namespace GoldRush
         }
 
         #region UpgradeEffects
-        public abstract class UpgradeEffect
+
+        internal abstract class UpgradeEffect
         {
             public GameObjects Game;
             protected UpgradeEffect(GameObjects game)
@@ -155,7 +156,7 @@ namespace GoldRush
         /// <summary>
         /// Increases the value of items by a percentage.
         /// </summary>
-        public class ItemValueUpgradeEffect:UpgradeEffect
+        class ItemValueUpgradeEffect:UpgradeEffect
         {
             private double value;
 
@@ -179,7 +180,7 @@ namespace GoldRush
         /// <summary>
         /// Adds new resources to gatherers.
         /// </summary>
-        public class ResourceUpgradeEffect : UpgradeEffect
+        class ResourceUpgradeEffect : UpgradeEffect
         {
             private Items.Resource[] resources;
             private Gatherers.Gatherer[] gatherers;
@@ -209,7 +210,7 @@ namespace GoldRush
         /// <summary>
         /// Increases the base efficiency of gatherers.
         /// </summary>
-        public class EfficiencyUpgradeEffect : UpgradeEffect
+        class EfficiencyUpgradeEffect : UpgradeEffect
         {
             private Gatherers.Gatherer[] gatherers;
             private double efficiency;
@@ -239,7 +240,7 @@ namespace GoldRush
         /// <summary>
         /// Increases the efficiency of gatherers by a percentage.
         /// </summary>
-        public class EfficiencyMagnitudeUpgradeEffect : UpgradeEffect
+        class EfficiencyMagnitudeUpgradeEffect : UpgradeEffect
         {
             private Gatherers.Gatherer[] gatherers;
             private double magnitude;
@@ -270,7 +271,7 @@ namespace GoldRush
         /// <summary>
         /// Increases the chance of finding rarer ores and decreases the chance of finding more common ores.
         /// </summary>
-        public class ProbabilityUpgradeEffect : UpgradeEffect
+        class ProbabilityUpgradeEffect : UpgradeEffect
         {
             private Gatherers.Gatherer[] gatherers;
             private double probability;

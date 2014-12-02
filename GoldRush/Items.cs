@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace GoldRush
 {
-    public class Items
+    class Items
     {
         public Items(GameObjects objs)
         {
@@ -303,7 +303,7 @@ namespace GoldRush
         /// <summary>
         /// A collectable GameObject that is generally shown in the players inventory.
         /// </summary>
-        public class Item : GameObjects.GameObject
+        internal class Item : GameObjects.GameObject
         {
             public Item()
             {
@@ -384,7 +384,7 @@ namespace GoldRush
         /// <summary>
         /// A collectable GameObject that is shown in the players inventory and gathered by a machine.
         /// </summary>
-        public class Resource : Item
+        internal class Resource : Item
         {
             public int Probability { get; set; }
         }
@@ -392,7 +392,7 @@ namespace GoldRush
         /// <summary>
         /// A collectable GameObject that is shown in the players inventory and can be consumed for a buff.
         /// </summary>
-        public class Potion : Item
+        internal class Potion : Item
         {
             /// <summary>
             /// Consumes the potion. Set and forget, will be managed by Upgrades class.
@@ -410,7 +410,7 @@ namespace GoldRush
         /// <summary>
         /// A collection of ingredients and resultants.
         /// </summary>
-        public class Recipe
+        internal class Recipe
         {
             public virtual List<Ingredient> Ingredients { get; set; }
             public virtual List<Ingredient> Resultants { get; set; }
@@ -475,7 +475,7 @@ namespace GoldRush
         /// <summary>
         /// A collection of ingredients and resulants with a duration.
         /// </summary>
-        public class ProcessorRecipe : Recipe
+        class ProcessorRecipe : Recipe
         {
             public ProcessorRecipe()
             {
@@ -493,7 +493,7 @@ namespace GoldRush
         /// <summary>
         /// A GameObject and quantity to be used in recipes.
         /// </summary>
-        public class Ingredient
+        internal class Ingredient
         {
             public GameObjects.GameObject Item { get; set; }
             public int Quantity { get; set; }

@@ -1,6 +1,6 @@
 ﻿namespace GoldRush
 {
-    public class Game : IGoldRushGame
+    class Game : IGoldRushGame
     {
         public Game()
         {

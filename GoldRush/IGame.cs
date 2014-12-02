@@ -2,7 +2,7 @@
 
 namespace GoldRush
 {
-    interface IGoldRushGame
+    public interface IGoldRushGame
     {
         OutputState Update(InputState message, UpdateFlags flags);
         GameSave Save();
@@ -12,14 +12,14 @@ namespace GoldRush
     [Flags]
     public enum UpdateFlags
     {
-        SendAllState = 1
+        ReturnAllState = 1
     }
 
-    internal interface IModifiedState
+    public interface IModifiedState
     {
     }
 
-    internal interface IInput
+    public interface IInput
     {
     }
 }
