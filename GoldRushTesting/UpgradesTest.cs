@@ -8,13 +8,21 @@ namespace GoldRushTesting
     public class UpgradesTest
     {
 
+        private Game _game;
+
+        [ClassInitialize]
+        private Game GetGame()
+        {
+            return _game ?? (_game = new Game());
+        }
+
         /// <summary>
         /// Copper is worth 5 base. With a 20% increase in value it is worth 6.
         /// </summary>
         [TestMethod]
         public void ItemValueActivate()
         {
-            Game game = new Game();
+            var game = GetGame();
             game.objs.Upgrades.SpeechBuff.Activate();
 
             Assert.AreEqual(6, game.objs.Items.Copper.Value);
@@ -26,7 +34,7 @@ namespace GoldRushTesting
         [TestMethod]
         public void ItemValueDeactivate()
         {
-            Game game = new Game();
+            var game = GetGame();
             game.objs.Upgrades.SpeechBuff.Activate();
             game.objs.Upgrades.SpeechBuff.Deactivate();
 
@@ -36,7 +44,7 @@ namespace GoldRushTesting
         [TestMethod]
         public void ResourceActivate()
         {
-            Game game = new Game();
+            var game = GetGame();
             game.objs.Upgrades.Researcher.Activate();
 
             Assert.IsTrue(game.objs.Gatherers.Miner.PossibleResources.Contains(game.objs.Items.Ruby));
@@ -45,7 +53,7 @@ namespace GoldRushTesting
         [TestMethod]
         public void ResourceDeactivate()
         {
-            Game game = new Game();
+            var game = GetGame();
             game.objs.Upgrades.Researcher.Activate();
             game.objs.Upgrades.Researcher.Deactivate();
 
@@ -55,7 +63,7 @@ namespace GoldRushTesting
         [TestMethod]
         public void BaseEfficiencyActivate()
         {
-            Game game = new Game();
+            var game = GetGame();
             game.objs.Upgrades.ChainsawsT1.Activate();
             game.objs.Gatherers.Lumberjack.Quantity = 1;
 
@@ -65,7 +73,7 @@ namespace GoldRushTesting
         [TestMethod]
         public void BaseEfficiencyDeactivate()
         {
-            Game game = new Game();
+            var game = GetGame();
             game.objs.Upgrades.ChainsawsT1.Activate();
             game.objs.Upgrades.ChainsawsT1.Deactivate();
             game.objs.Gatherers.Lumberjack.Quantity = 1;
@@ -77,7 +85,7 @@ namespace GoldRushTesting
         [TestMethod]
         public void PercEfficiencyActivate()
         {
-            var game = new Game();
+            var game = GetGame();
             game.objs.Upgrades.Foreman.Activate();
             game.objs.Gatherers.Miner.Quantity = 1;
 
@@ -87,7 +95,7 @@ namespace GoldRushTesting
         [TestMethod]
         public void PercEfficiencyDeactivate()
         {
-            var game = new Game();
+            var game = GetGame();
             game.objs.Upgrades.Foreman.Activate();
             game.objs.Upgrades.Foreman.Deactivate();
             game.objs.Gatherers.Miner.Quantity = 1;
@@ -102,7 +110,7 @@ namespace GoldRushTesting
         [TestMethod]
         public void BuffDecay()
         {
-            var game = new Game();
+            var game = GetGame();
             game.objs.Upgrades.SpeechBuff.Activate();
             game.objs.Upgrades.SpeechBuff.Update(46000);
 
@@ -112,7 +120,7 @@ namespace GoldRushTesting
         [TestMethod]
         public void BuffNoDecay()
         {
-            var game = new Game();
+            var game = GetGame();
             game.objs.Upgrades.SpeechBuff.Activate();
             game.objs.Upgrades.SpeechBuff.Update(44000);
 

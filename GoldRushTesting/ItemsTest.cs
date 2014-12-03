@@ -9,10 +9,18 @@ namespace GoldRushTesting
     public class ItemsTest
     {
 
+        private Game _game;
+
+        [ClassInitialize]
+        private Game GetGame()
+        {
+            return _game ?? (_game = new Game());
+        }
+
         [TestMethod]
         public void CraftWithPrerequisites()
         {
-            var game = new Game();
+            var game = GetGame();
             game.objs.Items.Copper.Quantity = 1000;
             game.objs.Items.BronzeBar.Quantity = 10;
 
@@ -23,7 +31,7 @@ namespace GoldRushTesting
         [TestMethod]
         public void CraftWithoutPrerequisites()
         {
-            var game = new Game();
+            var game = GetGame();
             game.objs.Items.CopperWire.Craft();
             Assert.AreEqual(0,game.objs.Items.CopperWire.Quantity);
         }
@@ -31,7 +39,7 @@ namespace GoldRushTesting
         [TestMethod]
         public void CraftManyWithPrerequisites()
         {
-            var game = new Game();
+            var game = GetGame();
             game.objs.Items.Copper.Quantity = 5000;
             game.objs.Items.BronzeBar.Quantity = 50;
             game.objs.Items.CopperWire.Craft(5);
@@ -45,7 +53,7 @@ namespace GoldRushTesting
         [TestMethod]
         public void CraftManyWithoutPrerequisites()
         {
-            var game = new Game();
+            var game = GetGame();
             game.objs.Items.CopperWire.Craft(5);
 
             Assert.AreEqual(0, game.objs.Items.CopperWire.Quantity);
@@ -54,7 +62,7 @@ namespace GoldRushTesting
         [TestMethod]
         public void TotalQuantity()
         {
-            var game = new Game();
+            var game = GetGame();
             game.objs.Items.Stone.Quantity = 5;
             game.objs.Items.Stone.Quantity = 0;
 
@@ -64,7 +72,7 @@ namespace GoldRushTesting
         [TestMethod]
         public void ItemSell()
         {
-            var game = new Game();
+            var game = GetGame();
             game.objs.Items.Copper.Quantity = 5;
             game.objs.Items.Copper.Sell(5);
 
@@ -74,7 +82,7 @@ namespace GoldRushTesting
         [TestMethod]
         public void ItemNoSell()
         {
-            var game = new Game();
+            var game = GetGame();
             game.objs.Items.Diamond.Sell();
 
             Assert.AreEqual(0,game.objs.Items.Coins.Quantity);
@@ -83,7 +91,7 @@ namespace GoldRushTesting
         [TestMethod]
         public void PotionConsume()
         {
-            var game = new Game();
+            var game = GetGame();
             game.objs.Items.SpeechPotion.Quantity = 1;
             game.objs.Items.SpeechPotion.Consume();
 
@@ -93,7 +101,7 @@ namespace GoldRushTesting
         [TestMethod]
         public void PotionDoNotConsume()
         {
-            var game = new Game();
+            var game = GetGame();
             game.objs.Items.SpeechPotion.Consume();
 
             Assert.AreEqual(5, game.objs.Items.Copper.Value);
