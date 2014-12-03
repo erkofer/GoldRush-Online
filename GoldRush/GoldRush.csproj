@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Class1.cs" />
+    <Compile Include="GameConfig.cs" />
     <Compile Include="GameFactory.cs" />
     <Compile Include="GameObjects.cs" />
     <Compile Include="GameSave.cs" />

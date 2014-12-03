@@ -23,6 +23,7 @@ namespace GoldRushTesting
         public void GuaranteeedNoCollect()
         {
             Game game = new Game();
+           
             game.objs.Gatherers.Pumpjack.Mine(1000);
 
             Assert.AreEqual(0, game.objs.Items.Oil.Quantity);
@@ -32,6 +33,7 @@ namespace GoldRushTesting
         public void ChanceCollect()
         {
             Game game=new Game();
+            
             var baseResources = new[]
             {
                 game.objs.Items.Stone, game.objs.Items.Copper, game.objs.Items.Iron, game.objs.Items.Silver,

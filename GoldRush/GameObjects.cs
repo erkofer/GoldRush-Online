@@ -15,6 +15,7 @@ namespace GoldRush
             Gatherers = new Gatherers(this);
             Upgrades = new Upgrades(this);
         }
+
         public static int LowestId = 0;
 
         public Random Random;
@@ -28,9 +29,17 @@ namespace GoldRush
             {
                 Id = LowestId;
                 LowestId++;
-                Quantity = 0;
-
             }
+
+            private readonly GameConfig.Config _config;
+
+            protected GameObject(GameConfig.Config config)
+            {
+                Id = LowestId;
+                LowestId++;
+                _config = config;
+            }
+
             /// <summary>
             /// Unique identifier used for interfacing with clients.
             /// </summary>

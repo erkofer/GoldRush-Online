@@ -2,11 +2,24 @@
 {
     public class GameFactory
     {
+        private IGoldRushGame template;
+
         public IGoldRushGame Create()
         {
-            // 02/12/2014: Hunter, if you have readonly state that you want to share between games,
-            // this would be the place to inject it.
-            return new Game();
+            return template ?? (template = new Game());
         }
+
+        /*private IGoldRushGame NewGame()
+        {
+            var game = new Game();
+            Items(game);
+            return game;
+        }
+
+        // Am I doing it right?
+        private void Items(Game game)
+        {
+            game.objs.Items.Copper.Worth = 1;
+        }*/
     }
 }
