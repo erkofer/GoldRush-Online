@@ -6,16 +6,16 @@ namespace Caroline.Dal
 {
     public class UnitOfWork : IDisposable
     {
-        ApplicationDbContext context = ApplicationDbContext.Create();
-        Repository<Game> _games;
-        Repository<ApplicationUser> _users;
-        Repository<IdentityRole> _roles; 
+        readonly ApplicationDbContext _context = ApplicationDbContext.Create();
+        public IRepository<Game> Games { get; private set; }
+        public IRepository<ApplicationUser> Users { get; private set; }
+        public IRepository<IdentityRole> Roles { get; private set; }
 
         public void Dispose()
         {
-            _games = new Repository<Game>(context);
-            _users = new Repository<ApplicationUser>(context);
-            _roles = new Repository<IdentityRole>(context);
+            Games = new Repository<Game>(_context);
+            Users = new Repository<ApplicationUser>(_context);
+            Roles = new Repository<IdentityRole>(_context);
         }
     }
 }

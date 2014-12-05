@@ -56,7 +56,6 @@ namespace Caroline.Connections
             var id = UserIdProvider.GetUserId(request);
             lock (_lock)
             {
-                IGoldRushGame game;
                 if (id != null)
                     _gamesByUserId.Remove(id);
                 _gamesByConnectionId.Remove(connectionId);
@@ -82,7 +81,7 @@ namespace Caroline.Connections
 
         void CreateAnonymousCredentials(IRequest request)
         {
-
+            // TODO:
         }
     }
 }

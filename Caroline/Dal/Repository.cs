@@ -3,25 +3,24 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Web;
-using Caroline.Models;
-using Microsoft.Ajax.Utilities;
+using System.Threading.Tasks;
 
 namespace Caroline.Dal
 {
-    public class Repository<TEntity> where TEntity : class
+    class Repository<TEntity> : IRepository<TEntity>
+        where TEntity : class
     {
-        ApplicationDbContext _context;
-        DbSet<TEntity> _dbSet;
+        readonly DbContext _context;
+        readonly IDbSet<TEntity> _dbSet;
 
-        public Repository(ApplicationDbContext context)
+        public Repository(DbContext context, IDbSet<TEntity> set = null)
         {
             _context = context;
-            _dbSet = context.Set<TEntity>();
+            _dbSet = set ?? context.Set<TEntity>();
         }
 
         public virtual IEnumerable<TEntity> Get(
-            Expression<Func<TEntity, bool>> filter = null,
+            Expression<Func<TEntity,  bool>> filter = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
             string includeProperties = "")
         {
@@ -38,10 +37,10 @@ namespace Caroline.Dal
                 query = query.Include(includeProperty);
             }
 
-            return orderBy == null ? query.ToList() : orderBy(query).ToList();
+            return orderBy?.Invoke(query).ToList() ?? query.ToList();
         }
 
-        public virtual TEntity GetByID(object id)
+        public TEntity GetById(object id)
         {
             return _dbSet.Find(id);
         }
@@ -60,15 +59,24 @@ namespace Caroline.Dal
 
         public virtual void Delete(object id)
         {
-            TEntity entityToDelete = _dbSet.Find(id);
+            var entityToDelete = _dbSet.Find(id);
             Delete(entityToDelete);
         }
-
 
         public virtual void Update(TEntity entity)
         {
             _dbSet.Attach(entity);
             _context.Entry(entity).State = EntityState.Modified;
+        }
+
+        public void SaveChanges()
+        {
+            _context.SaveChanges();
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
         }
     }
 }
