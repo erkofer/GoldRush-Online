@@ -271,6 +271,14 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Caroline.App.Models\Caroline.App.Models.csproj">
+      <Project>{920d7d6c-0101-4d19-9076-12aab52e516c}</Project>
+      <Name>Caroline.App.Models</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Caroline.App\Caroline.App.csproj">
+      <Project>{76f98e8c-c705-4c5a-a4de-d12628c1fdcb}</Project>
+      <Name>Caroline.App</Name>
+    </ProjectReference>
     <ProjectReference Include="..\GoldRush\GoldRush.csproj">
       <Project>{60AA2D41-1721-46B8-954C-76BEAEC6199F}</Project>
       <Name>GoldRush</Name>

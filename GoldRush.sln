@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30723.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.22310.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoldRush", "GoldRush\GoldRush.csproj", "{60AA2D41-1721-46B8-954C-76BEAEC6199F}"
 EndProject
@@ -19,6 +19,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Configurations", "Configura
 	ProjectSection(SolutionItems) = preProject
 		PublishScripts\Configurations\Caroline-WAWS-dev.json = PublishScripts\Configurations\Caroline-WAWS-dev.json
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caroline.Persistence", "Caroline.Persistence\Caroline.Persistence.csproj", "{A62BAB30-0EE1-4D60-A7CB-B06E277EB79E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caroline.Persistence.Models", "Caroline.Persistence.Models\Caroline.Persistence.Models.csproj", "{7D8032AB-3C86-4894-B5FA-302AC5B474E5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caroline.Domain", "Caroline.Domain\Caroline.Domain.csproj", "{2738A071-8130-4896-BF3C-26338B85D0CF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caroline.Domain.Models", "Caroline.Domain.Models\Caroline.Domain.Models.csproj", "{7C642ADD-543A-4232-B21E-D823E3A3B81C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caroline.App", "Caroline.App\Caroline.App.csproj", "{76F98E8C-C705-4C5A-A4DE-D12628C1FDCB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caroline.App.Models", "Caroline.App.Models\Caroline.App.Models.csproj", "{920D7D6C-0101-4D19-9076-12AAB52E516C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,6 +50,30 @@ Global
 		{5CC5B959-EB6C-4BBA-A388-247A83039003}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5CC5B959-EB6C-4BBA-A388-247A83039003}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5CC5B959-EB6C-4BBA-A388-247A83039003}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A62BAB30-0EE1-4D60-A7CB-B06E277EB79E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A62BAB30-0EE1-4D60-A7CB-B06E277EB79E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A62BAB30-0EE1-4D60-A7CB-B06E277EB79E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A62BAB30-0EE1-4D60-A7CB-B06E277EB79E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D8032AB-3C86-4894-B5FA-302AC5B474E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D8032AB-3C86-4894-B5FA-302AC5B474E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D8032AB-3C86-4894-B5FA-302AC5B474E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D8032AB-3C86-4894-B5FA-302AC5B474E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2738A071-8130-4896-BF3C-26338B85D0CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2738A071-8130-4896-BF3C-26338B85D0CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2738A071-8130-4896-BF3C-26338B85D0CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2738A071-8130-4896-BF3C-26338B85D0CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C642ADD-543A-4232-B21E-D823E3A3B81C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C642ADD-543A-4232-B21E-D823E3A3B81C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C642ADD-543A-4232-B21E-D823E3A3B81C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C642ADD-543A-4232-B21E-D823E3A3B81C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76F98E8C-C705-4C5A-A4DE-D12628C1FDCB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76F98E8C-C705-4C5A-A4DE-D12628C1FDCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76F98E8C-C705-4C5A-A4DE-D12628C1FDCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76F98E8C-C705-4C5A-A4DE-D12628C1FDCB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{920D7D6C-0101-4D19-9076-12AAB52E516C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{920D7D6C-0101-4D19-9076-12AAB52E516C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{920D7D6C-0101-4D19-9076-12AAB52E516C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{920D7D6C-0101-4D19-9076-12AAB52E516C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
