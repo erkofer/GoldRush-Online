@@ -14,3 +14,17 @@
 /Caroline/bin
 /Caroline/obj/Debug
 /GoldRush.sln.ide
+/Caroline.App/bin/Debug
+/Caroline.App/obj/Debug
+/Caroline.App.Models/bin/Debug
+/Caroline.App.Models/obj/Debug
+/Caroline.Dal/obj/Debug
+/Caroline.Domain/bin/Debug
+/Caroline.Domain/obj/Debug
+/Caroline.Domain.Models/bin/Debug
+/Caroline.Domain.Models/obj/Debug
+/Caroline.Persistance/obj/Debug
+/Caroline.Persistence/bin/Debug
+/Caroline.Persistence/obj/Debug
+/Caroline.Persistence.Models/bin/Debug
+/Caroline.Persistence.Models/obj/Debug
