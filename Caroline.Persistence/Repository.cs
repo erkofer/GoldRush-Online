@@ -5,7 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-namespace Caroline.Dal
+namespace Caroline.Persistence
 {
     class Repository<TEntity> : IRepository<TEntity>
         where TEntity : class
@@ -20,12 +20,12 @@ namespace Caroline.Dal
         }
 
         public virtual IEnumerable<TEntity> Get(
-            Expression<Func<TEntity,  bool>> filter = null,
+            Expression<Func<TEntity, bool>> filter = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
             string includeProperties = "")
         {
             IQueryable<TEntity> query = _dbSet;
-
+            
             if (filter != null)
             {
                 query = query.Where(filter);

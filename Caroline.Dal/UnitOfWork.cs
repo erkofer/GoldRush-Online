@@ -1,6 +1,4 @@
 ﻿using System;
-using Caroline.Models;
-using Microsoft.AspNet.Identity.EntityFramework;
 
 namespace Caroline.Dal
 {
