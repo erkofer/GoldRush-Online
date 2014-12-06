@@ -3,11 +3,16 @@ using Microsoft.AspNet.Identity.EntityFramework;
 
 namespace Caroline.Persistence
 {
-    class GoldRushDbContext : IdentityDbContext<ApplicationUser>
+    public class GoldRushDbContext : IdentityDbContext<ApplicationUser>
     {
         public GoldRushDbContext()
             : base("DefaultConnection", throwIfV1Schema: false)
         {
+        }
+
+        public static GoldRushDbContext Create()
+        {
+            return new GoldRushDbContext();
         }
     }
 }
