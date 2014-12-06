@@ -46,10 +46,15 @@ namespace GoldRushTesting
                 game.objs.Items.Stone, game.objs.Items.Copper, game.objs.Items.Iron, game.objs.Items.Silver,
                 game.objs.Items.Gold, game.objs.Items.Opal, game.objs.Items.Jade, game.objs.Items.Topaz
             };
-
+           
             game.objs.Gatherers.Miner.Quantity = 1;
             game.objs.Gatherers.Miner.Mine(10000);
-            Assert.AreEqual(5,baseResources.Sum(resource => resource.Quantity));
+
+            var resourceCount = 0;
+            foreach (var resource in baseResources)
+                resourceCount += resource.Quantity;
+
+            Assert.AreEqual(5,resourceCount);
             
         }
 

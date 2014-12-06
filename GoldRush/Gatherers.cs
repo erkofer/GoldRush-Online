@@ -20,18 +20,15 @@ namespace GoldRush
                 game.Items.Gold, game.Items.Opal, game.Items.Jade, game.Items.Topaz
             };
 
-            Miner = new Gatherer(game);
+            Miner = new Gatherer(game,GameConfig.Gatherers.Miner);
             Miner.PossibleResources.AddRange(baseResources);
-            Miner.BaseResourcesPerSecond = 0.5;
 
-            Lumberjack = new Gatherer(game);
+            Lumberjack = new Gatherer(game, GameConfig.Gatherers.Lumberjack);
             Lumberjack.GuaranteedResources.Add(game.Items.Logs);
             Lumberjack.ChanceOfNothing = 300;
-            Lumberjack.BaseResourcesPerSecond = 0.5;
 
-            Pumpjack = new Gatherer(game);
+            Pumpjack = new Gatherer(game, GameConfig.Gatherers.Pumpjack);
             Pumpjack.GuaranteedResources.Add(game.Items.Oil);
-            Pumpjack.BaseResourcesPerSecond = 0.25;
         }
         
         public Gatherer Miner;
@@ -40,15 +37,16 @@ namespace GoldRush
 
         internal class Gatherer : GameObjects.GameObject
         {
-            public Gatherer(GameObjects game)
+            public Gatherer(GameObjects game, GameConfig.Gatherers.GathererConfig config):base(config)
             {
                 PossibleResources = new List<Items.Resource>();
                 GuaranteedResources = new List<Items.Resource>();
-                this.game = game;
+                _game = game;
+                _config = config;
             }
 
-            private GameObjects game;
-
+            private readonly GameObjects _game;
+            private readonly GameConfig.Gatherers.GathererConfig _config;
             /// <summary>
             /// The odds of no resources being gathered.
             /// </summary>
@@ -71,7 +69,7 @@ namespace GoldRush
             /// <summary>
             /// The base quantity of resources gathered per second.
             /// </summary>
-            public double BaseResourcesPerSecond { get; set; }
+            public double BaseResourcesPerSecond { get { return _config.BaseResourcesPerSecond; } }
 
             public double TotalBaseResourcesPerSecond { get { 
                 return BaseResourcesPerSecond + ResourcesPerSecondBaseIncrease;
@@ -169,9 +167,9 @@ namespace GoldRush
                 
                 for (var i = 0; i < resourcesGained; i++)
                 {
-                    if (ChanceOfNothing != game.Random.Next(ChanceOfNothing+1)) continue;
+                    if (ChanceOfNothing != _game.Random.Next(ChanceOfNothing+1)) continue;
 
-                    var chance = game.Random.Next(1, totalProbability[totalProbability.Count - 1]);
+                    var chance = _game.Random.Next(1, totalProbability[totalProbability.Count - 1]);
                     var roll = Array.BinarySearch(totalProbability.ToArray(), chance);
                     if (roll < 0) roll = ~roll;
                     PossibleResources[roll].Quantity++;

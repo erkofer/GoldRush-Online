@@ -13,7 +13,7 @@ namespace GoldRush
             public string Name;
         }
 
-        internal class Items
+        public class Items
         {
             public class ItemConfig : Config
             {
@@ -65,6 +65,19 @@ namespace GoldRush
             public static ItemConfig AlchemyPotion = new ItemConfig { Name = "Alchemy Potion", Worth = 250000};
             public static ItemConfig CopperWire = new ItemConfig {Name = "Copper wire", Worth = 250};
             public static ItemConfig Tnt = new ItemConfig {Name = "Tnt", Worth = 100000};
+        }
+
+        public class Gatherers
+        {
+            public class GathererConfig : Config
+            {
+                public double BaseResourcesPerSecond;
+            }
+
+           
+            public static GathererConfig Miner = new GathererConfig() {Name = "Miner", BaseResourcesPerSecond = 0.5};
+            public static GathererConfig Lumberjack = new GathererConfig() {Name = "Lumberjack", BaseResourcesPerSecond = 0.5};
+            public static GathererConfig Pumpjack = new GathererConfig(){Name="Pumpjack", BaseResourcesPerSecond = 0.25};
         }
     }
 }
