@@ -45,18 +45,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
-    <Compile Include="GameConfig.cs" />
-    <Compile Include="GameFactory.cs" />
-    <Compile Include="GameObjects.cs" />
-    <Compile Include="GameSave.cs" />
-    <Compile Include="Gatherers.cs" />
-    <Compile Include="IGame.cs" />
-    <Compile Include="InputState.cs" />
-    <Compile Include="Items.cs" />
-    <Compile Include="OutputState.cs" />
+    <Compile Include="Game.cs" />
+    <Compile Include="GameObjects\GameConfig.cs" />
+    <Compile Include="APIs\GameFactory.cs" />
+    <Compile Include="GameObjects\GameObjects.cs" />
+    <Compile Include="APIs\GameSave.cs" />
+    <Compile Include="GameObjects\Gatherers.cs" />
+    <Compile Include="APIs\IGame.cs" />
+    <Compile Include="APIs\InputState.cs" />
+    <Compile Include="GameObjects\Items.cs" />
+    <Compile Include="APIs\OutputState.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Upgrades.cs" />
+    <Compile Include="GameObjects\Upgrades.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
