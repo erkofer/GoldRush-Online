@@ -15,18 +15,22 @@ namespace Caroline.Connections
     {
         readonly GameFactory _gameFactory = new GameFactory();
 
+        protected override async Task OnConnected(IRequest request, string connectionId)
+        {
+            var state = await UpdateGame();
+            await Connection.Send(connectionId, Serialize(state));
+        }
+
         protected override async Task OnReceived(IRequest request, string connectionId, string data)
         {
-            // verify identity
-            var identity = HttpContext.Current.User.Identity;
-            if (identity.IsAuthenticated)
-            {
-                var message = Serialize(new OutputState { Error = true });
-                await Connection.Send(connectionId, message);
-                return;
-            }
+            var state = await UpdateGame(Deserialize<InputState>(data));
+            await Connection.Send(connectionId, Serialize(state));
+        }
 
-            var userId = identity.GetUserId();
+
+        async Task<OutputState> UpdateGame(InputState data = null)
+        {
+            var userId = HttpContext.Current.User.Identity.GetUserId();
             OutputState dataToSend;
             using (var work = new UnitOfWork())
             {
@@ -42,7 +46,7 @@ namespace Caroline.Connections
                 game.Load(saveObject);
 
                 // update save with new input
-                dataToSend = game.Update(Deserialize<InputState>(data), UpdateFlags.ReturnAllState);
+                dataToSend = game.Update(data, UpdateFlags.ReturnAllState);
 
                 // save to the database
                 save.SaveData = Serialize(game.Save());
@@ -51,8 +55,7 @@ namespace Caroline.Connections
                 await work.SaveChangesAsync();
             }
 
-            // send output to the client
-            await Connection.Send(connectionId, Serialize(dataToSend)); // send new state to the client
+            return dataToSend;
         }
 
         protected override bool AuthorizeRequest(IRequest request)
