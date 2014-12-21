@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
@@ -14,6 +15,11 @@ namespace Caroline.Persistence.Models
             // Add custom user claims here
             return userIdentity;
         }
+
+        public int GameId { get; set; }
+
+        [ForeignKey("GameId")]
+        public virtual Game Game { get; set; }
 
         string IIdentifiableEntity<string>.EntityId
         {

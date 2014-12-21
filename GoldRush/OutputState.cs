@@ -5,5 +5,6 @@
     /// </summary>
     public class OutputState
     {
+        public bool Error { get; set; }
     }
 }

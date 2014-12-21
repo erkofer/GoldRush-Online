@@ -64,6 +64,10 @@
     <Compile Include="Migrations\201412061833169_Init.Designer.cs">
       <DependentUpon>201412061833169_Init.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201412210628268_AddUserSave.cs" />
+    <Compile Include="Migrations\201412210628268_AddUserSave.Designer.cs">
+      <DependentUpon>201412210628268_AddUserSave.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repository.cs" />
@@ -83,6 +87,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201412061833169_Init.resx">
       <DependentUpon>201412061833169_Init.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201412210628268_AddUserSave.resx">
+      <DependentUpon>201412210628268_AddUserSave.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
