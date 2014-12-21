@@ -1,13 +1,15 @@
-using System;
-using Caroline.Persistence.Models;
+﻿using System;
+using System.Data.Entity;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Identity.EntityFramework;
 
 namespace Caroline.Persistence
 {
     public interface IUnitOfWork : IDisposable
     {
-        IRepository<Game> Games { get; }
-        IRepository<ApplicationUser> Users { get; }
-        IRepository<IdentityRole> Roles { get; }
+        DbSet<IdentityRole> Roles { get; }
+        IGameRepository Games { get; }
+        IUserRepository Users { get; }
+        Task SaveChangesAsync();
     }
 }

@@ -1,23 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Caroline.Persistence
 {
-    public interface IRepository<TEntity> where TEntity : class
+    public interface IRepository<TEntity, in TId>
     {
-        IEnumerable<TEntity> Get(
-            Expression<Func<TEntity, bool>> filter = null,
-            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
-            string includeProperties = "");
-        TEntity GetById(object id);
-        void Insert(TEntity entity);
-        void Delete(TEntity entity);
-        void Delete(object id);
+        Task<IEnumerable<TEntity>> Get();
+        Task<TEntity> Get(TId id);
+        Task<TEntity> Add(TEntity entity);
+        void Remove(TEntity entity);
+        void Remove(TId id);
         void Update(TEntity entity);
-        void SaveChanges();
-        Task SaveChangesAsync();
+    }
+
+    public interface IRepository<TEntity> : IRepository<TEntity, int> where TEntity : class
+    {
     }
 }
