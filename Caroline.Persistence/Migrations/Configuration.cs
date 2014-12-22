@@ -1,20 +1,18 @@
-using Caroline.Models;
-
-namespace Caroline.Migrations
+namespace Caroline.Persistence.Migrations
 {
     using System;
     using System.Data.Entity;
     using System.Data.Entity.Migrations;
     using System.Linq;
 
-    internal sealed class Configuration : DbMigrationsConfiguration<ApplicationDbContext>
+    internal sealed class Configuration : DbMigrationsConfiguration<Caroline.Persistence.GoldRushDbContext>
     {
         public Configuration()
         {
             AutomaticMigrationsEnabled = false;
         }
 
-        protected override void Seed(Caroline.Models.ApplicationDbContext context)
+        protected override void Seed(Caroline.Persistence.GoldRushDbContext context)
         {
             //  This method will be called after migrating to the latest version.
 
