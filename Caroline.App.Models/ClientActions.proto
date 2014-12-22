@@ -5,7 +5,7 @@ option (google.protobuf.csharp_file_options).namespace = "Caroline.App.Models";
 
 option optimize_for = SPEED;
 
-// declares the objects that are shared between:
-// - ClientActions.proto
-// - GameState.proto
-// - SaveState.proto
+message ClientActions
+{
+	
+}

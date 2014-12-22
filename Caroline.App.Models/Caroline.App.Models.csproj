@@ -30,6 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="protobuf-net">
+      <HintPath>..\packages\protobuf-net.2.0.0.668\lib\net40\protobuf-net.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -45,9 +48,14 @@
     <ProtoBuf Include="Common.proto" />
   </ItemGroup>
   <ItemGroup>
-    <ProtoBuf Include="InputState.proto" />
-    <ProtoBuf Include="OutputState.proto" />
+    <ProtoBuf Include="ClientActions.proto" />
+    <ProtoBuf Include="GameState.proto" />
     <ProtoBuf Include="SaveState.proto" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="csharp_options.proto" />
+    <None Include="descriptor.proto" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

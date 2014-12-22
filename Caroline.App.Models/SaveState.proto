@@ -1,1 +1,11 @@
-﻿
+package Caroline.App.Models;
+
+import "csharp_options.proto";
+option (google.protobuf.csharp_file_options).namespace = "Caroline.App.Models";
+
+option optimize_for = SPEED;
+
+message SaveState
+{
+
+}

@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using System.Web;
+using Caroline.App.Models;
 using Caroline.Persistence;
 using Caroline.Persistence.Models;
 using GoldRush;
@@ -23,15 +24,15 @@ namespace Caroline.Connections
 
         protected override async Task OnReceived(IRequest request, string connectionId, string data)
         {
-            var state = await UpdateGame(Deserialize<InputState>(data));
+            var state = await UpdateGame(Deserialize<ClientActions>(data));
             await Connection.Send(connectionId, Serialize(state));
         }
 
 
-        async Task<OutputState> UpdateGame(InputState data = null)
+        async Task<GameState> UpdateGame(ClientActions data = null)
         {
             var userId = HttpContext.Current.User.Identity.GetUserId();
-            OutputState dataToSend;
+            GameState dataToSend;
             using (var work = new UnitOfWork())
             {
                 var games = work.Games;
@@ -39,7 +40,7 @@ namespace Caroline.Connections
                 // get game save, create it if it doesn't exist
                 var save = await games.GetByUseridAsync(userId) ?? await games.Add(new Game());
                 var saveData = save.SaveData;
-                var saveObject = saveData != null ? Deserialize<GameSave>(saveData) : null;
+                var saveObject = saveData != null ? Deserialize<SaveState>(saveData) : null;
 
                 // load game save into an game instance
                 var game = _gameFactory.Create();
@@ -55,7 +56,7 @@ namespace Caroline.Connections
                 await work.SaveChangesAsync();
             }
 
-            return dataToSend;
+            return dataToSend;D
         }
 
         protected override bool AuthorizeRequest(IRequest request)
