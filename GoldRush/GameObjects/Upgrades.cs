@@ -103,7 +103,8 @@ namespace GoldRush
 
         internal class Buff : Upgrade
         {
-            public Buff(UpgradeEffect effect):base(effect)
+            public Buff(UpgradeEffect effect)
+                :base(effect)
             {
                 
             }

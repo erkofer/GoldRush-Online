@@ -79,6 +79,10 @@
       <Project>{7D8032AB-3C86-4894-B5FA-302AC5B474E5}</Project>
       <Name>Caroline.Persistence.Models</Name>
     </ProjectReference>
+    <ProjectReference Include="..\GoldRush\GoldRush.csproj">
+      <Project>{60aa2d41-1721-46b8-954c-76beaec6199f}</Project>
+      <Name>GoldRush</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

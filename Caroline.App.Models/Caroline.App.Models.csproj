@@ -30,6 +30,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="JetBrains.Annotations">
+      <HintPath>..\packages\JetBrains.Annotations.8.0.3.0\lib\net20\JetBrains.Annotations.dll</HintPath>
+    </Reference>
+    <Reference Include="protobuf-net">
+      <HintPath>..\packages\protobuf-net.2.0.0.668\lib\net40\protobuf-net.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -41,6 +47,19 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProtoBuf Include="Common.proto" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProtoBuf Include="ClientActions.proto" />
+    <ProtoBuf Include="GameState.proto" />
+    <ProtoBuf Include="SaveState.proto" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="csharp_options.proto" />
+    <None Include="descriptor.proto" />
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
@@ -49,4 +68,10 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <PropertyGroup>
+    <ProtoGenFile>$(SolutionDir)\Build\ProtoGen\protogen</ProtoGenFile>
+    <ProtoBufTaskPath>..\Build\ProtoGen\</ProtoBufTaskPath>
+    <ProtoGenPath>..\Build\ProtoGen\</ProtoGenPath>
+  </PropertyGroup>
+  <Import Project="$(ProtoBufTaskPath)ProtoBuf.MSBuildTask.targets" />
 </Project>

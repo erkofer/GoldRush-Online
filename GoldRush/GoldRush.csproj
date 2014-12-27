@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+<<<<<<< HEAD
     <Compile Include="Game.cs" />
     <Compile Include="GameObjects\GameConfig.cs" />
     <Compile Include="APIs\GameFactory.cs" />
@@ -55,6 +56,14 @@
     <Compile Include="APIs\InputState.cs" />
     <Compile Include="GameObjects\Items.cs" />
     <Compile Include="APIs\OutputState.cs" />
+=======
+    <Compile Include="Class1.cs" />
+    <Compile Include="GameFactory.cs" />
+    <Compile Include="GameObjects.cs" />
+    <Compile Include="Gatherers.cs" />
+    <Compile Include="IGame.cs" />
+    <Compile Include="Items.cs" />
+>>>>>>> fd1e6d6abec1dd5b9c41501cd7539cd6ac1bbb98
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GameObjects\Upgrades.cs" />
   </ItemGroup>
@@ -62,6 +71,12 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Caroline.App.Models\Caroline.App.Models.csproj">
+      <Project>{920d7d6c-0101-4d19-9076-12aab52e516c}</Project>
+      <Name>Caroline.App.Models</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
