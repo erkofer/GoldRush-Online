@@ -1,4 +1,6 @@
-﻿namespace GoldRush
+﻿using Caroline.App.Models;
+
+namespace GoldRush
 {
     class Game : IGoldRushGame
     {
@@ -9,19 +11,19 @@
         public GameObjects objs;
 
 
-        public OutputState Update(InputState message, UpdateFlags flags)
+        public GameState Update(ClientActions message, UpdateFlags flags)
         {
             // TODO
-            return new OutputState();
+            return new GameState();
         }
 
-        public GameSave Save()
+        public SaveState Save()
         {
             //TODO
-            return new GameSave();
+            return new SaveState();
         }
 
-        public void Load(GameSave save)
+        public void Load(SaveState save)
         {
             //TODO
         }

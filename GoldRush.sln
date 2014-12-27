@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.22310.1
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoldRush", "GoldRush\GoldRush.csproj", "{60AA2D41-1721-46B8-954C-76BEAEC6199F}"
 EndProject
@@ -31,6 +31,26 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caroline.App", "Caroline.App\Caroline.App.csproj", "{76F98E8C-C705-4C5A-A4DE-D12628C1FDCB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caroline.App.Models", "Caroline.App.Models\Caroline.App.Models.csproj", "{920D7D6C-0101-4D19-9076-12AAB52E516C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{0EE3EBCD-ADF8-4839-99F3-2A59D4CFDAD8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ProtoGen", "ProtoGen", "{379C22DF-0AD2-4867-BDE8-EDB8E9E19F0B}"
+	ProjectSection(SolutionItems) = preProject
+		Build\ProtoGen\common.xslt = Build\ProtoGen\common.xslt
+		Build\ProtoGen\csharp.xslt = Build\ProtoGen\csharp.xslt
+		Build\ProtoGen\Licence.txt = Build\ProtoGen\Licence.txt
+		Build\ProtoGen\protobuf-net.dll = Build\ProtoGen\protobuf-net.dll
+		Build\ProtoGen\protobuf-net.pdb = Build\ProtoGen\protobuf-net.pdb
+		Build\ProtoGen\protobuf-net.xml = Build\ProtoGen\protobuf-net.xml
+		Build\ProtoGen\ProtoBuf.MSBuildTask.dll = Build\ProtoGen\ProtoBuf.MSBuildTask.dll
+		Build\ProtoGen\ProtoBuf.MSBuildTask.targets = Build\ProtoGen\ProtoBuf.MSBuildTask.targets
+		Build\ProtoGen\protoc-license.txt = Build\ProtoGen\protoc-license.txt
+		Build\ProtoGen\protogen.exe = Build\ProtoGen\protogen.exe
+		Build\ProtoGen\protogen.exe.config = Build\ProtoGen\protogen.exe.config
+		Build\ProtoGen\protogen.pdb = Build\ProtoGen\protogen.pdb
+		Build\ProtoGen\vb.xslt = Build\ProtoGen\vb.xslt
+		Build\ProtoGen\xml.xslt = Build\ProtoGen\xml.xslt
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -80,5 +100,6 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{5EB1BA73-FC45-41A3-9007-C7A0E8FD0A14} = {74EFAE0E-D7A9-418B-9116-3AEC28FF89A1}
+		{379C22DF-0AD2-4867-BDE8-EDB8E9E19F0B} = {0EE3EBCD-ADF8-4839-99F3-2A59D4CFDAD8}
 	EndGlobalSection
 EndGlobal
