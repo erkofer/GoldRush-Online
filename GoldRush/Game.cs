@@ -11,7 +11,7 @@ namespace GoldRush
         public GameObjects objs;
 
 
-        public GameState Update(ClientActions message, UpdateFlags flags)
+        public GameState Update(ClientActions message)
         {
             // TODO
             return new GameState();

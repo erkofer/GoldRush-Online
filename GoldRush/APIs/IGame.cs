@@ -13,7 +13,7 @@ namespace GoldRush
         /// <param name="flags">The flags</param>
         /// <returns>An OutputState. Can be null if no state was modified.</returns>
         [CanBeNull]
-        GameState Update([CanBeNull]ClientActions message, UpdateFlags flags);
+        GameState Update([CanBeNull]ClientActions message);
         /// <summary>
         /// Returns all state required to resume a save at a later date.
         /// </summary>
@@ -25,11 +25,5 @@ namespace GoldRush
         /// </summary>
         /// <param name="save">The state to use. Null to reset the game.</param>
         void Load([CanBeNull]SaveState save);
-    }
-
-    [Flags]
-    public enum UpdateFlags
-    {
-        ReturnAllState = 1
     }
 }

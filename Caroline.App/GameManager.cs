@@ -28,7 +28,7 @@ namespace Caroline.App
                 game.Load(saveObject);
 
                 // update save with new input
-                dataToSend = game.Update(input, UpdateFlags.ReturnAllState);
+                dataToSend = game.Update(input);
 
                 // save to the database
                 save.SaveData = ProtoBufHelpers.Serialize(game.Save());

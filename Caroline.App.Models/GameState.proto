@@ -8,4 +8,11 @@ option optimize_for = SPEED;
 message GameState
 {
 	optional bool IsError = 1;
+	repeated Item MyItems = 2;
+}
+
+message Item
+{
+	int id = 1;
+	int count = 2
 }
