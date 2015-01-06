@@ -8,9 +8,17 @@ namespace GoldRush
 {
     internal class GameConfig
     {
+        public static int LowestId = 0;
+
         public class Config
         {
             public string Name;
+            public readonly int Id;
+
+            public Config()
+            {
+                Id = ++LowestId;
+            }
         }
 
         public class Items
@@ -64,7 +72,9 @@ namespace GoldRush
             public static ItemConfig SpeechPotion = new ItemConfig { Name = "Speech Potion", Worth = 100000};
             public static ItemConfig AlchemyPotion = new ItemConfig { Name = "Alchemy Potion", Worth = 250000};
             public static ItemConfig CopperWire = new ItemConfig {Name = "Copper wire", Worth = 250};
-            public static ItemConfig Tnt = new ItemConfig {Name = "Tnt", Worth = 100000};
+            public static ItemConfig Tnt = new ItemConfig {Name = "TNT", Worth = 100000};
+
+            
         }
 
         public class Gatherers
@@ -72,12 +82,28 @@ namespace GoldRush
             public class GathererConfig : Config
             {
                 public double BaseResourcesPerSecond;
+                public Items.ResourceConfig[] PossibleResources;
+                public Items.ResourceConfig[] GuaranteedResources;
             }
 
+            public static Items.ResourceConfig[] BaseResources = new {Items.Stone,Items.Copper,Items.Iron,Items.Silver,Items.Gold,Items.Opal,Items.Jade,Items.Topaz};
            
-            public static GathererConfig Miner = new GathererConfig() {Name = "Miner", BaseResourcesPerSecond = 0.5};
-            public static GathererConfig Lumberjack = new GathererConfig() {Name = "Lumberjack", BaseResourcesPerSecond = 0.5};
-            public static GathererConfig Pumpjack = new GathererConfig(){Name="Pumpjack", BaseResourcesPerSecond = 0.25};
+            public static GathererConfig Miner = new GathererConfig() {Name = "Miner", BaseResourcesPerSecond = 0.5, PossibleResources=BaseResources};
+            public static GathererConfig Lumberjack = new GathererConfig() { Name = "Lumberjack", BaseResourcesPerSecond = 0.5, GuaranteedResources=Items.Logs};
+            public static GathererConfig Drill = new GathererConfig() { Name = "Drill", BaseResourcesPerSecond = 2.5, PossibleResources = BaseResources };
+            public static GathererConfig Crusher = new GathererConfig() { Name = "Crusher", BaseResourcesPerSecond = 5, PossibleResources = BaseResources };
+            public static GathererConfig Excavator = new GathererConfig() { Name = "Excavator", BaseResourcesPerSecond = 10, PossibleResources = BaseResources };
+            public static GathererConfig MegaDrill = new GathererConfig() { Name = "Mega Drill", BaseResourcesPerSecond = 20, PossibleResources = BaseResources };
+            public static GathererConfig Pumpjack = new GathererConfig() { Name = "Pumpjack", BaseResourcesPerSecond = 0.2, GuaranteedResources = Items.Oil };
+            public static GathererConfig BigTexan = new GathererConfig() { Name = "Big Texan", BaseResourcesPerSecond = 0.5, GuaranteedResources = Items.Oil };
+        }
+
+        public class UpgradeEffects
+        {
+            public class UpgradeConfig : Config
+            {
+                
+            }
         }
     }
 }

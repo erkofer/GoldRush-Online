@@ -1,0 +1,22 @@
+﻿.item {
+    background-color: rgb(160,160,160);
+}
+
+.selected-item {
+    background-color: rgb(160,160,160);
+}
+
+.tooltip-wrapper {
+    background: linear-gradient(rgb(4,32,55), rgb(18,54,82));
+    border: 1px solid black;
+    box-shadow: 1px 1px 2px black
+}
+
+.tooltip-content {
+    color: white;
+}
+
+.tooltip-header {
+    border-bottom: 1px solid white;
+    color: white;
+}

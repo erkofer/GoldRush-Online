@@ -4,6 +4,7 @@ using Caroline.App;
 using Caroline.App.Models;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.SignalR;
+using System;
 
 namespace Caroline.Connections
 {
@@ -20,6 +21,9 @@ namespace Caroline.Connections
         protected override async Task OnReceived(IRequest request, string connectionId, string data)
         {
             var actions = ProtoBufHelpers.Deserialize<ClientActions>(data);
+
+            if (actions.SocialActions != null) Socialize(request, actions);
+
             var state = await _gameManager.Update(HttpContext.Current.User.Identity.GetUserId(), connectionId, actions);
             await Connection.Send(connectionId, ProtoBufHelpers.Serialize(state));
         }
@@ -27,6 +31,39 @@ namespace Caroline.Connections
         protected override bool AuthorizeRequest(IRequest request)
         {
             return request.User != null && request.User.Identity.IsAuthenticated;
+        }
+
+        private void Socialize(IRequest request, ClientActions actions)
+        {
+            foreach (var action in actions.SocialActions)
+            {
+                if (action.Chat != null)
+                    if (action.Chat.GlobalMessage != null)
+                        SendGlobalChatMessage(request.User.Identity.Name, action.Chat.GlobalMessage);
+                    
+            }
+        }
+
+        private void SendGlobalChatMessage(string sender, string text)
+        {
+            SendGlobalChatMessage(sender, text, DateTime.UtcNow.ToShortTimeString());
+        }
+
+        private void SendGlobalChatMessage(string sender, string text, string time)
+        {
+            string[] developers = new string[]{"Developer","Hunter"};
+            var maxMessageLength = 220;
+
+            var state = new GameState();
+            var message = new GameState.ChatMessage();
+            message.Text = (text.Length > maxMessageLength) ? text.Substring(0, maxMessageLength) : text;
+            message.Sender = sender;
+            message.Time = time;
+            if (Array.IndexOf(developers, sender) != -1) message.Permissions="developer";
+            
+            state.Message = message;
+
+            Connection.Broadcast(ProtoBufHelpers.Serialize(state));
         }
     }
 }

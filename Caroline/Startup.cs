@@ -12,6 +12,7 @@ namespace Caroline
         {
             ConfigureAuth(app);
             app.MapSignalR<GameConnection>("/neon/komodo/dragons");
+           // app.MapConnection<GameConnection>("/neon/komodo/dragons");
         }
     }
 }

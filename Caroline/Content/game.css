@@ -1,0 +1,104 @@
+﻿/*Tooltip*/
+.tooltip-wrapper {
+    border-radius: 5px;
+    position: absolute;
+    max-width: 225px;
+    z-index: 100;
+    pointer-events: none;
+
+    -webkit-animation: tooltip 0.3s 1;
+    -moz-animation: tooltip 0.3s 1;
+    -o-animation: tooltip 0.3s 1;
+    animation: tooltip 0.3s 1;
+}
+
+.tooltip-content {
+    padding: 3px 5px 3px 5px;
+    font-size: 16px;
+}
+
+.tooltip-header {
+    font-size: 24px;
+}
+
+@-webkit-keyframes tooltip{
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+@-moz-keyframes tooltip {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+@-o-keyframes tooltip {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes tooltip {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/*Inventory*/
+.item {
+    height:100px;
+    width: 100px;
+    border: 1px solid;
+    display: inline-block;
+    border-radius:5px;
+    margin: 3px;
+    overflow: hidden;
+}
+
+.item:hover{
+    opacity:0.9;
+}
+
+.item:active {
+    opacity:0.8;
+}
+
+.item-text{
+    height: 18px;
+    line-height:16px;
+    font-weight: bold;
+    color:white;
+    text-align: center;
+}
+
+.selected-item {
+    border:1px solid;
+    border-radius:5px;
+    height: 100px;
+}
+
+.selected-item-image {
+    position:absolute;
+    margin-top:18px;
+    margin-left:18px;
+}
+
+.selected-item-quantity {
+    height:24px;
+    margin-top:38px;
+    margin-right:5px;
+    float:right;
+}
+
+/*Chat*/
+.chat-msg {
+    font-family:"Courier New", Courier, monospace;
+}
+
+.chat-sender {
+    font-weight:bold;
+}
+
+.chat-text {
+
+}
+
+.chat-developer .chat-sender{
+    color: white;
+    font-family: Consolas,monaco,monospace;
+    background: rgb(40,40,40); 
+}

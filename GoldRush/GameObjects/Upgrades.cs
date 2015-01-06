@@ -13,9 +13,10 @@ namespace GoldRush
 
         public Upgrades(GameObjects game)
         {
+            //TODO: Create configurations for upgrades and buffs.-
             this.game = game;
             #region Upgrades
-            Foreman = new Upgrade(new EfficiencyMagnitudeUpgradeEffect(game,
+           /* Foreman = new Upgrade(new EfficiencyMagnitudeUpgradeEffect(game,
                 new [] {game.Gatherers.Miner,
                     game.Gatherers.Lumberjack},
                 0.15));
@@ -47,14 +48,14 @@ namespace GoldRush
             ChainsawsT1 = new Upgrade(new EfficiencyUpgradeEffect(game,
                 new []{game.Gatherers.Lumberjack},
                 0.25));
-            ChainsawsT1.Name = "Chainsaws";
+            ChainsawsT1.Name = "Chainsaws";*/
             #endregion
 
             #region Buffs
-            SpeechBuff = new Buff(new ItemValueUpgradeEffect(game, 0.2));
+           /* SpeechBuff = new Buff(new ItemValueUpgradeEffect(game, 0.2));
             SpeechBuff.Name = "Speech Buff";
             SpeechBuff.Duration = 45;
-            game.Items.SpeechPotion.Effect = SpeechBuff;
+            game.Items.SpeechPotion.Effect = SpeechBuff;*/
             #endregion
         }
 

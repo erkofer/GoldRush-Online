@@ -16,7 +16,7 @@ namespace GoldRush
             Upgrades = new Upgrades(this);
         }
 
-        public static int LowestId = 0;
+        
 
         public Random Random;
         public Items Items;
@@ -27,23 +27,20 @@ namespace GoldRush
         {
             protected GameObject()
             {
-                Id = LowestId;
-                LowestId++;
+                
             }
 
             private readonly GameConfig.Config _config;
 
             protected GameObject(GameConfig.Config config)
             {
-                Id = LowestId;
-                LowestId++;
                 _config = config;
             }
 
             /// <summary>
             /// Unique identifier used for interfacing with clients.
             /// </summary>
-            public readonly int Id;
+            public int Id { get { return _config.Id;} }
 
             /// <summary>
             /// The prerequisite for this GameObject.
@@ -53,7 +50,7 @@ namespace GoldRush
             /// <summary>
             /// A user facing identifier.
             /// </summary>
-            public virtual string Name { get; set; }
+            public virtual string Name { get { return _config.Name; } }
             public virtual int Quantity { get; set; }
 
             public virtual bool Active

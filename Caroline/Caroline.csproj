@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -22,23 +23,37 @@
     <IISExpressUseClassicPipelineMode />
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <TypeScriptToolsVersion>1.0</TypeScriptToolsVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+    <TypeScriptRemoveComments>True</TypeScriptRemoveComments>
+    <TypeScriptSourceMap>true</TypeScriptSourceMap>
+    <OutputPath>bin\</OutputPath>
+    <TypeScriptModuleKind>amd</TypeScriptModuleKind>
+    <TypeScriptSourceMap> Scripts/connection.ts Scripts/chat.ts Scripts/inventory.ts</TypeScriptSourceMap>
+    <TypeScriptOutFile>game.js</TypeScriptOutFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\</OutputPath>
+    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+    <TypeScriptRemoveComments>True</TypeScriptRemoveComments>
+    <TypeScriptSourceMap>false</TypeScriptSourceMap>
+    <TypeScriptModuleKind>amd</TypeScriptModuleKind>
+    <OutputPath>bin\</OutputPath>
+    <TypeScriptSourceMap> Scripts/utils.ts Scripts/tooltip.ts Scripts/connection.ts Scripts/chat.ts</TypeScriptSourceMap>
+    <TypeScriptOutFile>game.js</TypeScriptOutFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="JetBrains.Annotations, Version=8.0.3.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
@@ -191,14 +206,92 @@
   <ItemGroup>
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Content\sprites.png" />
+    <Content Include="Content\sprites.css" />
+    <Content Include="Content\Sprites\Achievements.png" />
+    <Content Include="Content\Sprites\Alchemy_Potion.png" />
+    <Content Include="Content\Sprites\background.png" />
+    <Content Include="Content\Sprites\Big_Texan.png" />
+    <Content Include="Content\Sprites\Bitter_Root.png" />
+    <Content Include="Content\Sprites\Bronze_bar.png" />
+    <Content Include="Content\Sprites\Cauldron.png" />
+    <Content Include="Content\Sprites\City.png" />
+    <Content Include="Content\Sprites\Clicking_Potion.png" />
+    <Content Include="Content\Sprites\close.png" />
+    <Content Include="Content\Sprites\Coins.png" />
+    <Content Include="Content\Sprites\Copper.png" />
+    <Content Include="Content\Sprites\Copper_wire.png" />
+    <Content Include="Content\Sprites\Crafting.png" />
+    <Content Include="Content\Sprites\Crusher.png" />
+    <Content Include="Content\Sprites\Cubicula.png" />
+    <Content Include="Content\Sprites\Diamond.png" />
+    <Content Include="Content\Sprites\down.png" />
+    <Content Include="Content\Sprites\Drill.png" />
+    <Content Include="Content\Sprites\Emerald.png" />
+    <Content Include="Content\Sprites\Empty_vial.png" />
+    <Content Include="Content\Sprites\Equipment.png" />
+    <Content Include="Content\Sprites\Excavator.png" />
+    <Content Include="Content\Sprites\Export.png" />
+    <Content Include="Content\Sprites\Furnace.png" />
+    <Content Include="Content\Sprites\Gold.png" />
+    <Content Include="Content\Sprites\Gold_bar.png" />
+    <Content Include="Content\Sprites\Gunpowder.png" />
+    <Content Include="Content\Sprites\hack.png" />
+    <Content Include="Content\Sprites\Inventory.png" />
+    <Content Include="Content\Sprites\Iron.png" />
+    <Content Include="Content\Sprites\Iron_bar.png" />
+    <Content Include="Content\Sprites\Iron_Flower.png" />
+    <Content Include="Content\Sprites\Jade.png" />
+    <Content Include="Content\Sprites\Logs.png" />
+    <Content Include="Content\Sprites\Lumberjack.png" />
+    <Content Include="Content\Sprites\Mega_Drill.png" />
+    <Content Include="Content\Sprites\Melting_Nuts.png" />
+    <Content Include="Content\Sprites\Miner.png" />
+    <Content Include="Content\Sprites\Oil.png" />
+    <Content Include="Content\Sprites\Onyx.png" />
+    <Content Include="Content\Sprites\Opal.png" />
+    <Content Include="Content\Sprites\Prestige.png" />
+    <Content Include="Content\Sprites\Pumpjack.png" />
+    <Content Include="Content\Sprites\Quartz.png" />
+    <Content Include="Content\Sprites\Reset.png" />
+    <Content Include="Content\Sprites\Rock.png" />
+    <Content Include="Content\Sprites\Ruby.png" />
+    <Content Include="Content\Sprites\Sapphire.png" />
+    <Content Include="Content\Sprites\Save.png" />
+    <Content Include="Content\Sprites\Silver.png" />
+    <Content Include="Content\Sprites\Silver_bar.png" />
+    <Content Include="Content\Sprites\Smelting_Potion.png" />
+    <Content Include="Content\Sprites\Speech_Potion.png" />
+    <Content Include="Content\Sprites\Statistics.png" />
+    <Content Include="Content\Sprites\Steel_bar.png" />
+    <Content Include="Content\Sprites\Stone.png" />
+    <Content Include="Content\Sprites\Store.png" />
+    <Content Include="Content\Sprites\Thornberries.png" />
+    <Content Include="Content\Sprites\Titanium.png" />
+    <Content Include="Content\Sprites\Titanium_bar.png" />
+    <Content Include="Content\Sprites\TNT.png" />
+    <Content Include="Content\Sprites\Tongtwista_Flower.png" />
+    <Content Include="Content\Sprites\Topaz.png" />
+    <Content Include="Content\Sprites\Transfruit.png" />
+    <Content Include="Content\Sprites\Unknown.png" />
+    <Content Include="Content\Sprites\up.png" />
+    <Content Include="Content\Sprites\Uranium.png" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
+    <Content Include="Content\ClientActions.proto" />
+    <Content Include="Content\csharp_options.proto" />
+    <Content Include="Content\descriptor.proto" />
+    <Content Include="Content\GameState.proto" />
     <None Include="Properties\PublishProfiles\GoldRush.pubxml" />
     <None Include="Scripts\jquery-1.10.2-vsdoc.js" />
+    <Content Include="Scripts\ByteBufferAB.js" />
+    <Content Include="Scripts\ByteBufferAB.min.js" />
+    <Content Include="Content\game.css" />
+    <Content Include="Scripts\game.min.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
     <Content Include="Scripts\jquery-1.10.2.min.js" />
     <None Include="Scripts\jquery.validate-vsdoc.js" />
@@ -209,10 +302,17 @@
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
     <Content Include="Scripts\modernizr-2.6.2.js" />
+    <Content Include="Scripts\ProtoBuf.js" />
+    <Content Include="Scripts\ProtoBuf.min.js" />
+    <Content Include="Scripts\protoify.js" />
     <Content Include="Scripts\respond.js" />
     <Content Include="Scripts\respond.min.js" />
+    <Content Include="Scripts\test.js" />
+    <Content Include="Content\theme-classic.css" />
     <Content Include="Scripts\_references.js" />
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
@@ -248,6 +348,7 @@
     <Content Include="Views\Manage\VerifyPhoneNumber.cshtml" />
     <Content Include="Views\Shared\Lockout.cshtml" />
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
+    <Content Include="Scripts\ProtoBuf.min.map" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -287,11 +388,20 @@
       <Name>GoldRush</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="Scripts\chat.ts" />
+    <TypeScriptCompile Include="Scripts\connection.ts" />
+    <TypeScriptCompile Include="Scripts\inventory.ts" />
+    <TypeScriptCompile Include="Scripts\tooltip.ts" />
+    <TypeScriptCompile Include="Scripts\typings\jquery\jquery.d.ts" />
+    <TypeScriptCompile Include="Scripts\utils.ts" />
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets')" />
   <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
   <Target Name="MvcBuildViews" AfterTargets="AfterBuild" Condition="'$(MvcBuildViews)'=='true'">
@@ -322,10 +432,15 @@
     </PropertyGroup>
     <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
   </Target>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
-       Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
+    <Message Text="Compiling TypeScript files - $(TypeScriptSourceMap)" />
+    <Message Text="Executing tsc $(TypeScriptSourceMap) @(TypeScriptCompile ->'&quot;%(fullpath)&quot;', ' ')" />
+    <Exec Command="tsc$(TypeScriptSourceMap) -target ES5 --module amd --out Scripts/game.js" />
+    <Exec Command="java -jar &quot;$(SolutionDir)Build\compiler.jar&quot; --js &quot;$(SolutionDir)Caroline\Scripts\game.js&quot; --js_output_file &quot;$(SolutionDir)Caroline\Scripts\game.min.js&quot;" />
+    <Exec Command="&quot;$(SolutionDir)Build\Python27\Scripts\glue.exe&quot; --source &quot;$(SolutionDir)Caroline\Content\Sprites&quot; --output &quot;$(SolutionDir)Caroline\Content&quot; --css=&quot;$(SolutionDir)Caroline\Content&quot; --sprite-namespace= --namespace=" />
+    <Exec Command="&quot;$(SolutionDir)Build\SpriteRatio.exe&quot; -source &quot;$(SolutionDir)Caroline\Content\sprites.css&quot; -out &quot;$(SolutionDir)Caroline\Content\sprites.css&quot; -ratio 1,0.5,0.35 -rnames ,Half,Third" />
+    <Exec Command="&quot;$(SolutionDir)Build\pngquant.exe&quot; &quot;$(SolutionDir)Caroline\Content\sprites.png&quot; --ext .png --force" />
   </Target>
   <Target Name="AfterBuild">
-  </Target> -->
+  </Target>
 </Project>

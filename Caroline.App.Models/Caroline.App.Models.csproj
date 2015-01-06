@@ -58,18 +58,19 @@
     <ProtoBuf Include="SaveState.proto" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="csharp_options.proto" />
-    <None Include="descriptor.proto" />
+    <ProtoBuf Include="csharp_options.proto" />
+    <ProtoBuf Include="descriptor.proto" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
+    <Copy SourceFiles="$(SolutionDir)\Caroline.App.Models\GameState.proto" DestinationFolder="$(SolutionDir)\Caroline\Content" />
+    <Copy SourceFiles="$(SolutionDir)\Caroline.App.Models\csharp_options.proto" DestinationFolder="$(SolutionDir)\Caroline\Content" />
+    <Copy SourceFiles="$(SolutionDir)\Caroline.App.Models\descriptor.proto" DestinationFolder="$(SolutionDir)\Caroline\Content" />
+    <Copy SourceFiles="$(SolutionDir)\Caroline.App.Models\ClientActions.proto" DestinationFolder="$(SolutionDir)\Caroline\Content" />
   </Target>
   <Target Name="AfterBuild">
   </Target>
-  -->
   <PropertyGroup>
     <ProtoGenFile>$(SolutionDir)\Build\ProtoGen\protogen</ProtoGenFile>
     <ProtoBufTaskPath>..\Build\ProtoGen\</ProtoBufTaskPath>

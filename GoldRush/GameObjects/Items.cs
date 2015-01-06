@@ -22,16 +22,19 @@ namespace GoldRush
             items.AddRange(new Item[]
             {
                 Stone,Copper,Iron,Silver,Gold,Uranium,Titanium,Opal,Jade,Topaz,Sapphire,
-            Emerald,Ruby,Onyx,Quartz,Diamond,BronzeBar,IronBar,SilverBar,GoldBar,TitaniumBar,
+            Emerald,Ruby,Onyx,Quartz,Diamond,BronzeBar,IronBar,SilverBar,SteelBar,GoldBar,TitaniumBar,
             BitterRoot,Cubicula,IronFlower,TongtwistaFlower,Thornberries,Transfruit,MeltingNuts,
-            EmptyVial,Gunpowder,Logs,Coins,ClickingPotion,SmeltingPotion,SpeechPotion,AlchemyPotion,
+            EmptyVial,Gunpowder,Logs,Oil,Coins,ClickingPotion,SmeltingPotion,SpeechPotion,AlchemyPotion,
             CopperWire,Tnt
             });
 
             // If items should have a currency other than coins assign them here.
             // Such as EmptyVial.Currency = ISK;
 
-            foreach (var item in All)
+            foreach (var item in items)
+                All.Add(item.Id, item);
+
+            foreach (var item in items)
                 item.Currency = item.Currency ?? Coins;
 
             // Assign item recipes here.
@@ -43,18 +46,23 @@ namespace GoldRush
 
             #endregion
 
+            foreach (var item in items)
+                item.Quantity = 100;
+
         }
         private List<Item> items = new List<Item>();
-        public List<Item> All { get { return items; } }
+        //public List<Item> All { get { return items; } }
+
+        public Dictionary<int, Item> All = new Dictionary<int,Item>();
 
         public double WorthModifier
         {
             set
             {
-                foreach (var item in All)
+                foreach (var item in items)
                     item.WorthMultiplier = value;
             }
-            get { return All[0].WorthMultiplier; }
+            get { return items[0].WorthMultiplier; }
         }
 
         #region Item Declaration

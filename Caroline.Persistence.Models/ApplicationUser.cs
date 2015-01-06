@@ -16,7 +16,7 @@ namespace Caroline.Persistence.Models
             return userIdentity;
         }
 
-        public int GameId { get; set; }
+        public int? GameId { get; set; }
 
         [ForeignKey("GameId")]
         public virtual Game Game { get; set; }

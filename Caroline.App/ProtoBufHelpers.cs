@@ -18,8 +18,7 @@ namespace Caroline.App
 
         public static T Deserialize<T>(string data)
         {
-            var bytes = new byte[data.Length * sizeof(char)];
-            Buffer.BlockCopy(data.ToCharArray(), 0, bytes, 0, bytes.Length);
+            var bytes = Convert.FromBase64String(data);
             var stream = new MemoryStream(bytes, false);
             return Serializer.Deserialize<T>(stream);
         }
