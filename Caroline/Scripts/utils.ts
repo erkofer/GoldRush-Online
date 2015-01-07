@@ -1,4 +1,11 @@
 ﻿module Utils {
+    export function cssSwap(element: HTMLElement, initialVal: string, finalVal: string) {
+        if (element.classList.contains(initialVal))
+            element.classList.remove(initialVal);
+
+        element.classList.add(finalVal);
+    }
+
     export function cssifyName(name: string): string {
         return name.split(' ').join('_');
     }
@@ -40,6 +47,15 @@
         if (minutes < 0) {
             minutes = 60 - minutes;
             hours--;
+        }
+
+        if (hours > 23) {
+            hours = hours - 24;
+        }
+
+        if (minutes > 59) {
+            minutes = minutes - 60;
+            hours++;
         }
 
         return (hours < 10 ? '0' : '') + hours + ':' + (minutes < 10 ? '0' : '') + minutes;

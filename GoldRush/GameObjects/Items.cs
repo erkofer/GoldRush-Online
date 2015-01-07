@@ -112,7 +112,6 @@ namespace GoldRush
         public Recipe TntRecipe = new Recipe();
 
         #endregion
-
         //public static Recipe CopperWireRecipe = new Recipe();
 
         /// <summary>

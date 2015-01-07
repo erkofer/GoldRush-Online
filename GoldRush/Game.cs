@@ -50,6 +50,18 @@ namespace GoldRush
                     schemaItem.Worth = item.Value.Worth;
                     schema.Items.Add(schemaItem);
                 }
+                // STORE
+                foreach (var item in objs.Store.All)
+                {
+                    var schemaItem = new GameState.Schematic.SchemaStoreItem();
+                    schemaItem.Id = item.Value.Item.Id;
+                    schemaItem.Name = item.Value.Item.Name;
+                    schemaItem.Price = item.Value.BasePrice;
+                    schemaItem.Factor = item.Value.Factor;
+                    schemaItem.Category = (GameState.Schematic.SchemaStoreItem.Section)item.Value.Category;
+                    schema.StoreItems.Add(schemaItem);
+                }
+
                 state.GameSchema = schema;
             }
 
@@ -69,13 +81,35 @@ namespace GoldRush
 
         public SaveState Save()
         {
-            //TODO
+            var saveState = new SaveState();
+            foreach (var item in objs.Items.All)
+            {
+                var stateItem = new SaveState.Item();
+                var toSaveItem = item.Value;
+                stateItem.Id = toSaveItem.Id;
+                stateItem.Quantity = toSaveItem.Value;
+                stateItem.PrestigeQuantity = toSaveItem.PrestigeTimeTotal;
+                stateItem.AlltimeQuantity = toSaveItem.LifeTimeTotal;
+                saveState.Items.Add(stateItem);
+            }
             return new SaveState();
         }
 
         public void Load(SaveState save)
         {
-            //TODO
+            if (save != null)
+            {
+                if (save.Items != null)
+                {
+                    foreach (var item in save.Items)
+                    {
+                        var toLoadItem = objs.Items.All[item.Id];
+                        toLoadItem.Quantity = item.Quantity;
+                        toLoadItem.PrestigeTimeTotal = item.PrestigeQuantity;
+                        toLoadItem.LifeTimeTotal = item.AlltimeQuantity;
+                    }
+                }
+            }
         }
     }
 }

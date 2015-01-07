@@ -21,6 +21,7 @@ namespace GoldRush
                     game.Gatherers.Lumberjack},
                 0.15));
             Foreman.Name = "Foreman";
+            All.Add(Foreman.Id,Foreman);
 
             Backpack = new Upgrade(new ResourceUpgradeEffect(game,
                 new []{game.Gatherers.Lumberjack},
@@ -28,7 +29,8 @@ namespace GoldRush
                     game.Items.BitterRoot,
                     game.Items.Thornberries,
                     game.Items.Transfruit}));
-            Backpack.Name = "Backpack";
+           // Backpack.Name = "Backpack";
+            All.Add(Backpack.Id, Backpack);
 
             Botanist = new Upgrade(new ResourceUpgradeEffect(game,
                 new []{game.Gatherers.Lumberjack},
@@ -36,19 +38,21 @@ namespace GoldRush
                     game.Items.TongtwistaFlower,
                     game.Items.MeltingNuts}));
             Botanist.Requires = Backpack;
-            Botanist.Name = "Botanist";
+            //Botanist.Name = "Botanist";
+            All.Add(Botanist.Id, Botanist);*/
 
             Researcher = new Upgrade(new ResourceUpgradeEffect(game,
                 new []{game.Gatherers.Miner},
                 new []{game.Items.Sapphire,
                     game.Items.Emerald,
-                    game.Items.Ruby}));
-            Researcher.Name = "Researcher";
-
+                    game.Items.Ruby}),GameConfig.Upgrades.Researcher);
+            All.Add(Researcher.Id, Researcher);
+            /*
             ChainsawsT1 = new Upgrade(new EfficiencyUpgradeEffect(game,
                 new []{game.Gatherers.Lumberjack},
                 0.25));
-            ChainsawsT1.Name = "Chainsaws";*/
+            ChainsawsT1.Name = "Chainsaws";
+            All.Add(ChainsawsT1.Id, ChainsawsT1);*/
             #endregion
 
             #region Buffs
@@ -67,6 +71,8 @@ namespace GoldRush
             
         }
 
+        public Dictionary<int, Upgrade> All = new Dictionary<int, Upgrade>();
+
         public Buff SpeechBuff;
         public Upgrade Backpack;
         public Upgrade Botanist;
@@ -76,7 +82,8 @@ namespace GoldRush
 
         internal class Upgrade : GameObjects.GameObject
         {
-            public Upgrade(UpgradeEffect effect)
+            public Upgrade(UpgradeEffect effect, GameConfig.Upgrades.UpgradeConfig config)
+                :base(config)
             {
                 Effect = effect;
             }
@@ -104,8 +111,8 @@ namespace GoldRush
 
         internal class Buff : Upgrade
         {
-            public Buff(UpgradeEffect effect)
-                :base(effect)
+            public Buff(UpgradeEffect effect, GameConfig.Upgrades.UpgradeConfig config)
+                :base(effect,config)
             {
                 
             }

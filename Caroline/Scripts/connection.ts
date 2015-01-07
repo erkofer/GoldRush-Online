@@ -37,6 +37,12 @@ module Connection {
     function loadSchema(schema: any) {
         for (var i = 0; i < schema.Items.length; i++)
             Inventory.addItem(schema.Items[i].Id, schema.Items[i].Name, schema.Items[i].Worth);
+
+        for (var i = 0; i < schema.StoreItems.length; i++) {
+            var item = schema.StoreItems[i];
+            console.log(item);
+            Store.addItem(item.Id, item.Category, item.BasePrice, item.Factor, item.Name);
+        }
     }
 
     function updateInventory(items: any) {

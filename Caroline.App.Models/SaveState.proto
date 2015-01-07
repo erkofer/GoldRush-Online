@@ -7,5 +7,11 @@ option optimize_for = SPEED;
 
 message SaveState
 {
-
+	message Item {
+		optional int32 Id=1;
+		optional int32 Quantity=2;
+		optional int32 PrestigeQuantity=3;
+		optional int32 AlltimeQuantity=4;
+	}
+	repeated Item Items=1;
 }

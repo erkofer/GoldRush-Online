@@ -20,3 +20,18 @@
     border-bottom: 1px solid white;
     color: white;
 }
+
+/*STORE*/
+
+.store-item {
+    background-color: rgb(160,160,160);
+}
+
+.store-category{
+    background-color:aqua;
+}
+
+.store-category-header{
+    background-color:blue;
+    color:white;
+}

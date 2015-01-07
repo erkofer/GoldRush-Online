@@ -54,6 +54,7 @@
     <Compile Include="GameObjects\Gatherers.cs" />
     <Compile Include="APIs\IGame.cs" />
     <Compile Include="GameObjects\Items.cs" />
+    <Compile Include="GameObjects\Store.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GameObjects\Upgrades.cs" />
   </ItemGroup>

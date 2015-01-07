@@ -1,0 +1,29 @@
+﻿/* glue: 0.9.4 hash: d089cf5bc1 */
+        .sprite-output-Images,
+.sprite-output-sprites {
+            background-image: url('output.png');
+            background-repeat: no-repeat;
+        }
+        
+        .sprite-output-Images {
+            background-position: 0 0;
+            width: 576px;
+            height: 576px;
+        }
+        
+        .sprite-output-sprites {
+            background-position: -576px 0;
+            width: 531px;
+            height: 540px;
+        }
+        
+        @media screen and (-webkit-min-device-pixel-ratio: 1.0), screen and (min--moz-device-pixel-ratio: 1.0), screen and (-o-min-device-pixel-ratio: 100/100), screen and (min-device-pixel-ratio: 1.0), screen and (min-resolution: 1.0dppx) {
+            .sprite-output-Images,
+    .sprite-output-sprites {
+                background-image: url('output.png');
+                -webkit-background-size: 1107px 576px;
+                -moz-background-size: 1107px 576px;
+                background-size: 1107px 576px;
+            }
+        }
+        

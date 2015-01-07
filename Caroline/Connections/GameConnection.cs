@@ -52,6 +52,7 @@ namespace Caroline.Connections
         private void SendGlobalChatMessage(string sender, string text, string time)
         {
             string[] developers = new string[]{"Developer","Hunter"};
+            string[] moderators = new string[] { "scrublord" };
             var maxMessageLength = 220;
 
             var state = new GameState();
@@ -60,7 +61,7 @@ namespace Caroline.Connections
             message.Sender = sender;
             message.Time = time;
             if (Array.IndexOf(developers, sender) != -1) message.Permissions="developer";
-            
+            if (Array.IndexOf(moderators, sender) != -1) message.Permissions = "moderator";
             state.Message = message;
 
             Connection.Broadcast(ProtoBufHelpers.Serialize(state));

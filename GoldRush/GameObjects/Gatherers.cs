@@ -22,15 +22,20 @@ namespace GoldRush
 
             Miner = new Gatherer(game,GameConfig.Gatherers.Miner);
             Miner.PossibleResources.AddRange(baseResources);
+            All.Add(Miner.Id, Miner);
 
             Lumberjack = new Gatherer(game, GameConfig.Gatherers.Lumberjack);
             Lumberjack.GuaranteedResources.Add(game.Items.Logs);
             Lumberjack.ChanceOfNothing = 300;
+            All.Add(Lumberjack.Id, Lumberjack);
 
             Pumpjack = new Gatherer(game, GameConfig.Gatherers.Pumpjack);
             Pumpjack.GuaranteedResources.Add(game.Items.Oil);
+            All.Add(Pumpjack.Id, Pumpjack);
         }
         
+        public Dictionary<int,Gatherer> All = new Dictionary<int,Gatherer>();
+
         public Gatherer Miner;
         public Gatherer Lumberjack;
         public Gatherer Pumpjack;

@@ -82,28 +82,42 @@ namespace GoldRush
             public class GathererConfig : Config
             {
                 public double BaseResourcesPerSecond;
-                public Items.ResourceConfig[] PossibleResources;
-                public Items.ResourceConfig[] GuaranteedResources;
             }
-
-            public static Items.ResourceConfig[] BaseResources = new {Items.Stone,Items.Copper,Items.Iron,Items.Silver,Items.Gold,Items.Opal,Items.Jade,Items.Topaz};
            
-            public static GathererConfig Miner = new GathererConfig() {Name = "Miner", BaseResourcesPerSecond = 0.5, PossibleResources=BaseResources};
-            public static GathererConfig Lumberjack = new GathererConfig() { Name = "Lumberjack", BaseResourcesPerSecond = 0.5, GuaranteedResources=Items.Logs};
-            public static GathererConfig Drill = new GathererConfig() { Name = "Drill", BaseResourcesPerSecond = 2.5, PossibleResources = BaseResources };
-            public static GathererConfig Crusher = new GathererConfig() { Name = "Crusher", BaseResourcesPerSecond = 5, PossibleResources = BaseResources };
-            public static GathererConfig Excavator = new GathererConfig() { Name = "Excavator", BaseResourcesPerSecond = 10, PossibleResources = BaseResources };
-            public static GathererConfig MegaDrill = new GathererConfig() { Name = "Mega Drill", BaseResourcesPerSecond = 20, PossibleResources = BaseResources };
-            public static GathererConfig Pumpjack = new GathererConfig() { Name = "Pumpjack", BaseResourcesPerSecond = 0.2, GuaranteedResources = Items.Oil };
-            public static GathererConfig BigTexan = new GathererConfig() { Name = "Big Texan", BaseResourcesPerSecond = 0.5, GuaranteedResources = Items.Oil };
+            public static GathererConfig Miner = new GathererConfig() {Name = "Miner", BaseResourcesPerSecond = 0.5};
+            public static GathererConfig Lumberjack = new GathererConfig() { Name = "Lumberjack", BaseResourcesPerSecond = 0.5};
+            public static GathererConfig Drill = new GathererConfig() { Name = "Drill", BaseResourcesPerSecond = 2.5};
+            public static GathererConfig Crusher = new GathererConfig() { Name = "Crusher", BaseResourcesPerSecond = 5};
+            public static GathererConfig Excavator = new GathererConfig() { Name = "Excavator", BaseResourcesPerSecond = 10};
+            public static GathererConfig MegaDrill = new GathererConfig() { Name = "Mega Drill", BaseResourcesPerSecond = 20};
+            public static GathererConfig Pumpjack = new GathererConfig() { Name = "Pumpjack", BaseResourcesPerSecond = 0.2};
+            public static GathererConfig BigTexan = new GathererConfig() { Name = "Big Texan", BaseResourcesPerSecond = 0.5};
         }
 
-        public class UpgradeEffects
+        public class StoreItems
         {
-            public class UpgradeConfig : Config
+            public class StoreItemConfig
             {
-                
+                public int BasePrice;
+                public Store.Category Category;
+                // the maximum of this item you can purchase. 0 means infinite.
+                public int MaxQuantity = 0;
+                // determines the exponential increase in price. 1 means none.
+                public double Factor = 1;
             }
+
+            public static StoreItemConfig EmptyVial = new StoreItemConfig() { BasePrice = 1000, Category = Store.Category.ITEMS };
+            public static StoreItemConfig Gunpowder = new StoreItemConfig() { BasePrice = 2500, Category = Store.Category.ITEMS };
+            public static StoreItemConfig Researcher = new StoreItemConfig() { BasePrice = 1000000, Category = Store.Category.GATHERING };
+        }
+
+        public class Upgrades
+        {
+            public class UpgradeConfig:Config{
+
+            }
+
+            public static UpgradeConfig Researcher = new UpgradeConfig() { Name = "Researcher" };
         }
     }
 }

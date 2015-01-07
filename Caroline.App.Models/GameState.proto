@@ -29,6 +29,23 @@ message GameState {
 			optional int32 Worth = 3;
 		}
 		repeated SchemaItem Items = 1;
+
+		message SchemaStoreItem {
+			enum Section {
+				MINING=1;
+				MACHINES=2;
+				GATHERING=3;
+				PROCESSING=4;
+				ITEMS=5;
+				CRAFTING=6;
+			}
+			optional Section Category=1;
+			optional string Name=2;
+			optional int32 Price=3;
+			optional double Factor=4;
+			optional int32 Id=5;
+		}
+		repeated SchemaStoreItem StoreItems=2;
 	}
 	optional Schematic GameSchema = 4; 
 

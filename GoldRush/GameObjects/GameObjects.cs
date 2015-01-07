@@ -14,6 +14,11 @@ namespace GoldRush
             Items = new Items(this);
             Gatherers = new Gatherers(this);
             Upgrades = new Upgrades(this);
+            Store = new Store(this);
+            // Add all gameobjects to a big dictionary.
+            All = new Dictionary<int,GameObject>();
+            foreach (var item in Items.All) { All.Add(item.Key, item.Value); }
+            foreach (var gatherer in Gatherers.All) { All.Add(gatherer.Key, gatherer.Value); }
         }
 
         
@@ -22,6 +27,9 @@ namespace GoldRush
         public Items Items;
         public Upgrades Upgrades;
         public Gatherers Gatherers;
+        public Store Store;
+        public Dictionary<int,GameObject> All;
+       
 
         internal abstract class GameObject
         {

@@ -1,6 +1,6 @@
 ﻿///<reference path="utils.ts"/>
 ///<reference path="tooltip.ts"/>
-
+///<reference path="tabs.ts"/>
 module Inventory {
     var items = new Array<Item>();
     var inventoryPane: HTMLElement;
@@ -116,6 +116,8 @@ module Inventory {
         selectedItemPane.appendChild(sellItems);
         selectedItemPane.appendChild(selectedItemQuantity);
         inventoryPane.appendChild(selectedItemPane);
+
+        Tabs.registerGameTab(inventoryPane,'Inventory');
     }
 
     function drawItem(item: Item): HTMLElement {
