@@ -46,9 +46,8 @@ namespace GoldRush
 
             #endregion
 
-            /*foreach (var item in items)
-                item.Quantity = 100;*/
-            Coins.Quantity = 100000;
+            foreach (var item in items)
+                item.Quantity = 100;
 
         }
         private List<Item> items = new List<Item>();

@@ -2,12 +2,6 @@
     background-color: rgb(160,160,160);
 }
 
-.button {
-    background: linear-gradient(rgb(28,64,92),rgb(4,32,55));
-    color: white;
-}
-
-
 .selected-item {
     background-color: rgb(160,160,160);
 }
@@ -30,21 +24,14 @@
 /*STORE*/
 
 .store-item {
-    background-color: rgb(113,142,164);
-    box-shadow:1px 1px 3px black;
-}
-
-.store-item-header {
-    background-color:rgb(18,54,82);
-    color:white;
+    background-color: rgb(160,160,160);
 }
 
 .store-category{
-    background-color:rgb(73,109,137);
-    box-shadow:1px 1px 3px black;
+    background-color:aqua;
 }
 
 .store-category-header{
-    background:rgb(4,32,55);
+    background-color:blue;
     color:white;
 }

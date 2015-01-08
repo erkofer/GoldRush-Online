@@ -13,25 +13,6 @@
     }
     Utils.cssifyName = cssifyName;
 
-    function createButton(text, id) {
-        var button;
-        var textcontent;
-
-        button = document.createElement("div");
-        textcontent = document.createElement("div");
-        textcontent.textContent = text;
-
-        if (id) {
-            textcontent.id = id;
-        }
-
-        button.classList.add("button");
-        button.appendChild(textcontent);
-
-        return button;
-    }
-    Utils.createButton = createButton;
-
     function isNumber(obj) {
         return !isNaN(parseFloat(obj));
     }
@@ -726,11 +707,10 @@ var Connection;
     var actions = new Komodo.ClientActions();
     setInterval(function () {
         var encoded = actions.encode64();
+        if (encoded != '') {
+            send(encoded);
+        }
 
-        // if (encoded!='') {
-        send(encoded);
-
-        //}
         actions = new Komodo.ClientActions();
     }, 1000);
 
@@ -741,7 +721,7 @@ var Connection;
         for (var i = 0; i < schema.StoreItems.length; i++) {
             var item = schema.StoreItems[i];
             console.log(item);
-            Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.maxQuantity);
+            Store.addItem(item.Id, item.Category, item.BasePrice, item.Factor, item.Name);
         }
     }
 
@@ -759,16 +739,6 @@ var Connection;
         actions.InventoryActions.push(inventoryAction);
     }
     Connection.sellItem = sellItem;
-
-    function purchaseItem(id, quantity) {
-        var storeAction = new Komodo.ClientActions.StoreAction();
-        var purchaseAction = new Komodo.ClientActions.StoreAction.PurchaseAction();
-        purchaseAction.Id = id;
-        purchaseAction.Quantity = (quantity ? quantity : 1);
-        storeAction.Purchase = purchaseAction;
-        actions.StoreActions.push(storeAction);
-    }
-    Connection.purchaseItem = purchaseItem;
 
     function sellAllItems() {
     }
@@ -887,22 +857,19 @@ var Store;
     }
     Store.tempFix = tempFix;
 
-    function addItem(id, category, price, factor, name, maxQuantity) {
+    function addItem(id, category, price, factor, name) {
         if (!storePane)
             draw();
-        if (!items[id]) {
-            var item = new StoreItem();
-            item.id = id;
-            item.category = category;
-            item.price = price;
-            item.factor = factor;
-            item.name = name;
-            item.maxQuantity = maxQuantity;
 
-            var categoryContainer = Store.categories[Category[category]];
-            categoryContainer.appendChild(drawItem(item));
-            items[id] = item;
-        }
+        var item = new StoreItem();
+        item.id = id;
+        item.category = category;
+        item.price = price;
+        item.factor = factor;
+        item.name = name;
+
+        var categoryContainer = Store.categories[Category[category]];
+        categoryContainer.appendChild(drawItem(item));
     }
     Store.addItem = addItem;
 
@@ -914,12 +881,7 @@ var Store;
         itemContainer.classList.add('store-item');
         var header = document.createElement('div');
         header.classList.add('store-item-header');
-        if (item.maxQuantity < 1) {
-            header.textContent = item.name;
-        } else {
-            header.textContent = item.name + ' (' + item.quantity + '/' + item.maxQuantity + ')';
-        }
-        item.nameElm = header;
+        header.textContent = item.name;
         itemContainer.appendChild(header);
 
         // IMAGE
@@ -935,44 +897,7 @@ var Store;
 
         var footer = document.createElement('div');
         footer.classList.add('store-item-footer');
-
-        var priceContainer = document.createElement('div');
-        priceContainer.classList.add('item-text');
-        var price = document.createElement('div');
-        price.textContent = Utils.formatNumber(item.price);
-        price.style.display = 'inline-block';
-        price.style.verticalAlign = 'top';
-        item.priceElm = price;
-        var coins = document.createElement('div');
-        coins.classList.add('Third-Coins');
-        coins.style.display = 'inline-block';
-        priceContainer.appendChild(coins);
-        priceContainer.appendChild(price);
-
-        var buttonContainer = document.createElement('div');
-        var button = Utils.createButton('Buy', '');
-        var id = item.id;
-        if (item.category != 5 /* ITEMS */) {
-            button.addEventListener('click', function () {
-                Connection.purchaseItem(id);
-            });
-        } else {
-            var quantityInput = document.createElement('INPUT');
-            quantityInput.type = 'TEXT';
-            quantityInput.style.width = '40px';
-            quantityInput.style.height = '21px';
-            buttonContainer.appendChild(quantityInput);
-            button.addEventListener('click', function () {
-                if (Utils.isNumber(quantityInput.value))
-                    Connection.purchaseItem(id, +quantityInput.value);
-            });
-        }
-
-        buttonContainer.appendChild(button);
-
-        footer.appendChild(buttonContainer);
-        footer.appendChild(priceContainer);
-
+        footer.textContent = Utils.formatNumber(item.price);
         itemContainer.appendChild(footer);
 
         return itemContainer;

@@ -108,9 +108,7 @@ namespace GoldRush
 
             public static StoreItemConfig EmptyVial = new StoreItemConfig() { BasePrice = 1000, Category = Store.Category.ITEMS };
             public static StoreItemConfig Gunpowder = new StoreItemConfig() { BasePrice = 2500, Category = Store.Category.ITEMS };
-            public static StoreItemConfig Researcher = new StoreItemConfig() { BasePrice = 1000000, Category = Store.Category.GATHERING, MaxQuantity=1 };
-            public static StoreItemConfig Miner = new StoreItemConfig() { BasePrice = 1000, Category = Store.Category.MACHINES, MaxQuantity = 10, Factor=1.15 };
-            public static StoreItemConfig Lumberjack = new StoreItemConfig() { BasePrice = 20000, Category = Store.Category.MACHINES, MaxQuantity = 10, Factor = 1.15 };
+            public static StoreItemConfig Researcher = new StoreItemConfig() { BasePrice = 1000000, Category = Store.Category.GATHERING };
         }
 
         public class Upgrades

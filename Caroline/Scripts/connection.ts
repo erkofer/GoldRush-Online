@@ -27,9 +27,9 @@ module Connection {
     var actions = new Komodo.ClientActions();
     setInterval(function () {
         var encoded = actions.encode64();
-       // if (encoded!='') {
+        if (encoded!='') {
             send(encoded);
-        //}
+        }
        
         actions = new Komodo.ClientActions();
     }, 1000);
@@ -41,7 +41,7 @@ module Connection {
         for (var i = 0; i < schema.StoreItems.length; i++) {
             var item = schema.StoreItems[i];
             console.log(item);
-            Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.maxQuantity);
+            Store.addItem(item.Id, item.Category, item.BasePrice, item.Factor, item.Name);
         }
     }
 
@@ -57,15 +57,6 @@ module Connection {
         sellAction.Quantity = quantity;
         inventoryAction.Sell = sellAction;
         actions.InventoryActions.push(inventoryAction);
-    }
-
-    export function purchaseItem(id: number, quantity?: number) {
-        var storeAction = new Komodo.ClientActions.StoreAction();
-        var purchaseAction = new Komodo.ClientActions.StoreAction.PurchaseAction();
-        purchaseAction.Id = id;
-        purchaseAction.Quantity = (quantity ? quantity : 1);
-        storeAction.Purchase = purchaseAction;
-        actions.StoreActions.push(storeAction);
     }
 
     export function sellAllItems() {
