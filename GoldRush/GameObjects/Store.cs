@@ -21,6 +21,12 @@ namespace GoldRush
             Researcher = new StoreItem(game.Upgrades.Researcher, GameConfig.StoreItems.Researcher);
             All.Add(Researcher.Item.Id, Researcher);
 
+            Miner = new StoreItem(game.Gatherers.Miner, GameConfig.StoreItems.Miner);
+            All.Add(Miner.Item.Id, Miner);
+
+            Lumberjack = new StoreItem(game.Gatherers.Lumberjack, GameConfig.StoreItems.Lumberjack);
+            All.Add(Lumberjack.Item.Id, Lumberjack);
+
             // If you want an item to be purchased with a different currency define it above.
             foreach (var storeItem in All)
             {
@@ -34,6 +40,8 @@ namespace GoldRush
         StoreItem EmptyVial;
         StoreItem Gunpowder;
         StoreItem Researcher;
+        StoreItem Miner;
+        StoreItem Lumberjack;
 
         internal class StoreItem
         {
@@ -59,13 +67,18 @@ namespace GoldRush
 
             public void Purchase()
             {
-                if (Item.Quantity > MaxQuantity && MaxQuantity>0) return;
+                Purchase(1);
+            }
+
+            public void Purchase(int quantity)
+            {
+                if ((Item.Quantity+quantity) > MaxQuantity && MaxQuantity > 0) return;
 
                 int price = GetPrice();
-                if (price > Currency.Quantity) return;
-                
-                Currency.Quantity -= price;
-                Item.Quantity++;
+                if ((price * quantity) > Currency.Quantity) return;
+
+                Currency.Quantity -= price*quantity;
+                Item.Quantity+=quantity;
             }
         }
 

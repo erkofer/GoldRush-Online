@@ -29,7 +29,11 @@ namespace GoldRush
         public Gatherers Gatherers;
         public Store Store;
         public Dictionary<int,GameObject> All;
-       
+
+        public void Update(int ms)
+        {
+            Gatherers.Update(ms);
+        }
 
         internal abstract class GameObject
         {
