@@ -44,6 +44,7 @@ message GameState {
 			optional int32 Price=3;
 			optional double Factor=4;
 			optional int32 Id=5;
+			optional int32 MaxQuantity=6;
 		}
 		repeated SchemaStoreItem StoreItems=2;
 	}

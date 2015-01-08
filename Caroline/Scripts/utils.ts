@@ -10,6 +10,25 @@
         return name.split(' ').join('_');
     }
 
+    export function createButton(text, id): HTMLElement {
+        var button;
+        var textcontent;
+
+        button = <HTMLElement>document.createElement("div");
+        textcontent = document.createElement("div");
+        textcontent.textContent = text;
+
+        if (id) {
+            textcontent.id = id;
+        }
+
+        button.classList.add("button");
+        button.appendChild(textcontent);
+
+        return button;
+    }
+
+
     export function isNumber(obj) { return !isNaN(parseFloat(obj)) }
 
     export function formatNumber(n: number): string {

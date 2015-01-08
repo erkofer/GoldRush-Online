@@ -33,7 +33,15 @@ namespace GoldRush
             Pumpjack.GuaranteedResources.Add(game.Items.Oil);
             All.Add(Pumpjack.Id, Pumpjack);
         }
-        
+
+        public void Update(int ms)
+        {
+            foreach (var gatherer in All)
+            {
+                gatherer.Value.Mine(ms);
+            }
+        }
+
         public Dictionary<int,Gatherer> All = new Dictionary<int,Gatherer>();
 
         public Gatherer Miner;
