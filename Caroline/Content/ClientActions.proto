@@ -1,0 +1,32 @@
+package Caroline.App.Models;
+
+import "csharp_options.proto";
+option (google.protobuf.csharp_file_options).namespace = "Caroline.App.Models";
+
+option optimize_for = SPEED;
+
+message ClientActions
+{	
+	message SocialAction {
+		message ChatAction {
+			optional string GlobalMessage=1; 
+		}
+		optional ChatAction Chat = 1;
+	}
+	repeated SocialAction SocialActions = 1;
+
+	message InventoryAction{
+		message SellAction {
+			optional int32 Id=1;
+			optional int32 Quantity=2;
+		}
+		optional SellAction Sell = 1;
+
+		message ConfigAction {
+			optional int32 Id=1;
+			optional bool Enabled=2;
+		}
+		optional ConfigAction Config=2;
+	}
+	repeated InventoryAction InventoryActions = 2;
+}
