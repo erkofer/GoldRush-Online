@@ -54,6 +54,7 @@ namespace GoldRush
             {
                 PossibleResources = new List<Items.Resource>();
                 GuaranteedResources = new List<Items.Resource>();
+                ChanceOfNothing = 0;
                 _game = game;
                 _config = config;
             }
@@ -115,7 +116,7 @@ namespace GoldRush
             /// The resources the Gatherer can collect.
             /// </summary>
             public List<Items.Resource> PossibleResources { get { return possibleResources; } 
-                set { possibleResources = value; RecalculateMiningStuff(); } }
+                set { possibleResources = value; } }
 
             /// <summary>
             /// The total probability of all possible resources.
@@ -140,7 +141,7 @@ namespace GoldRush
                 totalProbability = new List<int>();
                 var total = 0;
                 foreach (var resource in PossibleResources)
-                    totalProbability.Add(total+=resource.Probability);
+                    totalProbability.Add(total += resource.Probability);
 
                 if (ProbabilityModifier <= 0) return;
                 
@@ -150,6 +151,7 @@ namespace GoldRush
                     else
                         totalProbability[i] /= (int) Math.Floor(ProbabilityModifier + 1);
             }
+             
 
             /// <summary>
             /// Gathers resources based on time.
@@ -171,16 +173,21 @@ namespace GoldRush
                 // Stores excess resources in the resource buffer.
                 resourceBuffer = resourcesGained - Math.Floor(resourcesGained);
                 resourcesGained = Math.Floor(resourcesGained);
-               
                 if (GuaranteedResources.Count > 0)
                     foreach (var resource in GuaranteedResources)
                         resource.Quantity += (int) resourcesGained;
 
                 if (PossibleResources.Count <= 0) return;
+
                 
                 for (var i = 0; i < resourcesGained; i++)
                 {
-                    if (ChanceOfNothing != _game.Random.Next(ChanceOfNothing+1)) continue;
+                    if (totalProbability.ToArray().Length < 1) break;
+
+                    var random = _game.Random.Next(ChanceOfNothing + 1);
+                    Debug.Print(ChanceOfNothing.ToString()+' '+random.ToString());
+                    if (ChanceOfNothing != random) continue;
+
 
                     var chance = _game.Random.Next(1, totalProbability[totalProbability.Count - 1]);
                     var roll = Array.BinarySearch(totalProbability.ToArray(), chance);

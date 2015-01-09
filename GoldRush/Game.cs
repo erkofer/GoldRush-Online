@@ -88,14 +88,35 @@ namespace GoldRush
                 state.GameSchema = schema;
             }
 
-            // INVENTORY DATA
+            // INVENTORY & STATS DATA
             foreach (var item in objs.Items.All)
             {
                 var stateItem = new GameState.Item();
                 stateItem.Id = item.Value.Id;
                 stateItem.Quantity = item.Value.Quantity;
 
+
+                var stateStatsItem = new GameState.StatItem();
+                stateStatsItem.Id = item.Value.Id;
+                stateStatsItem.PrestigeQuantity = item.Value.PrestigeTimeTotal;
+                stateStatsItem.LifeTimeQuantity = item.Value.LifeTimeTotal;
+
+                state.StatItemsUpdate.Add(stateStatsItem);
                 state.Items.Add(stateItem);
+            }
+            
+
+
+            // STORE DATA
+            foreach (var item in objs.Store.All)
+            {
+                var stateStoreItem = new GameState.StoreItem();
+                GameObjects.GameObject gameobject;
+                objs.All.TryGetValue(item.Key,out gameobject);
+                stateStoreItem.Id = gameobject.Id;
+                stateStoreItem.Quantity = gameobject.Quantity;
+
+                state.StoreItemsUpdate.Add(stateStoreItem);
             }
             
             return state;

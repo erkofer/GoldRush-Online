@@ -101,17 +101,19 @@ namespace GoldRush
                 public int BasePrice;
                 public Store.Category Category;
                 // the maximum of this item you can purchase. 0 means infinite.
-                public int MaxQuantity = 0;
+                public int MaxQuantity = 1;
                 // determines the exponential increase in price. 1 means none.
                 public double Factor = 1;
             }
 
-            public static StoreItemConfig EmptyVial = new StoreItemConfig() { BasePrice = 1000, Category = Store.Category.ITEMS };
-            public static StoreItemConfig Gunpowder = new StoreItemConfig() { BasePrice = 2500, Category = Store.Category.ITEMS };
-            public static StoreItemConfig Researcher = new StoreItemConfig() { BasePrice = 1000000, Category = Store.Category.GATHERING, MaxQuantity=1 };
+            public static StoreItemConfig EmptyVial = new StoreItemConfig() { BasePrice = 1000, Category = Store.Category.ITEMS, MaxQuantity=0 };
+            public static StoreItemConfig Gunpowder = new StoreItemConfig() { BasePrice = 2500, Category = Store.Category.ITEMS, MaxQuantity=0 };
+            public static StoreItemConfig Researcher = new StoreItemConfig() { BasePrice = 1000000, Category = Store.Category.GATHERING};
             public static StoreItemConfig Miner = new StoreItemConfig() { BasePrice = 1000, Category = Store.Category.MACHINES, MaxQuantity = 10, Factor=1.15 };
             public static StoreItemConfig Lumberjack = new StoreItemConfig() { BasePrice = 20000, Category = Store.Category.MACHINES, MaxQuantity = 10, Factor = 1.15 };
-        }
+            public static StoreItemConfig Foreman = new StoreItemConfig(){BasePrice = 250000,Category = Store.Category.GATHERING};
+            public static StoreItemConfig Botanist = new StoreItemConfig() { BasePrice = 100000000, Category = Store.Category.GATHERING }; 
+       }
 
         public class Upgrades
         {
@@ -119,7 +121,17 @@ namespace GoldRush
 
             }
 
+            public class BuffConfig : UpgradeConfig
+            {
+                public int Duration;
+            }
+
+            public static BuffConfig SpeechBuff = new BuffConfig() { Name = "SpeechBuff", Duration=45 }; 
+            public static UpgradeConfig Backpack = new UpgradeConfig() { Name = "Backpack" };
             public static UpgradeConfig Researcher = new UpgradeConfig() { Name = "Researcher" };
+            public static UpgradeConfig Botanist = new UpgradeConfig() { Name = "Botanist" };
+            public static UpgradeConfig Foreman = new UpgradeConfig() { Name = "Foreman" };
+            public static UpgradeConfig ChainsawsT1 = new UpgradeConfig() { Name = "Backpack" };
         }
     }
 }

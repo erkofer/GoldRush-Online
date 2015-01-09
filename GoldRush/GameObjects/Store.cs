@@ -24,6 +24,12 @@ namespace GoldRush
             Miner = new StoreItem(game.Gatherers.Miner, GameConfig.StoreItems.Miner);
             All.Add(Miner.Item.Id, Miner);
 
+            Botanist = new StoreItem(game.Upgrades.Botanist, GameConfig.StoreItems.Botanist);
+            All.Add(Botanist.Item.Id, Botanist);
+
+            Foreman = new StoreItem(game.Upgrades.Foreman, GameConfig.StoreItems.Foreman);
+            All.Add(Foreman.Item.Id, Foreman);
+
             Lumberjack = new StoreItem(game.Gatherers.Lumberjack, GameConfig.StoreItems.Lumberjack);
             All.Add(Lumberjack.Item.Id, Lumberjack);
 
@@ -42,6 +48,8 @@ namespace GoldRush
         StoreItem Researcher;
         StoreItem Miner;
         StoreItem Lumberjack;
+        StoreItem Botanist;
+        StoreItem Foreman;
 
         internal class StoreItem
         {

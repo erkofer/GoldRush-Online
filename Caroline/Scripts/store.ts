@@ -21,6 +21,7 @@
         name: string;
         priceElm: HTMLElement;
         nameElm: HTMLElement;
+        container: HTMLElement;
 
         constructor() {
 
@@ -69,7 +70,7 @@
             item.price = price;
             item.factor = factor;
             item.name = name;
-            item.maxQuantity = maxQuantity;
+            item.maxQuantity = maxQuantity ? maxQuantity : 0;
 
             var categoryContainer = categories[Category[category]];
             categoryContainer.appendChild(drawItem(item));
@@ -77,7 +78,14 @@
         }
     }
 
-    
+    export function changeQuantity(id: number, quantity: number) {
+        var item = items[id];
+        item.quantity = quantity;
+        item.container.style.display = (item.quantity >= item.maxQuantity && item.maxQuantity > 0) ? 'none' : 'inline-block';
+        if (item.maxQuantity && item.maxQuantity > 1)
+            item.nameElm.textContent = item.name + ' (' + ((item.quantity) ? item.quantity : 0) + '/' + item.maxQuantity + ')';
+        
+    }
 
     function add() {
 
@@ -86,9 +94,10 @@
     function drawItem(item: StoreItem):HTMLElement {
         var itemContainer = document.createElement('div');
         itemContainer.classList.add('store-item');
+        item.container = itemContainer;
         var header = document.createElement('div');
         header.classList.add('store-item-header');
-        if (item.maxQuantity < 1) {
+        if (item.maxQuantity <= 1) {
             header.textContent = item.name;
         } else {
             header.textContent = item.name+' (' + item.quantity + '/' + item.maxQuantity + ')';

@@ -19,9 +19,8 @@ namespace GoldRush
             All = new Dictionary<int,GameObject>();
             foreach (var item in Items.All) { All.Add(item.Key, item.Value); }
             foreach (var gatherer in Gatherers.All) { All.Add(gatherer.Key, gatherer.Value); }
+            foreach (var upgrade in Upgrades.All) { All.Add(upgrade.Key, upgrade.Value); }
         }
-
-        
 
         public Random Random;
         public Items Items;
@@ -32,6 +31,7 @@ namespace GoldRush
 
         public void Update(int ms)
         {
+            Upgrades.Update(ms);
             Gatherers.Update(ms);
         }
 
@@ -47,6 +47,7 @@ namespace GoldRush
             protected GameObject(GameConfig.Config config)
             {
                 _config = config;
+                Quantity = 0;
             }
 
             /// <summary>
@@ -64,19 +65,7 @@ namespace GoldRush
             /// </summary>
             public virtual string Name { get { return _config.Name; } }
             public virtual int Quantity { get; set; }
-
-            public virtual bool Active
-            {
-                get { return Quantity > 0; }
-                set
-                {
-                    if (value)
-                        if (Quantity <= 0) Quantity = 1;
-                    else
-                        if (Quantity > 0) Quantity = 0;
-                }
-            }
+            public virtual bool Active { get; set; }
         }
-
     }
 }

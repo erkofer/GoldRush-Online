@@ -50,5 +50,17 @@ message GameState {
 	}
 	optional Schematic GameSchema = 4; 
 
+	message StoreItem {
+		optional int32 Id = 1;
+		optional int32 Quantity = 2;
+	}
+	repeated StoreItem StoreItemsUpdate=5;
+
+	message StatItem {
+		optional int32 Id = 1;
+		optional int32 PrestigeQuantity = 2;
+		optional int32 LifeTimeQuantity = 3;
+	}
+	repeated StatItem StatItemsUpdate=6;
 } 
 

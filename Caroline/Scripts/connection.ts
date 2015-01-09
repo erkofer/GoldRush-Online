@@ -23,6 +23,13 @@ module Connection {
         if (msg.Items != null) {
             updateInventory(msg.Items);
         }
+        // STORE UPDATES
+        if (msg.StoreItemsUpdate != null) {
+            updateStore(msg.StoreItemsUpdate);
+        }
+        if (msg.StatItemsUpdate != null) {
+            updateStats(msg.StatItemsUpdate);
+        }
     });
     var actions = new Komodo.ClientActions();
     setInterval(function () {
@@ -35,19 +42,30 @@ module Connection {
     }, 1000);
 
     function loadSchema(schema: any) {
-        for (var i = 0; i < schema.Items.length; i++)
+        for (var i = 0; i < schema.Items.length; i++) {
             Inventory.addItem(schema.Items[i].Id, schema.Items[i].Name, schema.Items[i].Worth);
+            Statistics.addItem(schema.Items[i].Id, schema.Items[i].Name);
+        }
 
         for (var i = 0; i < schema.StoreItems.length; i++) {
             var item = schema.StoreItems[i];
-            console.log(item);
-            Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.maxQuantity);
+            Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.MaxQuantity);
         }
+    }
+
+    function updateStats(items: any) {
+        for (var i = 0; i < items.length; i++)
+            Statistics.changeStats(items[i].Id, items[i].PrestigeQuantity, items[i].LifeTimeQuantity);
     }
 
     function updateInventory(items: any) {
         for (var i = 0; i < items.length; i++)
             Inventory.changeQuantity(items[i].Id, items[i].Quantity);
+    }
+
+    function updateStore(items: any) {
+        for (var i = 0; i < items.length; i++)
+            Store.changeQuantity(items[i].Id, items[i].Quantity);
     }
 
     export function sellItem(id: number, quantity: number) {

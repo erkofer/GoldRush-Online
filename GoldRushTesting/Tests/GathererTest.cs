@@ -22,7 +22,7 @@ namespace GoldRushTesting
         {
             var game = GetGame();
             game.objs.Gatherers.Pumpjack.Quantity = 1;
-            game.objs.Gatherers.Pumpjack.Mine(4000);
+            game.objs.Gatherers.Pumpjack.Mine(5000);
 
             Assert.AreEqual(1, game.objs.Items.Oil.Quantity);
         }

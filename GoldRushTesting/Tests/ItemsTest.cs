@@ -74,6 +74,7 @@ namespace GoldRushTesting
         {
             var game = GetGame();
             game.objs.Items.Copper.Quantity = 5;
+            game.objs.Items.Coins.Quantity = 0;
             game.objs.Items.Copper.Sell(5);
 
             Assert.AreEqual(25,game.objs.Items.Coins.Quantity);
@@ -84,6 +85,7 @@ namespace GoldRushTesting
         {
             var game = GetGame();
             game.objs.Items.Diamond.Sell();
+            game.objs.Items.Coins.Quantity = 0;
 
             Assert.AreEqual(0,game.objs.Items.Coins.Quantity);
         }

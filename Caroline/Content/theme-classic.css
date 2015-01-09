@@ -48,3 +48,22 @@
     background:rgb(4,32,55);
     color:white;
 }
+
+/*Table*/
+.table-header {
+    background: rgb(4, 32, 55);
+    color: white;
+}
+
+.table-subheader {
+    background: rgb(18, 54, 82);
+    color: white;
+}
+
+.table-row {
+    background: rgb(113, 142, 164);
+}
+
+.table-row:hover {
+    background: rgb(103, 132, 154);
+}

@@ -16,30 +16,27 @@ namespace GoldRush
             //TODO: Create configurations for upgrades and buffs.-
             this.game = game;
             #region Upgrades
-           /* Foreman = new Upgrade(new EfficiencyMagnitudeUpgradeEffect(game,
+            Foreman = new Upgrade(new EfficiencyMagnitudeUpgradeEffect(game,
                 new [] {game.Gatherers.Miner,
                     game.Gatherers.Lumberjack},
-                0.15));
-            Foreman.Name = "Foreman";
+                0.15),GameConfig.Upgrades.Foreman);
             All.Add(Foreman.Id,Foreman);
-
+            /*
             Backpack = new Upgrade(new ResourceUpgradeEffect(game,
                 new []{game.Gatherers.Lumberjack},
                 new[]{game.Items.Cubicula,
                     game.Items.BitterRoot,
                     game.Items.Thornberries,
-                    game.Items.Transfruit}));
-           // Backpack.Name = "Backpack";
-            All.Add(Backpack.Id, Backpack);
+                    game.Items.Transfruit}), GameConfig.Upgrades.Backpack);
+            All.Add(Backpack.Id, Backpack);*/
 
             Botanist = new Upgrade(new ResourceUpgradeEffect(game,
                 new []{game.Gatherers.Lumberjack},
                 new [] {game.Items.IronFlower,
                     game.Items.TongtwistaFlower,
-                    game.Items.MeltingNuts}));
+                    game.Items.MeltingNuts}), GameConfig.Upgrades.Botanist);
             Botanist.Requires = Backpack;
-            //Botanist.Name = "Botanist";
-            All.Add(Botanist.Id, Botanist);*/
+            All.Add(Botanist.Id, Botanist);
 
             Researcher = new Upgrade(new ResourceUpgradeEffect(game,
                 new []{game.Gatherers.Miner},
@@ -50,8 +47,7 @@ namespace GoldRush
             /*
             ChainsawsT1 = new Upgrade(new EfficiencyUpgradeEffect(game,
                 new []{game.Gatherers.Lumberjack},
-                0.25));
-            ChainsawsT1.Name = "Chainsaws";
+                0.25),GameConfig.Upgrades.ChainsawsT1);
             All.Add(ChainsawsT1.Id, ChainsawsT1);*/
             #endregion
 
@@ -66,9 +62,18 @@ namespace GoldRush
         /// <summary>
         /// Updates the duration on all buffs.
         /// </summary>
-        public void Update()
+        public void Update(int ms)
         {
-            
+            foreach (var upgradePair in All)
+            {
+                var upgrade = upgradePair.Value;
+
+                if (upgrade.Quantity > 0)
+                    upgrade.Activate();
+
+                if (upgrade.Quantity == 0)
+                    upgrade.Deactivate();
+            }
         }
 
         public Dictionary<int, Upgrade> All = new Dictionary<int, Upgrade>();
@@ -203,15 +208,22 @@ namespace GoldRush
             public override void Activate()
             {
                 foreach (var gatherer in gatherers)
+                {
                     gatherer.PossibleResources.AddRange(resources);
+                    gatherer.RecalculateMiningStuff();
+                }
                   
             }
 
             public override void Deactivate()
             {
                 foreach (var gatherer in gatherers)
+                {
                     foreach (var resource in resources)
                         gatherer.PossibleResources.Remove(resource);
+
+                    gatherer.RecalculateMiningStuff();
+                }
                 
             }
         }

@@ -48,7 +48,7 @@ namespace GoldRush
 
             /*foreach (var item in items)
                 item.Quantity = 100;*/
-            Coins.Quantity = 100000;
+            Coins.Quantity = 500000000;
 
         }
         private List<Item> items = new List<Item>();
@@ -133,7 +133,7 @@ namespace GoldRush
                 _config = config;
             }
 
-            private int quantity;
+            private int quantity { get { return base.Quantity; } set { base.Quantity = value; } }
 
             public override int Quantity
             {
@@ -146,7 +146,20 @@ namespace GoldRush
                         PrestigeTimeTotal += difference;
                         LifeTimeTotal += difference;
                     }
+
                     quantity = value;
+                }
+            }
+
+            public override bool Active
+            {
+                get { return Quantity > 0; }
+                set
+                {
+                    if (value)
+                        if (Quantity <= 0) Quantity = 1;
+                    else
+                        if (Quantity > 0) Quantity = 0;
                 }
             }
 
