@@ -26,8 +26,7 @@ namespace Caroline.Domain
             // Configure validation logic for usernames
             manager.UserValidator = new UserValidator<ApplicationUser>(manager)
             {
-                AllowOnlyAlphanumericUserNames = true,
-                RequireUniqueEmail = true
+                AllowOnlyAlphanumericUserNames = true
             };
 
             // Configure validation logic for passwords

@@ -1,9 +1,11 @@
 ﻿using System.Web.Mvc;
+using Caroline.Api.Mvc;
 
 namespace Caroline.Controllers
 {
     public class GameController : Controller
     {
+        [GenerateAnonymousProfile]
         public ActionResult Index()
         {
             return View();
