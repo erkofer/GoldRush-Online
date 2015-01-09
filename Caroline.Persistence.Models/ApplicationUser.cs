@@ -16,6 +16,8 @@ namespace Caroline.Persistence.Models
             return userIdentity;
         }
 
+        public bool IsAnonymous { get; set; }
+
         public int? GameId { get; set; }
 
         [ForeignKey("GameId")]
