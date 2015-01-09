@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using System.Web;
+using Caroline.Api;
 using Caroline.App;
 using Caroline.App.Models;
 using Microsoft.AspNet.Identity;
@@ -30,7 +31,8 @@ namespace Caroline.Connections
 
         protected override bool AuthorizeRequest(IRequest request)
         {
-            return request.User != null && request.User.Identity.IsAuthenticated;
+            // possibly extremely laggy
+            return AnonymousProfileApi.GenerateAnonymousProfileIfNotAuthenticated(request.GetHttpContext());
         }
 
         private void Socialize(IRequest request, ClientActions actions)

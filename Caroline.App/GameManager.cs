@@ -19,7 +19,7 @@ namespace Caroline.App
                 var games = work.Games;
 
                 // get game save, create it if it doesn't exist
-                var save = await games.GetByUseridAsync(userId) ?? await games.Add(new Game());
+                var save = await games.GetByUseridAsync(userId) ?? await games.AddByUserIdAsync(userId, new Game());
                 var saveData = save.SaveData;
                 var saveObject = saveData != null ? ProtoBufHelpers.Deserialize<SaveState>(saveData) : null;
 
@@ -31,7 +31,8 @@ namespace Caroline.App
                 dataToSend = game.Update(input);
 
                 // save to the database
-                save.SaveData = ProtoBufHelpers.Serialize(game.Save());
+                var saveDto = game.Save();
+                save.SaveData = ProtoBufHelpers.Serialize(saveDto);
                 games.Update(save);
 
                 await work.SaveChangesAsync();

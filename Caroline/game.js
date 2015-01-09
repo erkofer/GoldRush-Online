@@ -709,13 +709,6 @@ var Connection;
         if (msg.Items != null) {
             updateInventory(msg.Items);
         }
-
-        if (msg.StoreItemsUpdate != null) {
-            updateStore(msg.StoreItemsUpdate);
-        }
-        if (msg.StatItemsUpdate != null) {
-            updateStats(msg.StatItemsUpdate);
-        }
     });
     var actions = new Komodo.ClientActions();
     setInterval(function () {
@@ -727,30 +720,19 @@ var Connection;
     }, 1000);
 
     function loadSchema(schema) {
-        for (var i = 0; i < schema.Items.length; i++) {
+        for (var i = 0; i < schema.Items.length; i++)
             Inventory.addItem(schema.Items[i].Id, schema.Items[i].Name, schema.Items[i].Worth);
-            Statistics.addItem(schema.Items[i].Id, schema.Items[i].Name);
-        }
 
         for (var i = 0; i < schema.StoreItems.length; i++) {
             var item = schema.StoreItems[i];
-            Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.MaxQuantity);
+            console.log(item);
+            Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.maxQuantity);
         }
-    }
-
-    function updateStats(items) {
-        for (var i = 0; i < items.length; i++)
-            Statistics.changeStats(items[i].Id, items[i].PrestigeQuantity, items[i].LifeTimeQuantity);
     }
 
     function updateInventory(items) {
         for (var i = 0; i < items.length; i++)
             Inventory.changeQuantity(items[i].Id, items[i].Quantity);
-    }
-
-    function updateStore(items) {
-        for (var i = 0; i < items.length; i++)
-            Store.changeQuantity(items[i].Id, items[i].Quantity);
     }
 
     function sellItem(id, quantity) {
@@ -827,84 +809,6 @@ var Connection;
         return bytes;
     }
 })(Connection || (Connection = {}));
-var Statistics;
-(function (Statistics) {
-    var statsPane;
-    var itemsBody;
-    var items = new Array();
-    var Item = (function () {
-        function Item() {
-        }
-        return Item;
-    })();
-
-    function changeStats(id, prestige, lifetime) {
-        var item = items[id];
-
-        item.prestigeRow.textContent = prestige ? Utils.formatNumber(prestige) : '0';
-        item.alltimeRow.textContent = lifetime ? Utils.formatNumber(lifetime) : '0';
-    }
-    Statistics.changeStats = changeStats;
-
-    function addItem(id, name) {
-        if (!statsPane)
-            draw();
-
-        if (!items[id]) {
-            var item = new Item();
-            items[id] = item;
-
-            var row = itemsBody.insertRow(0);
-            row.classList.add('table-row');
-            item.alltimeRow = row.insertCell(0);
-            item.alltimeRow.style.width = '40%';
-            item.prestigeRow = row.insertCell(0);
-            item.prestigeRow.style.width = '40%';
-            var imageRow = row.insertCell(0);
-            imageRow.style.width = '20%';
-            var image = document.createElement('DIV');
-            image.classList.add('Third-' + Utils.cssifyName(name));
-            image.style.display = 'inline-block';
-            imageRow.appendChild(image);
-        }
-    }
-    Statistics.addItem = addItem;
-
-    function draw() {
-        statsPane = document.createElement('DIV');
-        document.getElementById('paneContainer').appendChild(statsPane);
-        Tabs.registerGameTab(statsPane, 'Statistics');
-
-        statsPane.appendChild(drawItemsTable());
-    }
-
-    function drawItemsTable() {
-        var itemsTable = document.createElement('TABLE');
-
-        var header = itemsTable.createTHead();
-        var titleRow = header.insertRow(0);
-        titleRow.classList.add('table-header');
-        var titleCell = titleRow.insertCell(0);
-        titleCell.textContent = 'Item Statistics';
-        titleCell.setAttribute('colspan', '3');
-
-        var descriptionsRow = header.insertRow(1);
-        descriptionsRow.classList.add('table-subheader');
-        var lifetime = descriptionsRow.insertCell(0);
-        lifetime.textContent = 'Lifetime Quantity';
-        lifetime.style.width = '40%';
-        var prestige = descriptionsRow.insertCell(0);
-        prestige.textContent = 'Prestige Quantity';
-        prestige.style.width = '40%';
-        var item = descriptionsRow.insertCell(0);
-        item.textContent = 'Item';
-        item.style.width = '20%';
-
-        itemsBody = itemsTable.createTBody();
-
-        return itemsTable;
-    }
-})(Statistics || (Statistics = {}));
 var Store;
 (function (Store) {
     var storePane;
@@ -970,7 +874,7 @@ var Store;
             item.price = price;
             item.factor = factor;
             item.name = name;
-            item.maxQuantity = maxQuantity ? maxQuantity : 0;
+            item.maxQuantity = maxQuantity;
 
             var categoryContainer = Store.categories[Category[category]];
             categoryContainer.appendChild(drawItem(item));
@@ -979,25 +883,15 @@ var Store;
     }
     Store.addItem = addItem;
 
-    function changeQuantity(id, quantity) {
-        var item = items[id];
-        item.quantity = quantity;
-        item.container.style.display = (item.quantity >= item.maxQuantity && item.maxQuantity > 0) ? 'none' : 'inline-block';
-        if (item.maxQuantity && item.maxQuantity > 1)
-            item.nameElm.textContent = item.name + ' (' + ((item.quantity) ? item.quantity : 0) + '/' + item.maxQuantity + ')';
-    }
-    Store.changeQuantity = changeQuantity;
-
     function add() {
     }
 
     function drawItem(item) {
         var itemContainer = document.createElement('div');
         itemContainer.classList.add('store-item');
-        item.container = itemContainer;
         var header = document.createElement('div');
         header.classList.add('store-item-header');
-        if (item.maxQuantity <= 1) {
+        if (item.maxQuantity < 1) {
             header.textContent = item.name;
         } else {
             header.textContent = item.name + ' (' + item.quantity + '/' + item.maxQuantity + ')';
