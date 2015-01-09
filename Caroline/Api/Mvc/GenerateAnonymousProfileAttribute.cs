@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using JetBrains.Annotations;
 
 namespace Caroline.Api.Mvc
 {
@@ -27,11 +28,12 @@ namespace Caroline.Api.Mvc
             return AnonymousProfileApi.GenerateAnonymousProfileIfNotAuthenticated(httpContext, UsersSplit, RolesSplit);
         }
 
+        [CanBeNull]
         internal static string[] SplitString(string original)
         {
             // decompiled from AuthorizeAttribute.SplitString()
             if (string.IsNullOrEmpty(original))
-                return new string[0];
+                return null;
             return original.Split(new[]
             {
                 ','
