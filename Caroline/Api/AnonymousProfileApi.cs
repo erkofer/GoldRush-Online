@@ -2,13 +2,16 @@
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Security;
 using Caroline.Domain;
 using Caroline.Extensions;
 using Caroline.Models;
+using Caroline.Persistence;
 using Caroline.Persistence.Models;
 using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Identity.Owin;
 using Newtonsoft.Json;
 
@@ -18,13 +21,51 @@ namespace Caroline.Api
     {
         const string AnonymousProfileCookieName = "GoldRushAnonymousId";
 
-        public static bool GenerateAnonymousProfileIfNotAuthenticated(HttpContextBase httpContext, string[] usernamesWhiteList = null, string[] rolesWhiteList = null)
+        public static bool GenerateAnonymousProfileIfNotAuthenticated(
+            HttpContextBase context, 
+            string[] usernamesWhiteList = null, 
+            string[] rolesWhiteList = null)
         {
-            RegisterAnonymouslyIfLoggedOff(httpContext);
+            RegisterAnonymouslyIfLoggedOff(context);
 
             // assert that the user is whitelisted
-            return (usernamesWhiteList == null || usernamesWhiteList.Length == 0 || usernamesWhiteList.Contains(httpContext.User.Identity.Name))
-                && (rolesWhiteList == null || rolesWhiteList.Length == 0 || rolesWhiteList.Any(httpContext.User.IsInRole));
+            return (usernamesWhiteList == null || usernamesWhiteList.Length == 0 || usernamesWhiteList.Contains(context.User.Identity.Name))
+                && (rolesWhiteList == null || rolesWhiteList.Length == 0 || rolesWhiteList.Any(context.User.IsInRole));
+        }
+
+        public static async Task<bool> TryMigrateAnonymousAccountOrRegister(HttpContextBase context, RegisterViewModel model)
+        {
+            if (model.Password != model.ConfirmPassword)
+                return false;
+
+            using (var work = new UnitOfWork())
+            {
+                if (context.User.Identity.IsAuthenticated)
+                {
+                    // migrate from an anonymous account
+                    var id = context.User.Identity.GetUserId();
+                    var anonUser = await work.Users.Get(id);
+                    if (!anonUser.IsAnonymous)
+                        return false;
+
+                    anonUser.IsAnonymous = false;
+                    anonUser.PasswordHash = new PasswordHasher().HashPassword(model.Password);
+                    anonUser.Email = model.Email;
+                    anonUser.UserName = anonUser.UserName;
+                    work.Users.Update(anonUser);
+                    await work.SaveChangesAsync();
+
+                    return true;
+                }
+
+                // register a new account
+                var store = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>());
+                var user = new ApplicationUser();
+                user.Email = model.Email;
+                user.UserName = model.UserName;
+                var result = await store.CreateAsync(user, model.Password);
+                return result.Succeeded;
+            }
         }
 
         static void RegisterAnonymouslyIfLoggedOff(HttpContextBase context)
@@ -97,4 +138,20 @@ namespace Caroline.Api
             return Convert.ToBase64String(randomBytes);
         }
     }
+
+    //public enum AnonymousAuthentication : byte
+    //{
+    //    /// <summary>
+    //    /// A anonymous profile will be generated if the user is not signed in.
+    //    /// </summary>
+    //    Generate,
+    //    /// <summary>
+    //    /// The user can't be registered. An anonymous profile will be created if they are not signed in.
+    //    /// </summary>
+    //    Require,
+    //    /// <summary>
+    //    /// Only registered users are allowed.
+    //    /// </summary>
+    //    Forbid
+    //}
 }

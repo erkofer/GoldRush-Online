@@ -188,12 +188,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Api\AnonymousProfileApi.cs" />
-    <Compile Include="Api\Mvc\GenerateAnonymousProfileAttribute.cs" />
-    <Compile Include="Api\SignalR\GenerateAnonymousProfileAttribute.cs" />
+    <Compile Include="Api\Mvc\AnonymousProfileAttribute.cs" />
+    <Compile Include="Api\SignalR\AnonymousProfileAttribute.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\Startup.Auth.cs" />
+    <Compile Include="Areas\Api\ApiAreaRegistration.cs" />
+    <Compile Include="Areas\Api\Controllers\AccountController.cs" />
+    <Compile Include="Areas\Api\Models\SuccessViewModel.cs" />
     <Compile Include="Connections\GameConnection.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\GameController.cs" />
@@ -291,6 +294,7 @@
     <Content Include="Content\csharp_options.proto" />
     <Content Include="Content\descriptor.proto" />
     <Content Include="Content\GameState.proto" />
+    <Content Include="Areas\Api\Views\web.config" />
     <None Include="Properties\PublishProfiles\GoldRush.pubxml" />
     <None Include="Scripts\jquery-1.10.2-vsdoc.js" />
     <Content Include="Scripts\ByteBufferAB.js" />
@@ -357,6 +361,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Areas\Api\Views\Shared\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff" />
