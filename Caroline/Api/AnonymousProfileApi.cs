@@ -49,7 +49,7 @@ namespace Caroline.Api
             var cookie = context.Request[AnonymousProfileCookieName];
             AnonymousUserCookie user = null;
             if (cookie != null)
-                user = JsonConvert.DeserializeObject<AnonymousUserCookie>(MachineKey.Unprotect(cookie.GetBytes()).GetString());
+                user = DecryptDto<AnonymousUserCookie>(cookie);
 
             var userManager = context.GetOwinContext().GetUserManager<ApplicationSignInManager>();
             if (user == null)
@@ -80,13 +80,37 @@ namespace Caroline.Api
 
                 var cookie = new HttpCookie(AnonymousProfileCookieName)
                 {
-                    Value = JsonConvert.SerializeObject(anonymousCookie),
+                    Value = EncryptDto(anonymousCookie),
                     Expires = DateTime.MaxValue // expires never
                 };
                 context.Response.AppendCookie(cookie);
 
                 return;
             }
+        }
+
+        static T DecryptDto<T>(string obj)
+            where T : class
+        {
+            try
+            {
+                var encryptedBytes = Convert.FromBase64String(obj);
+                var decryptedBytes = MachineKey.Unprotect(encryptedBytes);
+                var decryptedJson = decryptedBytes.GetString();
+                return JsonConvert.DeserializeObject<T>(decryptedJson);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        static string EncryptDto<T>(T obj)
+        {
+            var json = JsonConvert.SerializeObject(obj);
+            var jsonBytes = json.GetBytes();
+            var encrypted = MachineKey.Protect(jsonBytes);
+            return Convert.ToBase64String(encrypted);
         }
 
         static string GenerateBase64String(int numBytes)

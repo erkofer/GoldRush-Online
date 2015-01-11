@@ -20,6 +20,9 @@ namespace GoldRush
                 game.Items.Gold, game.Items.Opal, game.Items.Jade, game.Items.Topaz
             };
 
+            Player = new Gatherer(game, GameConfig.Gatherers.Player);
+            Player.PossibleResources.AddRange(baseResources);
+
             Miner = new Gatherer(game,GameConfig.Gatherers.Miner);
             Miner.PossibleResources.AddRange(baseResources);
             All.Add(Miner.Id, Miner);
@@ -29,9 +32,29 @@ namespace GoldRush
             Lumberjack.ChanceOfNothing = 300;
             All.Add(Lumberjack.Id, Lumberjack);
 
+            Drill = new Gatherer(game, GameConfig.Gatherers.Drill);
+            Drill.PossibleResources.AddRange(baseResources);
+            Drill.Requires = Miner;
+            All.Add(Drill.Id, Drill);
+
+            Crusher = new Gatherer(game, GameConfig.Gatherers.Crusher);
+            Crusher.PossibleResources.AddRange(baseResources);
+            Crusher.Requires = Drill;
+            All.Add(Crusher.Id, Crusher);
+
+            Excavator = new Gatherer(game, GameConfig.Gatherers.Excavator);
+            Excavator.PossibleResources.AddRange(baseResources);
+            Excavator.Requires = Crusher;
+            All.Add(Excavator.Id, Excavator);
+
             Pumpjack = new Gatherer(game, GameConfig.Gatherers.Pumpjack);
             Pumpjack.GuaranteedResources.Add(game.Items.Oil);
             All.Add(Pumpjack.Id, Pumpjack);
+
+            BigTexan = new Gatherer(game, GameConfig.Gatherers.BigTexan);
+            BigTexan.GuaranteedResources.Add(game.Items.Oil);
+            BigTexan.Requires = Pumpjack;
+            All.Add(BigTexan.Id, BigTexan);
         }
 
         public void Update(int ms)
@@ -42,11 +65,26 @@ namespace GoldRush
             }
         }
 
+        public void Mine()
+        {
+            Mine(1);
+        }
+
+        public void Mine(int iterations)
+        {
+            Player.Mine(1000 * iterations);
+        }
+
         public Dictionary<int,Gatherer> All = new Dictionary<int,Gatherer>();
 
+        public Gatherer Player;
         public Gatherer Miner;
         public Gatherer Lumberjack;
+        public Gatherer Drill;
+        public Gatherer Crusher;
+        public Gatherer Excavator;
         public Gatherer Pumpjack;
+        public Gatherer BigTexan;
 
         internal class Gatherer : GameObjects.GameObject
         {
@@ -127,6 +165,18 @@ namespace GoldRush
             /// Determines when we must recalculate mining stuff.
             /// </summary>
             private bool recalculate=true;
+
+            public override bool Active
+            {
+                get { return Quantity > 0; }
+                set
+                {
+                    if (value)
+                        if (Quantity <= 0) Quantity = 1;
+                        else
+                            if (Quantity > 0) Quantity = 0;
+                }
+            }
 
             /// <summary>
             /// Forces the gatherer to recalculate its mining variables next update.

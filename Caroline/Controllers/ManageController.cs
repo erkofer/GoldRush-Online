@@ -8,6 +8,7 @@ using Caroline.Persistence.Models;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
+using Caroline.Api.Mvc;
 
 namespace Caroline.Controllers
 {

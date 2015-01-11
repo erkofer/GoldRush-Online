@@ -13,6 +13,8 @@ namespace GoldRush
 
         public Upgrades(GameObjects game)
         {
+            var oreMiningMachines = new []{ game.Gatherers.Player, game.Gatherers.Miner, game.Gatherers.Drill, game.Gatherers.Excavator, game.Gatherers.Crusher };
+
             //TODO: Create configurations for upgrades and buffs.-
             this.game = game;
             #region Upgrades
@@ -39,11 +41,22 @@ namespace GoldRush
             All.Add(Botanist.Id, Botanist);
 
             Researcher = new Upgrade(new ResourceUpgradeEffect(game,
-                new []{game.Gatherers.Miner},
+                oreMiningMachines,
                 new []{game.Items.Sapphire,
                     game.Items.Emerald,
                     game.Items.Ruby}),GameConfig.Upgrades.Researcher);
             All.Add(Researcher.Id, Researcher);
+
+            ClickUpgradeT1 = new Upgrade(new BaseEfficiencyUpgradeEffect(game,new[]{game.Gatherers.Player},1),GameConfig.Upgrades.ClickUpgradeT1);
+            All.Add(ClickUpgradeT1.Id, ClickUpgradeT1);
+
+            ClickUpgradeT2 = new Upgrade(new BaseEfficiencyUpgradeEffect(game, new[] { game.Gatherers.Player }, 5), GameConfig.Upgrades.ClickUpgradeT2);
+            ClickUpgradeT2.Requires = ClickUpgradeT1;
+            All.Add(ClickUpgradeT2.Id, ClickUpgradeT2);
+
+            ClickUpgradeT3 = new Upgrade(new BaseEfficiencyUpgradeEffect(game, new[] { game.Gatherers.Player }, 10), GameConfig.Upgrades.ClickUpgradeT3);
+            ClickUpgradeT3.Requires = ClickUpgradeT2;
+            All.Add(ClickUpgradeT3.Id, ClickUpgradeT3);
             /*
             ChainsawsT1 = new Upgrade(new EfficiencyUpgradeEffect(game,
                 new []{game.Gatherers.Lumberjack},
@@ -84,6 +97,10 @@ namespace GoldRush
         public Upgrade Researcher;
         public Upgrade Foreman;
         public Upgrade ChainsawsT1;
+
+        public Upgrade ClickUpgradeT1;
+        public Upgrade ClickUpgradeT2;
+        public Upgrade ClickUpgradeT3;
 
         internal class Upgrade : GameObjects.GameObject
         {
@@ -316,6 +333,33 @@ namespace GoldRush
                 foreach (var gatherer in gatherers)
                     gatherer.ProbabilityModifier -= probability;
                   
+            }
+        }
+
+        class BaseEfficiencyUpgradeEffect : UpgradeEffect
+        {
+            private Gatherers.Gatherer[] gatherers;
+            private double efficiencyIncrease;
+
+            public BaseEfficiencyUpgradeEffect(GameObjects game, Gatherers.Gatherer[] gatherers, double efficiencyIncrease)
+                :base(game)
+            {
+                this.gatherers = gatherers;
+                this.efficiencyIncrease = efficiencyIncrease;
+            }
+
+            public override void Activate()
+            {
+                foreach (var gatherer in gatherers)
+                    gatherer.ResourcesPerSecondBaseIncrease += efficiencyIncrease;
+
+            }
+
+            public override void Deactivate()
+            {
+                foreach (var gatherer in gatherers)
+                    gatherer.ResourcesPerSecondBaseIncrease -= efficiencyIncrease;
+
             }
         }
         #endregion

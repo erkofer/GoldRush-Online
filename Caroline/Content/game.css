@@ -1,12 +1,54 @@
 ﻿#paneContainer {
     font-family:"Courier New", Courier, monospace;
     font-size:12px;
-    background:rgb(220,220,220);
+    padding:0px 25px 25px 25px;
+    overflow:hidden;
+    transition: max-height 0.5s ease, min-height 0.5s ease;
+    background: rgb(220,220,220);
+}
+
+
+body{
+    margin:0!important;
+
+    background-image: url('/Content/background.png');
+    background-repeat:repeat;
+
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 #tabContainer {
     height:34px;
     background:grey;
+}
+
+.Rock{
+    margin:0 auto;
+    transform:scale(0.8);
+    transition:all 0.15s;
+}
+
+.Rock:active{
+    transform:scale(0.95);
+}
+
+.header{
+    background:darkgray;
+    border-bottom:#757575 1px solid;
+}
+
+.tab-area{
+    margin-left:300px;
+}
+
+.sidebar-area{
+    float:left;
+    width:300px;
 }
 
 .button {
@@ -283,6 +325,7 @@
     border:1px solid;
     border-radius:5px;
     height: 100px;
+    position:relative;
 }
 
 .selected-item-image {
@@ -382,6 +425,7 @@
 
 table{
    box-shadow:2px 2px 5px black;
+   border-collapse:collapse;
 }
 
 td {

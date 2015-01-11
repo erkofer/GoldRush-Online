@@ -30,7 +30,7 @@
             var item = new Item();
             items[id] = item;
 
-            var row = <HTMLTableRowElement>itemsBody.insertRow(0);
+            var row = <HTMLTableRowElement>itemsBody.insertRow(itemsBody.rows.length);
             row.classList.add('table-row');
             item.alltimeRow = row.insertCell(0);
             item.alltimeRow.style.width = '40%';

@@ -27,6 +27,8 @@ message ClientActions
 			optional bool Enabled=2;
 		}
 		optional ConfigAction Config=2;
+
+		optional bool SellAll=3;
 	}
 	repeated InventoryAction InventoryActions = 2;
 

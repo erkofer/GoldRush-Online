@@ -56,6 +56,14 @@ namespace GoldRush
 
         public Dictionary<int, Item> All = new Dictionary<int,Item>();
 
+        public void SellAll()
+        {
+            foreach (var item in items)
+                if (item.IncludeInSellAll)
+                    item.Sell(item.Quantity);
+            
+        }
+
         public double WorthModifier
         {
             set
@@ -65,6 +73,15 @@ namespace GoldRush
             }
             get { return items[0].WorthMultiplier; }
         }
+
+        public enum Category
+        {
+            ORE = 1,
+            GEM = 2,
+            INGREDIENT = 3,
+            CRAFTING = 4,
+            POTION = 5
+        };
 
         #region Item Declaration
 
@@ -131,6 +148,7 @@ namespace GoldRush
                 :base(config)
             {
                 _config = config;
+                IncludeInSellAll = false;
             }
 
             private int quantity { get { return base.Quantity; } set { base.Quantity = value; } }
@@ -165,6 +183,11 @@ namespace GoldRush
 
             public int PrestigeTimeTotal { get; set; }
             public int LifeTimeTotal { get; set; }
+
+            public bool IncludeInSellAll { get; set; }
+
+            public Category Category { get { return _config.Category; } }
+
 
             /// <summary>
             /// How much the item is worth at base.

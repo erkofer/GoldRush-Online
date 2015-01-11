@@ -2,47 +2,59 @@
 ///<reference path="tooltip.ts"/>
 ///<reference path="tabs.ts"/>
 module Inventory {
-    var items = new Array<Item>();
+    export var items = new Array<Item>();
     var inventoryPane: HTMLElement;
+    var inventory: HTMLElement;
     var selectedItemPane:HTMLElement;
     var selectedItemImage: HTMLElement;
     var selectedItem:Item;
-    class Item {
+    export class Item {
         id: number;
         name: string;
         quantity: number;
         worth: number;
+        category: Category;
 
         container: HTMLElement;
         worthElm: HTMLElement;
         quantityElm: HTMLElement;
 
-        constructor(id: number, name: string, worth: number) {
+        constructor(id: number, name: string, worth: number, category: Category) {
             this.id = id;
             this.name = name;
             this.worth = worth;
+            this.category = category;
         }
     }
+
+    export enum Category {
+        NFS = 0,
+        ORE = 1,
+        GEM = 2,
+        INGREDIENT = 3,
+        CRAFTING = 4,
+        POTION = 5
+    };
 
     export function getSelectedItemQuantity(): number {
         return selectedItem ? selectedItem.quantity: 0;
     }
 
-    export function selectItem(id: number) {
+    export function selectItem(id?: number) {
         if (id) {
             if (selectedItem != null) {
                 selectedItemImage.classList.remove(Utils.cssifyName(selectedItem.name));
             }
             selectedItem = items[id];
             selectedItemImage.classList.add(Utils.cssifyName(selectedItem.name));
-            selectedItemPane.style.display = 'block';
             limitTextQuantity();
         }
         else {
             selectedItemImage.classList.remove(Utils.cssifyName(selectedItem.name));
             selectedItem = null;
-            selectedItemPane.style.display = 'none';
         }
+
+        selectedItemPane.style.display = selectedItem == null ? 'none' : 'block';
     }
 
     export function sellSelectedItem(quantity?: number) {
@@ -69,28 +81,39 @@ module Inventory {
         if (!inventoryPane)
             draw();
 
-        inventoryPane.appendChild(drawItem(item));
+        inventory.appendChild(drawItem(item));
     }
 
     function draw() {
+        // SELECTED ITEM HEADER
         inventoryPane = document.createElement('DIV');
         document.getElementById('paneContainer').appendChild(inventoryPane);
         selectedItemPane = document.createElement('DIV');
         selectedItemPane.classList.add('selected-item');
+        selectedItemPane.style.display = 'none';
+        var selectedItemPaneCloser = document.createElement('SPAN');
+        selectedItemPaneCloser.textContent = 'x';
+        selectedItemPaneCloser.style.top = '0px';
+        selectedItemPaneCloser.style.right = '3px';
+        selectedItemPaneCloser.style.position = 'absolute';
+        selectedItemPaneCloser.addEventListener('click', function () {
+            Inventory.selectItem();
+        });
+        selectedItemPane.appendChild(selectedItemPaneCloser);
+
         selectedItemImage = document.createElement('DIV');
         selectedItemImage.classList.add('selected-item-image');
         var selectedItemQuantity = <HTMLInputElement>document.createElement('INPUT');
         selectedItemQuantity.id = 'selecteditemquantity';
         selectedItemQuantity.type = 'text';
+        selectedItemQuantity.style.height = '18px';
         selectedItemQuantity.classList.add('selected-item-quantity');
         selectedItemQuantity.addEventListener('input', function () {
             limitTextQuantity();
         });
 
-        var sellItems = <HTMLInputElement>document.createElement('INPUT');
-        sellItems.type = 'button';
+        var sellItems = <HTMLInputElement>Utils.createButton('Sell', '');
         sellItems.classList.add('selected-item-quantity');
-        sellItems.value = 'Sell';
         sellItems.addEventListener('click', function () {
             var textbox = <HTMLInputElement>document.getElementById('selecteditemquantity');
             var quantity = +textbox.value;
@@ -100,10 +123,8 @@ module Inventory {
             limitTextQuantity();
         });
         
-        var sellAllItems = <HTMLInputElement>document.createElement('INPUT');
-        sellAllItems.type = 'button';
+        var sellAllItems = <HTMLInputElement>Utils.createButton('Sell all', '');
         sellAllItems.classList.add('selected-item-quantity');
-        sellAllItems.value = 'Sell all';
         sellAllItems.addEventListener('click', function () {
             Inventory.sellAllSelectedItem();
             limitTextQuantity();
@@ -116,8 +137,33 @@ module Inventory {
         selectedItemPane.appendChild(sellItems);
         selectedItemPane.appendChild(selectedItemQuantity);
         inventoryPane.appendChild(selectedItemPane);
+        // CONFIG CONTROLS
+        var configDiv = document.createElement('DIV');
+        configDiv.style.textAlign = 'center';
+        var configPanel = document.createElement('DIV');
+        configPanel.style.display = 'inline-block';
+        var sellAll = <HTMLInputElement>Utils.createButton('Sell (...)', '');
+        sellAll.addEventListener('click', function () {
+            Connection.sellAllItems();
+        });
+        var sellAllConfig = <HTMLInputElement>Utils.createButton('...','');
+        sellAllConfig.addEventListener('click', function () {
+            toggleConfig();
+        });
+        configPanel.appendChild(sellAll);
+        configPanel.appendChild(sellAllConfig);
+        configDiv.appendChild(configPanel);
+        inventoryPane.appendChild(configDiv);
+        // CONFIG TABLE
+
+        inventory = document.createElement('DIV');
+        inventoryPane.appendChild(inventory);
 
         Tabs.registerGameTab(inventoryPane,'Inventory');
+    }
+
+    function toggleConfig() {
+
     }
 
     function drawItem(item: Item): HTMLElement {
@@ -162,9 +208,9 @@ module Inventory {
         return itemElement;
     }
 
-    export function addItem(id: number, name: string, worth: number) {
+    export function addItem(id: number, name: string, worth: number, category: number) {
         if(!items[id]) // If we haven't already added this item.
-            add(new Item(id, name, worth));
+            add(new Item(id, name, worth,category));
     }
 
     export function changeQuantity(id: number, quantity: number) {

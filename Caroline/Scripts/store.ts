@@ -1,7 +1,7 @@
 ﻿module Store {
     var storePane:HTMLElement;
     var items = new Array<StoreItem>();
-    export var categories = new Array<HTMLElement>();
+    var categories = new Array<HTMLElement>();
     export enum Category {
         MINING=1,
 		MACHINES=2,
@@ -63,6 +63,7 @@
     export function addItem(id: number, category: Category, price: number, factor: number, name: string, maxQuantity:number) {
         if (!storePane)
             draw();
+
         if (!items[id]) { // if we haven't already drawn this item.
             var item = new StoreItem();
             item.id = id;
@@ -73,6 +74,9 @@
             item.maxQuantity = maxQuantity ? maxQuantity : 0;
 
             var categoryContainer = categories[Category[category]];
+            if (categoryContainer == null) {
+                categoryContainer = categories["MINING"];
+            }
             categoryContainer.appendChild(drawItem(item));
             items[id] = item;
         }
@@ -81,7 +85,7 @@
     export function changeQuantity(id: number, quantity: number) {
         var item = items[id];
         item.quantity = quantity;
-        item.container.style.display = (item.quantity >= item.maxQuantity && item.maxQuantity > 0) ? 'none' : 'inline-block';
+        item.container.style.display = (item.quantity == -1 || item.quantity >= item.maxQuantity && item.maxQuantity > 0) ? 'none' : 'inline-block';
         if (item.maxQuantity && item.maxQuantity > 1)
             item.nameElm.textContent = item.name + ' (' + ((item.quantity) ? item.quantity : 0) + '/' + item.maxQuantity + ')';
         
@@ -142,7 +146,7 @@
             var quantityInput = <HTMLInputElement>document.createElement('INPUT');
             quantityInput.type = 'TEXT';
             quantityInput.style.width = '40px';
-            quantityInput.style.height = '21px';
+            quantityInput.style.height = '15px';
             buttonContainer.appendChild(quantityInput);
             button.addEventListener('click', function () {
                 if(Utils.isNumber(quantityInput.value))

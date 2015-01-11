@@ -1,5 +1,19 @@
 ﻿var Utils;
 (function (Utils) {
+    function addEvent(elem, type, eventHandle) {
+        if (elem == null || typeof (elem) == 'undefined')
+            return;
+        if (elem.addEventListener) {
+            elem.addEventListener(type, eventHandle, false);
+        } else if (elem.attachEvent) {
+            elem.attachEvent("on" + type, eventHandle);
+        } else {
+            elem["on" + type] = eventHandle;
+        }
+    }
+    Utils.addEvent = addEvent;
+    ;
+
     function cssSwap(element, initialVal, finalVal) {
         if (element.classList.contains(initialVal))
             element.classList.remove(initialVal);
@@ -91,7 +105,11 @@
 var Tabs;
 (function (Tabs) {
     var lowestTabContainerId = 0;
+    var tabContainer = document.getElementById("paneContainer");
+    Tabs.bottomPadding = 200;
     var tabContainers = new Array();
+    var selectedTab;
+
     var TabContainer = (function () {
         function TabContainer(container) {
             this.container = container;
@@ -151,8 +169,25 @@ var Tabs;
     }
     Tabs.registerGameTab = registerGameTab;
 
+    function updateGameTabs() {
+        if (selectedTab) {
+            var height = selectedTab.scrollHeight;
+            if (height > window.innerHeight - Tabs.bottomPadding) {
+                height = window.innerHeight - Tabs.bottomPadding;
+            }
+            tabContainer.style.minHeight = height + 'px';
+            tabContainer.style.maxHeight = height + 'px';
+            tabContainer.style.overflowY = height >= window.innerHeight - Tabs.bottomPadding ? 'scroll' : 'hidden';
+        }
+    }
+    Tabs.updateGameTabs = updateGameTabs;
+
+    Utils.addEvent(window, 'resize', Tabs.updateGameTabs);
+    setInterval(updateGameTabs, 20);
+
     function activateTab(containerId, tabId) {
         tabContainers[containerId].activate(tabId);
+        updateGameTabs();
     }
     Tabs.activateTab = activateTab;
 
@@ -167,6 +202,7 @@ var Tabs;
         Tab.prototype.activate = function () {
             Utils.cssSwap(this.button, 'inactive', 'active');
             this.pane.style.display = 'block';
+            selectedTab = this.pane;
         };
         return Tab;
     })();
@@ -524,19 +560,33 @@ var tooltip;
 ///<reference path="tabs.ts"/>
 var Inventory;
 (function (Inventory) {
-    var items = new Array();
+    Inventory.items = new Array();
     var inventoryPane;
+    var inventory;
     var selectedItemPane;
     var selectedItemImage;
     var selectedItem;
     var Item = (function () {
-        function Item(id, name, worth) {
+        function Item(id, name, worth, category) {
             this.id = id;
             this.name = name;
             this.worth = worth;
+            this.category = category;
         }
         return Item;
     })();
+    Inventory.Item = Item;
+
+    (function (Category) {
+        Category[Category["NFS"] = 0] = "NFS";
+        Category[Category["ORE"] = 1] = "ORE";
+        Category[Category["GEM"] = 2] = "GEM";
+        Category[Category["INGREDIENT"] = 3] = "INGREDIENT";
+        Category[Category["CRAFTING"] = 4] = "CRAFTING";
+        Category[Category["POTION"] = 5] = "POTION";
+    })(Inventory.Category || (Inventory.Category = {}));
+    var Category = Inventory.Category;
+    ;
 
     function getSelectedItemQuantity() {
         return selectedItem ? selectedItem.quantity : 0;
@@ -548,15 +598,15 @@ var Inventory;
             if (selectedItem != null) {
                 selectedItemImage.classList.remove(Utils.cssifyName(selectedItem.name));
             }
-            selectedItem = items[id];
+            selectedItem = Inventory.items[id];
             selectedItemImage.classList.add(Utils.cssifyName(selectedItem.name));
-            selectedItemPane.style.display = 'block';
             limitTextQuantity();
         } else {
             selectedItemImage.classList.remove(Utils.cssifyName(selectedItem.name));
             selectedItem = null;
-            selectedItemPane.style.display = 'none';
         }
+
+        selectedItemPane.style.display = selectedItem == null ? 'none' : 'block';
     }
     Inventory.selectItem = selectItem;
 
@@ -581,33 +631,44 @@ var Inventory;
     }
 
     function add(item) {
-        items[item.id] = item;
+        Inventory.items[item.id] = item;
 
         if (!inventoryPane)
             draw();
 
-        inventoryPane.appendChild(drawItem(item));
+        inventory.appendChild(drawItem(item));
     }
 
     function draw() {
+        // SELECTED ITEM HEADER
         inventoryPane = document.createElement('DIV');
         document.getElementById('paneContainer').appendChild(inventoryPane);
         selectedItemPane = document.createElement('DIV');
         selectedItemPane.classList.add('selected-item');
+        selectedItemPane.style.display = 'none';
+        var selectedItemPaneCloser = document.createElement('SPAN');
+        selectedItemPaneCloser.textContent = 'x';
+        selectedItemPaneCloser.style.top = '0px';
+        selectedItemPaneCloser.style.right = '3px';
+        selectedItemPaneCloser.style.position = 'absolute';
+        selectedItemPaneCloser.addEventListener('click', function () {
+            Inventory.selectItem();
+        });
+        selectedItemPane.appendChild(selectedItemPaneCloser);
+
         selectedItemImage = document.createElement('DIV');
         selectedItemImage.classList.add('selected-item-image');
         var selectedItemQuantity = document.createElement('INPUT');
         selectedItemQuantity.id = 'selecteditemquantity';
         selectedItemQuantity.type = 'text';
+        selectedItemQuantity.style.height = '18px';
         selectedItemQuantity.classList.add('selected-item-quantity');
         selectedItemQuantity.addEventListener('input', function () {
             limitTextQuantity();
         });
 
-        var sellItems = document.createElement('INPUT');
-        sellItems.type = 'button';
+        var sellItems = Utils.createButton('Sell', '');
         sellItems.classList.add('selected-item-quantity');
-        sellItems.value = 'Sell';
         sellItems.addEventListener('click', function () {
             var textbox = document.getElementById('selecteditemquantity');
             var quantity = +textbox.value;
@@ -617,10 +678,8 @@ var Inventory;
             limitTextQuantity();
         });
 
-        var sellAllItems = document.createElement('INPUT');
-        sellAllItems.type = 'button';
+        var sellAllItems = Utils.createButton('Sell all', '');
         sellAllItems.classList.add('selected-item-quantity');
-        sellAllItems.value = 'Sell all';
         sellAllItems.addEventListener('click', function () {
             Inventory.sellAllSelectedItem();
             limitTextQuantity();
@@ -633,7 +692,32 @@ var Inventory;
         selectedItemPane.appendChild(selectedItemQuantity);
         inventoryPane.appendChild(selectedItemPane);
 
+        // CONFIG CONTROLS
+        var configDiv = document.createElement('DIV');
+        configDiv.style.textAlign = 'center';
+        var configPanel = document.createElement('DIV');
+        configPanel.style.display = 'inline-block';
+        var sellAll = Utils.createButton('Sell (...)', '');
+        sellAll.addEventListener('click', function () {
+            Connection.sellAllItems();
+        });
+        var sellAllConfig = Utils.createButton('...', '');
+        sellAllConfig.addEventListener('click', function () {
+            toggleConfig();
+        });
+        configPanel.appendChild(sellAll);
+        configPanel.appendChild(sellAllConfig);
+        configDiv.appendChild(configPanel);
+        inventoryPane.appendChild(configDiv);
+
+        // CONFIG TABLE
+        inventory = document.createElement('DIV');
+        inventoryPane.appendChild(inventory);
+
         Tabs.registerGameTab(inventoryPane, 'Inventory');
+    }
+
+    function toggleConfig() {
     }
 
     function drawItem(item) {
@@ -681,16 +765,16 @@ var Inventory;
         return itemElement;
     }
 
-    function addItem(id, name, worth) {
-        if (!items[id])
-            add(new Item(id, name, worth));
+    function addItem(id, name, worth, category) {
+        if (!Inventory.items[id])
+            add(new Item(id, name, worth, category));
     }
     Inventory.addItem = addItem;
 
     function changeQuantity(id, quantity) {
-        items[id].quantityElm.textContent = Utils.formatNumber(quantity);
-        items[id].quantity = quantity;
-        items[id].container.style.display = quantity == 0 ? 'none' : 'inline-block';
+        Inventory.items[id].quantityElm.textContent = Utils.formatNumber(quantity);
+        Inventory.items[id].quantity = quantity;
+        Inventory.items[id].container.style.display = quantity == 0 ? 'none' : 'inline-block';
         limitTextQuantity();
     }
     Inventory.changeQuantity = changeQuantity;
@@ -744,7 +828,7 @@ var Connection;
 
     function loadSchema(schema) {
         for (var i = 0; i < schema.Items.length; i++) {
-            Inventory.addItem(schema.Items[i].Id, schema.Items[i].Name, schema.Items[i].Worth);
+            Inventory.addItem(schema.Items[i].Id, schema.Items[i].Name, schema.Items[i].Worth, schema.Items[i].Category);
             Statistics.addItem(schema.Items[i].Id, schema.Items[i].Name);
         }
 
@@ -790,6 +874,9 @@ var Connection;
     Connection.purchaseItem = purchaseItem;
 
     function sellAllItems() {
+        var inventoryAction = new Komodo.ClientActions.InventoryAction();
+        inventoryAction.SellAll = true;
+        actions.InventoryActions.push(inventoryAction);
     }
     Connection.sellAllItems = sellAllItems;
 
@@ -855,7 +942,7 @@ var Store;
 (function (Store) {
     var storePane;
     var items = new Array();
-    Store.categories = new Array();
+    var categories = new Array();
     (function (Category) {
         Category[Category["MINING"] = 1] = "MINING";
         Category[Category["MACHINES"] = 2] = "MACHINES";
@@ -892,7 +979,7 @@ var Store;
     function drawCategory(name) {
         var categoryContainer = document.createElement('div');
         categoryContainer.classList.add('store-category');
-        Store.categories[name] = categoryContainer;
+        categories[name] = categoryContainer;
 
         var categoryHeader = document.createElement('div');
         categoryHeader.textContent = name;
@@ -909,6 +996,7 @@ var Store;
     function addItem(id, category, price, factor, name, maxQuantity) {
         if (!storePane)
             draw();
+
         if (!items[id]) {
             var item = new StoreItem();
             item.id = id;
@@ -918,7 +1006,10 @@ var Store;
             item.name = name;
             item.maxQuantity = maxQuantity ? maxQuantity : 0;
 
-            var categoryContainer = Store.categories[Category[category]];
+            var categoryContainer = categories[Category[category]];
+            if (categoryContainer == null) {
+                categoryContainer = categories["MINING"];
+            }
             categoryContainer.appendChild(drawItem(item));
             items[id] = item;
         }
@@ -928,7 +1019,7 @@ var Store;
     function changeQuantity(id, quantity) {
         var item = items[id];
         item.quantity = quantity;
-        item.container.style.display = (item.quantity >= item.maxQuantity && item.maxQuantity > 0) ? 'none' : 'inline-block';
+        item.container.style.display = (item.quantity == -1 || item.quantity >= item.maxQuantity && item.maxQuantity > 0) ? 'none' : 'inline-block';
         if (item.maxQuantity && item.maxQuantity > 1)
             item.nameElm.textContent = item.name + ' (' + ((item.quantity) ? item.quantity : 0) + '/' + item.maxQuantity + ')';
     }
@@ -989,7 +1080,7 @@ var Store;
             var quantityInput = document.createElement('INPUT');
             quantityInput.type = 'TEXT';
             quantityInput.style.width = '40px';
-            quantityInput.style.height = '21px';
+            quantityInput.style.height = '15px';
             buttonContainer.appendChild(quantityInput);
             button.addEventListener('click', function () {
                 if (Utils.isNumber(quantityInput.value))
@@ -1034,7 +1125,7 @@ var Statistics;
             var item = new Item();
             items[id] = item;
 
-            var row = itemsBody.insertRow(0);
+            var row = itemsBody.insertRow(itemsBody.rows.length);
             row.classList.add('table-row');
             item.alltimeRow = row.insertCell(0);
             item.alltimeRow.style.width = '40%';

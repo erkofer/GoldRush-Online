@@ -1,5 +1,6 @@
 ﻿using Caroline.App.Models;
 using System;
+using System.Diagnostics;
 
 namespace GoldRush
 {
@@ -9,7 +10,10 @@ namespace GoldRush
         {
             objs = new GameObjects();
             lastUpdate = UnixTimeNow();
+            sendSchema = true;
         }
+
+        bool sendSchema;
         public GameObjects objs;
         long lastUpdate;
 
@@ -35,10 +39,20 @@ namespace GoldRush
                 {
                     for (var i = 0; i < message.InventoryActions.Count; i++)
                     {
-                        if (message.InventoryActions[i].Sell != null)
+                        var msg = message.InventoryActions[i];
+                        if (msg.Sell != null)
                         {
-                            var item = objs.Items.All[message.InventoryActions[i].Sell.Id];
-                            item.Sell(message.InventoryActions[i].Sell.Quantity);
+                            var item = objs.Items.All[msg.Sell.Id];
+                            item.Sell(msg.Sell.Quantity);
+                        }
+                        if(msg.Config != null)
+                        {
+                            var item = objs.Items.All[msg.Config.Id];
+                            item.IncludeInSellAll = msg.Config.Enabled;;
+                        }
+                        if(msg.SellAll == true)
+                        {
+                            objs.Items.SellAll();
                         }
                     }
                 }
@@ -58,11 +72,14 @@ namespace GoldRush
             // SEND DATA TO CLIENT
             var state = new GameState();
 
-            var sendSchema = true;
+            
+          
+
             // SCHEMATIC
             if (sendSchema)
             {
                 var schema = new GameState.Schematic();
+                sendSchema = false;
                 // INVENTORY
                 foreach (var item in objs.Items.All)
                 {
@@ -70,6 +87,7 @@ namespace GoldRush
                     schemaItem.Id = item.Value.Id;
                     schemaItem.Name = item.Value.Name;
                     schemaItem.Worth = item.Value.Worth;
+                    schemaItem.Category = (GameState.Schematic.SchemaItem.Section)item.Value.Category;
                     schema.Items.Add(schemaItem);
                 }
                 // STORE
@@ -82,6 +100,7 @@ namespace GoldRush
                     schemaItem.Factor = item.Value.Factor;
                     schemaItem.MaxQuantity = item.Value.MaxQuantity;
                     schemaItem.Category = (GameState.Schematic.SchemaStoreItem.Section)item.Value.Category;
+
                     schema.StoreItems.Add(schemaItem);
                 }
 
@@ -103,7 +122,9 @@ namespace GoldRush
 
                 state.StatItemsUpdate.Add(stateStatsItem);
                 state.Items.Add(stateItem);
+
             }
+            
             
 
 
@@ -115,6 +136,9 @@ namespace GoldRush
                 objs.All.TryGetValue(item.Key,out gameobject);
                 stateStoreItem.Id = gameobject.Id;
                 stateStoreItem.Quantity = gameobject.Quantity;
+
+                if (gameobject.Requires != null && gameobject.Requires.Active == false)// if the gameobject requires something and is not active.
+                    stateStoreItem.Quantity = -1;
 
                 state.StoreItemsUpdate.Add(stateStoreItem);
             }
@@ -131,12 +155,12 @@ namespace GoldRush
                 var stateItem = new SaveState.Item();
                 var toSaveItem = item.Value;
                 stateItem.Id = toSaveItem.Id;
-                stateItem.Quantity = toSaveItem.Value;
+                stateItem.Quantity = toSaveItem.Quantity;
                 stateItem.PrestigeQuantity = toSaveItem.PrestigeTimeTotal;
                 stateItem.AlltimeQuantity = toSaveItem.LifeTimeTotal;
                 saveState.Items.Add(stateItem);
             }
-            return new SaveState();
+            return saveState;
         }
 
         public void Load(SaveState save)

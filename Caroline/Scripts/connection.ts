@@ -43,7 +43,7 @@ module Connection {
 
     function loadSchema(schema: any) {
         for (var i = 0; i < schema.Items.length; i++) {
-            Inventory.addItem(schema.Items[i].Id, schema.Items[i].Name, schema.Items[i].Worth);
+            Inventory.addItem(schema.Items[i].Id, schema.Items[i].Name, schema.Items[i].Worth, schema.Items[i].Category);
             Statistics.addItem(schema.Items[i].Id, schema.Items[i].Name);
         }
 
@@ -87,7 +87,9 @@ module Connection {
     }
 
     export function sellAllItems() {
-
+        var inventoryAction = new Komodo.ClientActions.InventoryAction();
+        inventoryAction.SellAll = true;
+        actions.InventoryActions.push(inventoryAction);
     }
 
     export function sendGlobalMessage(message: string) {

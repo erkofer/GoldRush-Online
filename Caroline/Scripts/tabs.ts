@@ -1,6 +1,10 @@
 ﻿module Tabs {
     var lowestTabContainerId: number = 0;
+    var tabContainer = document.getElementById("paneContainer");
+    export var bottomPadding = 200;
     var tabContainers = new Array<TabContainer>();
+    var selectedTab:HTMLElement; 
+   
     class TabContainer {
         tabs: Array<Tab>;
         container: HTMLElement;
@@ -52,21 +56,37 @@
             this.tabs[id].activate();
         }
 
-        css(id:number,className: string) {
+        css(id: number, className: string) {
             this.tabs[id].button.classList.add(className);
         }
     }
 
     var gameTabs = new TabContainer(document.getElementById('tabContainer'));
 
-    export function registerGameTab(pane:HTMLElement,css?:string) {
+    export function registerGameTab(pane: HTMLElement, css?: string) {
         var id = gameTabs.newTab(pane);
-        if(css)
+        if (css)
             gameTabs.css(id, css);
     }
 
+    export function updateGameTabs() {
+        if (selectedTab) {
+            var height = selectedTab.scrollHeight;
+            if (height > window.innerHeight - bottomPadding) {
+                height = window.innerHeight - bottomPadding;
+            }
+            tabContainer.style.minHeight = height + 'px';
+            tabContainer.style.maxHeight = height + 'px';
+            tabContainer.style.overflowY = height >= window.innerHeight - bottomPadding ? 'scroll' : 'hidden';
+        }
+    }
+
+    Utils.addEvent(window, 'resize', Tabs.updateGameTabs);
+    setInterval(updateGameTabs, 20);
+
     export function activateTab(containerId: number, tabId: number) {
         tabContainers[containerId].activate(tabId);
+        updateGameTabs();
     }
 
     class Tab {
@@ -81,6 +101,7 @@
         activate() {
             Utils.cssSwap(this.button, 'inactive', 'active');
             this.pane.style.display = 'block';
+            selectedTab = this.pane;
         }
     }
 }
