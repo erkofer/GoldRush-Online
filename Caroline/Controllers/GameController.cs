@@ -5,7 +5,7 @@ namespace Caroline.Controllers
 {
     public class GameController : Controller
     {
-        [GenerateAnonymousProfile]
+        [AnonymousProfile]
         public ActionResult Index()
         {
             return View();

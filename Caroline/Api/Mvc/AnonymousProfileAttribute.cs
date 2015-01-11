@@ -8,7 +8,7 @@ namespace Caroline.Api.Mvc
     /// <summary>
     /// If the user is not logged in, creates a profile whos username and password are saved in a cookie.
     /// </summary>
-    public class GenerateAnonymousProfileAttribute : AuthorizeAttribute
+    public class AnonymousProfileAttribute : AuthorizeAttribute
     {
         private string[] _usersSplit;
         private string[] _rolesSplit;
