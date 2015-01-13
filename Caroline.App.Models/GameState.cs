@@ -87,7 +87,7 @@
                 {
                     if (message == null)
                         message = new ChatMessage();
-                    message = new ChatMessage { Text = Text };
+                    message.Text = Text;
                 }
                 if (oldObject.Sender != Sender)
                 {
@@ -115,6 +115,7 @@
         {
             public Schematic Compress(Schematic oldObject)
             {
+                // create it eagerly because we are compressing lists
                 var schematic = new Schematic();
                 CompressableHelpers.CompressList(_Items, oldObject._Items, schematic._Items);
                 CompressableHelpers.CompressList(_StoreItems, oldObject._StoreItems, schematic._StoreItems);

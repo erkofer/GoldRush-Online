@@ -38,13 +38,14 @@ namespace Caroline.App
                 await work.SaveChangesAsync();
             }
 
-            if(dataToSend == null)
+            if (dataToSend == null)
                 dataToSend = new GameState();
 
             // minify the GameState by only sending differences since the last state
             var previousState = _gameStateCache.GetGameData(sessionGuid);
             _gameStateCache.SetGameData(sessionGuid, dataToSend);
-            // todo: build deep, minified copy by looking at differences between them via reflection
+            if (previousState != null)
+                dataToSend = dataToSend.Compress(previousState);
             return dataToSend;
         }
     }
