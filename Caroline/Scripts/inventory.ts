@@ -7,7 +7,10 @@ module Inventory {
     var inventory: HTMLElement;
     var selectedItemPane:HTMLElement;
     var selectedItemImage: HTMLElement;
-    var selectedItem:Item;
+    var selectedItem: Item;
+    //var configDiv;
+    var configTableBody: HTMLElement;
+    var configTableContainer:HTMLElement;
     export class Item {
         id: number;
         name: string;
@@ -142,28 +145,66 @@ module Inventory {
         configDiv.style.textAlign = 'center';
         var configPanel = document.createElement('DIV');
         configPanel.style.display = 'inline-block';
-        var sellAll = <HTMLInputElement>Utils.createButton('Sell (...)', '');
+        var sellAll = Utils.createButton('Sell (...)', '');
         sellAll.addEventListener('click', function () {
             Connection.sellAllItems();
         });
-        var sellAllConfig = <HTMLInputElement>Utils.createButton('...','');
+        var sellAllConfig = Utils.createButton('...','');
         sellAllConfig.addEventListener('click', function () {
-            toggleConfig();
+            Inventory.toggleConfig();
         });
         configPanel.appendChild(sellAll);
         configPanel.appendChild(sellAllConfig);
         configDiv.appendChild(configPanel);
         inventoryPane.appendChild(configDiv);
         // CONFIG TABLE
+        configTableContainer = document.createElement('DIV');
+        configTableContainer.classList.add('config-container');
+        configTableContainer.classList.add('closed');
+        var configTable = document.createElement('TABLE');
+        configTable.classList.add('config-table');
+        configTableContainer.appendChild(configTable);
+        
+        var header = (<HTMLTableElement>configTable).createTHead();
+        var titleRow = (<HTMLTableElement>header).insertRow(0);
+        var realTitleRow = (<HTMLTableElement>header).insertRow(0);
+        realTitleRow.classList.add('table-header');
+        var titleCell = (<HTMLTableRowElement>realTitleRow).insertCell(0);
+        titleCell.textContent = 'Inventory Configuration';
+        titleCell.setAttribute('colspan', '10');
+        titleRow.classList.add('table-subheader');
+        // TODO: finish config table
+        for (var enumMember in Category) {
+            var isValueProperty = parseInt(enumMember, 10) >= 0
+            if (isValueProperty) {
+                if (Category[enumMember] != "NFS") { // if the item is in fact for sale.
+                    var configCell = (<HTMLTableRowElement>titleRow).insertCell((<HTMLTableRowElement>titleRow).cells.length);
+                    configCell.classList.add('config-cell-check');
+                    
+
+                    var titleCell = (<HTMLTableRowElement>titleRow).insertCell((<HTMLTableRowElement>titleRow).cells.length);
+                    titleCell.classList.add('config-cell-name');
+                    titleCell.textContent = Category[enumMember];
+                }
+            }
+        }
+        configTableBody = (<HTMLTableElement>configTable).createTBody();
 
         inventory = document.createElement('DIV');
+        inventory.style.position = 'relative';
+        inventory.appendChild(configTableContainer);
         inventoryPane.appendChild(inventory);
 
-        Tabs.registerGameTab(inventoryPane,'Inventory');
+
+        Tabs.registerGameTab(inventoryPane, 'Inventory');
     }
 
-    function toggleConfig() {
-
+    export function toggleConfig() {
+        if (configTableContainer.classList.contains('closed')) {
+            configTableContainer.classList.remove('closed')
+        }
+        else 
+            configTableContainer.classList.add('closed')
     }
 
     function drawItem(item: Item): HTMLElement {
@@ -204,6 +245,66 @@ module Inventory {
         itemQuantity.classList.add("item-text");
         itemQuantity.textContent = Utils.formatNumber(0);
         itemElement.appendChild(itemQuantity);
+        // CONFIG TABLE
+        if (item.category != null) {
+            var selectedItemCell;
+            var selectedConfigCell;
+            var rows = (<HTMLTableElement>configTableBody).rows.length;
+            var cellIndex = item.category;
+            cellIndex *= 2;
+            cellIndex--;
+
+            for (var i = 0; i < rows; i++) {
+                // FIX THIS.
+                var testCell = (<HTMLTableElement>(<HTMLTableElement>configTableBody).rows[i]).cells[cellIndex];
+                if (testCell && testCell.childElementCount == 0) { // if we have an empty place to write.
+                    selectedItemCell = (<HTMLTableElement>(<HTMLTableElement>configTableBody).rows[i]).cells[cellIndex];
+                    selectedConfigCell = (<HTMLTableElement>(<HTMLTableElement>configTableBody).rows[i]).cells[cellIndex - 1];
+                    break;
+                }
+            }
+            if (!selectedItemCell) { // we need a new row.
+                var row = (<HTMLTableElement>configTableBody).insertRow((<HTMLTableElement>configTableBody).rows.length);
+                row.classList.add('table-row');
+                for (var enumMember in Category) {
+                    var isValueProperty = parseInt(enumMember, 10) >= 0
+                    if (isValueProperty) {
+                        if (Category[enumMember] != "NFS") { // if the item is in fact for sale.
+                            var configCell = (<HTMLTableRowElement>row).insertCell((<HTMLTableRowElement>row).cells.length);
+                            configCell.classList.add('config-cell-check');
+
+                            var titleCell = (<HTMLTableRowElement>row).insertCell((<HTMLTableRowElement>row).cells.length);
+                            titleCell.classList.add('config-cell-name');
+                        }
+                    }
+                }
+                selectedItemCell = (<HTMLTableElement>row).cells[cellIndex];
+                selectedConfigCell = (<HTMLTableElement>row).cells[cellIndex-1];
+            }
+            for (var curRow = 0; curRow < rows; curRow++) {
+                var inspectedRow = (<HTMLTableElement>configTableBody).rows[i];
+                var cells = (<HTMLTableElement>inspectedRow).cells.length;
+                for (var curCell = 0; curCell < cells; curCell++) {
+
+                }
+            }
+
+            var nameAndImage = document.createElement('DIV');
+            nameAndImage.classList.add('item-text');
+            var nameSpan = document.createElement('SPAN');
+            nameSpan.style.verticalAlign = 'top';
+            var image = document.createElement('DIV');
+            image.classList.add('Third-' + Utils.cssifyName(item.name));
+            image.style.display = 'inline-block';
+            nameSpan.textContent = item.name;
+            nameAndImage.appendChild(image);
+            nameAndImage.appendChild(nameSpan);
+            (<HTMLElement>selectedItemCell).appendChild(nameAndImage);
+            var configChecker = <HTMLInputElement>document.createElement('INPUT');
+            configChecker.type = 'CHECKBOX';
+            (<HTMLElement>selectedConfigCell).appendChild(configChecker);
+
+        }
 
         return itemElement;
     }

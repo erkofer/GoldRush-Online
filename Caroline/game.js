@@ -474,10 +474,9 @@ var Tabs;
             tab.button = button;
 
             if (this.lowestId == 0) {
-                tab.button.classList.add('active');
+                tab.activate();
             } else {
-                tab.button.classList.add('inactive');
-                tab.pane.style.display = 'none';
+                tab.deactivate();
             }
 
             var id = this.lowestId++;
@@ -543,11 +542,13 @@ var Tabs;
         Tab.prototype.deactivate = function () {
             Utils.cssSwap(this.button, 'active', 'inactive');
             this.pane.style.display = 'none';
+            this.pane.style.overflow = 'hidden';
         };
 
         Tab.prototype.activate = function () {
             Utils.cssSwap(this.button, 'inactive', 'active');
             this.pane.style.display = 'block';
+            this.pane.style.overflow = 'visible';
             selectedTab = this.pane;
         };
         return Tab;
@@ -561,6 +562,9 @@ var Inventory;
     var selectedItemPane;
     var selectedItemImage;
     var selectedItem;
+
+    var configTableBody;
+    var configTableContainer;
     var Item = (function () {
         function Item(id, name, worth, category) {
             this.id = id;
@@ -696,21 +700,59 @@ var Inventory;
         });
         var sellAllConfig = Utils.createButton('...', '');
         sellAllConfig.addEventListener('click', function () {
-            toggleConfig();
+            Inventory.toggleConfig();
         });
         configPanel.appendChild(sellAll);
         configPanel.appendChild(sellAllConfig);
         configDiv.appendChild(configPanel);
         inventoryPane.appendChild(configDiv);
 
+        configTableContainer = document.createElement('DIV');
+        configTableContainer.classList.add('config-container');
+        configTableContainer.classList.add('closed');
+        var configTable = document.createElement('TABLE');
+        configTable.classList.add('config-table');
+        configTableContainer.appendChild(configTable);
+
+        var header = configTable.createTHead();
+        var titleRow = header.insertRow(0);
+        var realTitleRow = header.insertRow(0);
+        realTitleRow.classList.add('table-header');
+        var titleCell = realTitleRow.insertCell(0);
+        titleCell.textContent = 'Inventory Configuration';
+        titleCell.setAttribute('colspan', '10');
+        titleRow.classList.add('table-subheader');
+
+        for (var enumMember in Category) {
+            var isValueProperty = parseInt(enumMember, 10) >= 0;
+            if (isValueProperty) {
+                if (Category[enumMember] != "NFS") {
+                    var configCell = titleRow.insertCell(titleRow.cells.length);
+                    configCell.classList.add('config-cell-check');
+
+                    var titleCell = titleRow.insertCell(titleRow.cells.length);
+                    titleCell.classList.add('config-cell-name');
+                    titleCell.textContent = Category[enumMember];
+                }
+            }
+        }
+        configTableBody = configTable.createTBody();
+
         inventory = document.createElement('DIV');
+        inventory.style.position = 'relative';
+        inventory.appendChild(configTableContainer);
         inventoryPane.appendChild(inventory);
 
         Tabs.registerGameTab(inventoryPane, 'Inventory');
     }
 
     function toggleConfig() {
+        if (configTableContainer.classList.contains('closed')) {
+            configTableContainer.classList.remove('closed');
+        } else
+            configTableContainer.classList.add('closed');
     }
+    Inventory.toggleConfig = toggleConfig;
 
     function drawItem(item) {
         var itemElement = document.createElement('DIV');
@@ -751,6 +793,63 @@ var Inventory;
         itemQuantity.textContent = Utils.formatNumber(0);
         itemElement.appendChild(itemQuantity);
 
+        if (item.category != null) {
+            var selectedItemCell;
+            var selectedConfigCell;
+            var rows = configTableBody.rows.length;
+            var cellIndex = item.category;
+            cellIndex *= 2;
+            cellIndex--;
+
+            for (var i = 0; i < rows; i++) {
+                var testCell = configTableBody.rows[i].cells[cellIndex];
+                if (testCell && testCell.childElementCount == 0) {
+                    selectedItemCell = configTableBody.rows[i].cells[cellIndex];
+                    selectedConfigCell = configTableBody.rows[i].cells[cellIndex - 1];
+                    break;
+                }
+            }
+            if (!selectedItemCell) {
+                var row = configTableBody.insertRow(configTableBody.rows.length);
+                row.classList.add('table-row');
+                for (var enumMember in Category) {
+                    var isValueProperty = parseInt(enumMember, 10) >= 0;
+                    if (isValueProperty) {
+                        if (Category[enumMember] != "NFS") {
+                            var configCell = row.insertCell(row.cells.length);
+                            configCell.classList.add('config-cell-check');
+
+                            var titleCell = row.insertCell(row.cells.length);
+                            titleCell.classList.add('config-cell-name');
+                        }
+                    }
+                }
+                selectedItemCell = row.cells[cellIndex];
+                selectedConfigCell = row.cells[cellIndex - 1];
+            }
+            for (var curRow = 0; curRow < rows; curRow++) {
+                var inspectedRow = configTableBody.rows[i];
+                var cells = inspectedRow.cells.length;
+                for (var curCell = 0; curCell < cells; curCell++) {
+                }
+            }
+
+            var nameAndImage = document.createElement('DIV');
+            nameAndImage.classList.add('item-text');
+            var nameSpan = document.createElement('SPAN');
+            nameSpan.style.verticalAlign = 'top';
+            var image = document.createElement('DIV');
+            image.classList.add('Third-' + Utils.cssifyName(item.name));
+            image.style.display = 'inline-block';
+            nameSpan.textContent = item.name;
+            nameAndImage.appendChild(image);
+            nameAndImage.appendChild(nameSpan);
+            selectedItemCell.appendChild(nameAndImage);
+            var configChecker = document.createElement('INPUT');
+            configChecker.type = 'CHECKBOX';
+            selectedConfigCell.appendChild(configChecker);
+        }
+
         return itemElement;
     }
 
@@ -770,6 +869,7 @@ var Inventory;
 })(Inventory || (Inventory = {}));
 var Connection;
 (function (Connection) {
+    var conInterval;
     Komodo.connection.received(function (msg) {
         Chat.log("Recieved " + roughSizeOfObject(msg) + " bytes from komodo.");
         Chat.log("Encoded: ");
@@ -798,14 +898,33 @@ var Connection;
             updateStats(msg.StatItemsUpdate);
         }
     });
+
+    function restart() {
+        Komodo.restart();
+    }
+    Connection.restart = restart;
+
     var actions = new Komodo.ClientActions();
-    setInterval(function () {
-        var encoded = actions.encode64();
 
-        send(encoded);
+    Komodo.connection.stateChanged(function (change) {
+        if (change.newState === $.signalR.connectionState.connected) {
+            connected();
+        }
+        if (change.newState === $.signalR.connectionState.disconnected) {
+            clearInterval(conInterval);
+        }
+    });
 
-        actions = new Komodo.ClientActions();
-    }, 1000);
+    function connected() {
+        console.log('Connection opened');
+        conInterval = setInterval(function () {
+            var encoded = actions.encode64();
+
+            send(encoded);
+
+            actions = new Komodo.ClientActions();
+        }, 1000);
+    }
 
     function loadSchema(schema) {
         for (var i = 0; i < schema.Items.length; i++) {
@@ -911,6 +1030,387 @@ var Connection;
         return bytes;
     }
 })(Connection || (Connection = {}));
+var modal;
+(function (modal) {
+    var timeOpened = 0;
+    var modalPane;
+    modal.activeWindow;
+    modal.intervalIdentifier;
+
+    function hide() {
+        if (modal.activeWindow) {
+            modal.activeWindow.hide();
+        }
+        modal.activeWindow = null;
+    }
+    modal.hide = hide;
+
+    function close() {
+        if (modal.activeWindow) {
+            var a = modal.activeWindow;
+            hide();
+            a.container.parentNode.removeChild(a.container);
+        }
+    }
+    modal.close = close;
+
+    var Window = (function () {
+        function Window() {
+            this.container = document.createElement("div");
+            this.container.addEventListener("click", function (e) {
+                e.stopPropagation();
+            }, false);
+            this.container.classList.add("modal-window");
+            if (!modalPane) {
+                var pane = document.createElement("div");
+                modalPane = pane;
+                pane.classList.add("modal-wrapper");
+                pane.addEventListener("click", function (e) {
+                    e.stopPropagation();
+                    if ((Date.now() - timeOpened) > 3000)
+                        modal.close();
+                }, false);
+                document.body.appendChild(pane);
+            }
+            modalPane.appendChild(this.container);
+
+            this.titleEl = document.createElement("div");
+            this.titleEl.classList.add("modal-header");
+            this.bodyEl = document.createElement("div");
+
+            this.container.appendChild(this.titleEl);
+            this.container.appendChild(this.bodyEl);
+        }
+        Object.defineProperty(Window.prototype, "title", {
+            get: function () {
+                return this._title;
+            },
+            set: function (s) {
+                this._title = s;
+                this.titleEl.textContent = this._title;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Window.prototype.addElement = function (el) {
+            this.bodyEl.appendChild(el);
+        };
+
+        Window.prototype.addOption = function (opt) {
+            if (!this.options) {
+                this.options = document.createElement("div");
+                this.options.classList.add("modal-options");
+                this.container.appendChild(this.options);
+            }
+            var optionContainer = document.createElement("span");
+            optionContainer.classList.add("modal-option");
+
+            var option = document.createElement("span");
+            option.textContent = opt;
+
+            optionContainer.appendChild(option);
+            this.options.appendChild(optionContainer);
+            return optionContainer;
+        };
+
+        Window.prototype.addAffirmativeOption = function (opt) {
+            var option = this.addOption(opt);
+            option.classList.add("affirmative");
+            return option;
+        };
+
+        Window.prototype.addNegativeOption = function (opt) {
+            var option = this.addOption(opt);
+            option.classList.add("negative");
+            return option;
+        };
+
+        Window.prototype.show = function () {
+            if (!this.container.classList.contains("opened"))
+                this.container.classList.add("opened");
+            if (!modalPane.classList.contains("opened"))
+                modalPane.classList.add("opened");
+            modal.activeWindow = this;
+            updatePosition();
+            modal.intervalIdentifier = setInterval(updatePosition, 100);
+            timeOpened = Date.now();
+        };
+
+        Window.prototype.hide = function () {
+            if (this.container.classList.contains("opened"))
+                this.container.classList.remove("opened");
+            if (modalPane.classList.contains("opened"))
+                modalPane.classList.remove("opened");
+        };
+        return Window;
+    })();
+    modal.Window = Window;
+
+    function updatePosition() {
+        if (!modal.activeWindow) {
+            clearInterval(modal.intervalIdentifier);
+        } else {
+            var containerDimensions = modal.activeWindow.container.getBoundingClientRect();
+            modal.activeWindow.container.style.left = (window.innerWidth / 2) - ((containerDimensions.right - containerDimensions.left) / 2) + "px";
+            modal.activeWindow.container.style.top = (window.innerHeight / 2) - ((containerDimensions.bottom - containerDimensions.top) / 2) + "px";
+        }
+    }
+})(modal || (modal = {}));
+var Account;
+(function (Account) {
+    var container;
+    var userButton;
+    var userSpan;
+    var contextMenu;
+
+    var mouseTimeout;
+
+    function draw() {
+        container = document.createElement('DIV');
+        container.classList.add('account-manager');
+        container.classList.add('closed');
+
+        container.onmouseenter = function () {
+            clearTimeout(mouseTimeout);
+        };
+
+        container.onmouseleave = function () {
+            mouseTimeout = setTimeout(hideMenu, 250);
+        };
+
+        var loginButton = document.createElement('DIV');
+        loginButton.textContent = 'Sign in';
+        loginButton.classList.add('account-option');
+        loginButton.classList.add('anonymous-account-option');
+        loginButton.addEventListener('click', function () {
+            loginModal();
+        });
+        container.appendChild(loginButton);
+
+        var registerButton = document.createElement('DIV');
+        registerButton.textContent = 'Register';
+        registerButton.classList.add('account-option');
+        registerButton.classList.add('anonymous-account-option');
+        registerButton.addEventListener('click', function () {
+            registerModal();
+        });
+        container.appendChild(registerButton);
+
+        var optionsButton = document.createElement('DIV');
+        optionsButton.textContent = 'Options';
+        optionsButton.classList.add('account-option');
+        optionsButton.classList.add('registered-account-option');
+        container.appendChild(optionsButton);
+
+        var logoffButton = document.createElement('DIV');
+        logoffButton.textContent = 'Sign out';
+        logoffButton.classList.add('account-option');
+        logoffButton.classList.add('registered-account-option');
+        logoffButton.addEventListener('click', function () {
+            logoff();
+        });
+        container.appendChild(logoffButton);
+
+        userButton = document.createElement('DIV');
+        userButton.classList.add('account-user');
+        userSpan = document.createElement('SPAN');
+        userButton.appendChild(userSpan);
+        container.appendChild(userButton);
+
+        document.body.appendChild(container);
+        userButton.addEventListener('click', function () {
+            toggleMenu();
+        });
+
+        info();
+    }
+    draw();
+    function toggleMenu() {
+        if (container.classList.contains('closed'))
+            container.classList.remove('closed');
+        else
+            container.classList.add('closed');
+    }
+
+    function hideMenu() {
+        if (!container.classList.contains('closed'))
+            container.classList.add('closed');
+    }
+
+    function updateUser(name, isAnon) {
+        userSpan.textContent = isAnon ? 'Guest' : name;
+
+        Utils.cssSwap(container, isAnon ? 'registered' : 'anonymous', isAnon ? 'anonymous' : 'registered');
+    }
+
+    function loginModal() {
+        var loginModal = new modal.Window();
+        var formControlsContainer = document.createElement('DIV');
+        formControlsContainer.style.width = '400px';
+
+        var usernameContainer = document.createElement('DIV');
+        usernameContainer.style.marginBottom = '5px';
+        var username = document.createElement("INPUT");
+        username.type = 'TEXT';
+        username.maxLength = 16;
+        username.placeholder = 'Username';
+        usernameContainer.appendChild(username);
+
+        var passwordContainer = document.createElement('DIV');
+        passwordContainer.style.marginBottom = '5px';
+        var password = document.createElement("INPUT");
+        password.type = 'PASSWORD';
+        password.pattern = ".{6,}";
+        password.placeholder = 'Password';
+        passwordContainer.appendChild(password);
+
+        var rememberMeContainer = document.createElement('DIV');
+        rememberMeContainer.style.marginBottom = '5px';
+        var rememberMe = document.createElement('INPUT');
+        rememberMe.type = 'CHECKBOX';
+        rememberMe.placeholder = 'Stay logged in on this computer?';
+        rememberMeContainer.appendChild(rememberMe);
+
+        formControlsContainer.appendChild(usernameContainer);
+        formControlsContainer.appendChild(passwordContainer);
+        formControlsContainer.appendChild(rememberMeContainer);
+
+        loginModal.title = 'Log in';
+        loginModal.addElement(formControlsContainer);
+
+        var no = loginModal.addNegativeOption("Cancel");
+        no.addEventListener("click", function () {
+            modal.close();
+        }, false);
+        var yes = loginModal.addAffirmativeOption("Submit");
+        yes.addEventListener("click", function () {
+            login(username.value, password.value, rememberMe.checked);
+            modal.close();
+        }, false);
+        loginModal.show();
+    }
+
+    function registerModal() {
+        var registerModal = new modal.Window();
+        var formControlsContainer = document.createElement('DIV');
+        formControlsContainer.style.width = '400px';
+
+        var usernameContainer = document.createElement('DIV');
+        usernameContainer.style.marginBottom = '5px';
+        var username = document.createElement("INPUT");
+        username.type = 'TEXT';
+        username.maxLength = 16;
+        username.placeholder = 'Username';
+        usernameContainer.appendChild(username);
+
+        var emailContainer = document.createElement('DIV');
+        emailContainer.style.marginBottom = '5px';
+        var email = document.createElement("INPUT");
+        email.type = 'EMAIL';
+        email.placeholder = 'Email';
+        emailContainer.appendChild(email);
+
+        var passwordContainer = document.createElement('DIV');
+        passwordContainer.style.marginBottom = '5px';
+        var password = document.createElement("INPUT");
+        password.type = 'PASSWORD';
+        password.pattern = ".{6,}";
+        password.placeholder = 'Password';
+        passwordContainer.appendChild(password);
+
+        var confpassContainer = document.createElement('DIV');
+        confpassContainer.style.marginBottom = '5px';
+        var confirmPassword = document.createElement("INPUT");
+        confirmPassword.type = 'PASSWORD';
+        confirmPassword.pattern = ".{6,}";
+        confirmPassword.placeholder = 'Confirm password';
+        confpassContainer.appendChild(confirmPassword);
+        confirmPassword.onblur = function () {
+            if (password.value != confirmPassword.value)
+                confirmPassword.setCustomValidity('Passwords are not the same.');
+        };
+
+        confirmPassword.onfocus = function () {
+            confirmPassword.setCustomValidity('');
+        };
+        formControlsContainer.appendChild(usernameContainer);
+        formControlsContainer.appendChild(emailContainer);
+        formControlsContainer.appendChild(passwordContainer);
+        formControlsContainer.appendChild(confpassContainer);
+
+        registerModal.addElement(formControlsContainer);
+
+        registerModal.title = "Register";
+
+        var no = registerModal.addNegativeOption("Cancel");
+        no.addEventListener("click", function () {
+            modal.close();
+        }, false);
+        var yes = registerModal.addAffirmativeOption("Submit");
+        yes.addEventListener("click", function () {
+            create(email.value, username.value, password.value, confirmPassword.value);
+            modal.close();
+        }, false);
+        registerModal.show();
+    }
+
+    function create(email, username, password, passwordConfirmation) {
+        var request = $.ajax({
+            type: 'POST',
+            url: '/Api/Account/Register',
+            data: $.param({ Email: email, UserName: username, Password: password, ConfirmPassword: passwordConfirmation }),
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            success: function (request) {
+                console.log(request.responseText);
+                Connection.restart();
+                info();
+            }
+        });
+    }
+
+    function login(email, password, rememberMe) {
+        var request = $.ajax({
+            type: 'POST',
+            url: '/Api/Account/Login',
+            data: $.param({ UserName: email, Password: password, RememberMe: rememberMe }),
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            success: function (request) {
+                console.log(request);
+                Connection.restart();
+                info();
+            }
+        });
+    }
+
+    function logoff() {
+        var request = $.ajax({
+            type: 'POST',
+            url: '/Api/Account/LogOff',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            success: function (request) {
+                console.log(request);
+                Connection.restart();
+                info();
+                location.reload();
+            }
+        });
+    }
+
+    function info() {
+        var request = $.ajax({
+            type: 'POST',
+            url: '/Api/Account/Info',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            success: function (request) {
+                console.log(request);
+                request = JSON.parse(request);
+                updateUser(request.UserName, request.Anonymous);
+            }
+        });
+    }
+    Account.info = info;
+})(Account || (Account = {}));
 var Statistics;
 (function (Statistics) {
     var statsPane;

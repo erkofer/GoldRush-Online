@@ -37,7 +37,7 @@
     <TypeScriptSourceMap>true</TypeScriptSourceMap>
     <OutputPath>bin\</OutputPath>
     <TypeScriptModuleKind>amd</TypeScriptModuleKind>
-    <TypeScriptSourceMap> Scripts/utils.ts Scripts/tabs.ts Scripts/connection.ts Scripts/chat.ts Scripts/inventory.ts Scripts/store.ts Scripts/stats.ts</TypeScriptSourceMap>
+    <TypeScriptSourceMap> Scripts/utils.ts Scripts/modal.ts Scripts/register.ts Scripts/tabs.ts Scripts/connection.ts Scripts/chat.ts Scripts/inventory.ts Scripts/store.ts Scripts/stats.ts</TypeScriptSourceMap>
     <TypeScriptOutFile>game.js</TypeScriptOutFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -56,6 +56,12 @@
     <TypeScriptOutFile>game.js</TypeScriptOutFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AutoMapper">
+      <HintPath>..\packages\AutoMapper.3.3.0\lib\net40\AutoMapper.dll</HintPath>
+    </Reference>
+    <Reference Include="AutoMapper.Net4">
+      <HintPath>..\packages\AutoMapper.3.3.0\lib\net40\AutoMapper.Net4.dll</HintPath>
+    </Reference>
     <Reference Include="JetBrains.Annotations, Version=8.0.3.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\JetBrains.Annotations.8.0.3.0\lib\net20\JetBrains.Annotations.dll</HintPath>
@@ -212,12 +218,12 @@
     <Compile Include="App_Start\Startup.Auth.cs" />
     <Compile Include="Areas\Api\ApiAreaRegistration.cs" />
     <Compile Include="Areas\Api\Controllers\AccountController.cs" />
+    <Compile Include="Areas\Api\Models\AccountViewModel.cs" />
     <Compile Include="Areas\Api\Models\SuccessViewModel.cs" />
     <Compile Include="Connections\GameConnection.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\GameController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
-    <Compile Include="Extensions\StringEx.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -380,6 +386,7 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Areas\Api\Views\Shared\" />
+    <Folder Include="Extensions\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff" />
@@ -420,6 +427,8 @@
     <TypeScriptCompile Include="Scripts\chat.ts" />
     <TypeScriptCompile Include="Scripts\connection.ts" />
     <TypeScriptCompile Include="Scripts\inventory.ts" />
+    <TypeScriptCompile Include="Scripts\modal.ts" />
+    <TypeScriptCompile Include="Scripts\register.ts" />
     <TypeScriptCompile Include="Scripts\stats.ts" />
     <TypeScriptCompile Include="Scripts\store.ts" />
     <TypeScriptCompile Include="Scripts\tabs.ts" />
@@ -474,4 +483,5 @@
   </Target>
   <Target Name="AfterBuild">
   </Target>
+  <Import Project="..\packages\AutoMapper.3.3.0\tools\AutoMapper.targets" Condition="Exists('..\packages\AutoMapper.3.3.0\tools\AutoMapper.targets')" />
 </Project>

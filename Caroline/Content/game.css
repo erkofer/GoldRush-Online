@@ -298,6 +298,34 @@ body{
 }
 
 /*Inventory*/
+.config-container{
+    overflow:visible;
+    position:absolute;
+    top:5px;
+    right:0;
+    left:0;
+    margin:0 auto;
+    width:75%;
+    z-index:1;
+}
+
+.config-container.closed {
+    display:none;
+}
+
+.config-table{
+    width:100%;
+    margin:auto;
+}
+
+.config-cell-check {
+    width:4%;
+}
+
+.config-cell-name {
+    width:16%;
+}
+
 .item {
     height:100px;
     width: 100px;
@@ -404,6 +432,11 @@ body{
     padding:2px;
 }
 
+.chat-server {
+    background: blue;
+    color: white;
+}
+
 /*Table*/
 .table-header {
     font-weight: bold;
@@ -431,4 +464,150 @@ table{
 td {
     text-align:center;
     border:1px solid white;
+}
+
+/*Registration*/
+
+.account-user{
+    height:30px;
+    width:100%;
+    font-size:15px;
+    line-height:30px;
+}
+
+.account-manager{
+    position: fixed;
+    right: 5px;
+    bottom: 5px;
+    width:100px;
+    border-radius:5px;
+    overflow:hidden;
+    text-align: center;
+
+    
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.account-option {
+    height:20px;
+    width:100%;
+    font-size:13px;
+    line-height:20px;
+}
+
+.account-manager.closed .account-option{
+    display:none;
+}
+
+.account-manager.registered .anonymous-account-option {
+    display:none;
+}
+
+.account-manager.anonymous .registered-account-option {
+    display:none;
+}
+
+/*Modal*/
+.modal-wrapper {
+    -webkit-transition:all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+
+    background-color: rgba(0, 0, 0, 0.0);
+    min-height: 100%; margin: 0;width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}
+
+.modal-wrapper.opened {
+    background-color: rgba(0, 0, 0, 0.55);
+    z-index: 500;
+}
+
+.modal-window {
+    margin: 0 auto;
+    
+    border-radius: 5px;
+    max-width: 400px;
+    display: none;
+    position: absolute;
+}
+
+.modal-window.opened {
+    display: block;
+}
+
+.modal-header {
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: default;
+    margin-bottom: 3px;
+
+    font-size: 18px;
+    width: 100%;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.modal-options {
+    margin: 0 auto;
+}
+
+.modal-option {
+    min-width: 75px;
+    text-align: center;
+    margin-top: 3px;
+    margin-right: 3px;
+    margin-bottom: 3px;
+    border-radius: 3px;
+    float: right;
+    cursor: pointer;
+    
+     transition: background-color 0.2s ease-in-out;
+    -o-transition:background-color 0.2s ease-in-out;
+    -ms-transition:background-color 0.2s ease-in-out;
+    -webkit-transition: background-color 0.2s ease-in-out;
+
+    background-color: rgb(212, 212, 212);
+}
+
+.modal-option:hover {
+    background-color: #AAAAAA;
+}
+
+.modal-option.affirmative {
+    background-color: #33CC33
+}
+
+.modal-option.affirmative:hover {
+    background-color: #29A329
+}
+
+.modal-option.negative {
+    background-color: #FF3300;
+}
+
+.modal-option.negative:hover {
+    background-color: #CC2900;
+}
+
+.modal-option > span {
+    padding: 3px;
+
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }

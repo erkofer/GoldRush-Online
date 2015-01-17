@@ -6,7 +6,7 @@ using Microsoft.AspNet.Identity.EntityFramework;
 
 namespace Caroline.Persistence.Models
 {
-    public class ApplicationUser : IdentityUser, IIdentifiableEntity<string>
+    public class ApplicationUser : IdentityUser
     {
         public async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<ApplicationUser> manager)
         {
@@ -22,11 +22,5 @@ namespace Caroline.Persistence.Models
 
         [ForeignKey("GameId")]
         public virtual Game Game { get; set; }
-
-        string IIdentifiableEntity<string>.EntityId
-        {
-            get { return Id; }
-            set { Id = value; }
-        }
     }
 }
