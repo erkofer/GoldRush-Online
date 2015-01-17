@@ -700,7 +700,6 @@ var Inventory;
         });
         var sellAllConfig = Utils.createButton('...', '');
         sellAllConfig.addEventListener('click', function () {
-            console.log('why..');
             Inventory.toggleConfig();
         });
         configPanel.appendChild(sellAll);

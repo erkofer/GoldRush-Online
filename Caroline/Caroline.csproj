@@ -459,10 +459,10 @@
     <Message Text="Compiling TypeScript files - $(TypeScriptSourceMap)" />
     <Message Text="Executing tsc $(TypeScriptSourceMap) @(TypeScriptCompile ->'&quot;%(fullpath)&quot;', ' ')" />
     <Exec Command="tsc$(TypeScriptSourceMap) -target ES5 --module amd --out Scripts/game.js" />
-    <Exec Command="java -jar &quot;$(SolutionDir)Build\compiler.jar&quot; --js &quot;$(SolutionDir)Caroline\Scripts\game.js&quot; --js_output_file &quot;$(SolutionDir)Caroline\Scripts\game.min.js&quot;" />
-    <Exec Command="&quot;$(SolutionDir)Build\Python27\Scripts\glue.exe&quot; --source &quot;$(SolutionDir)Caroline\Content\Sprites&quot; --output &quot;$(SolutionDir)Caroline\Content&quot; --css=&quot;$(SolutionDir)Caroline\Content&quot; --sprite-namespace= --namespace=" />
-    <Exec Command="&quot;$(SolutionDir)Build\SpriteRatio.exe&quot; -source &quot;$(SolutionDir)Caroline\Content\sprites.css&quot; -out &quot;$(SolutionDir)Caroline\Content\sprites.css&quot; -ratio 1,0.5,0.35 -rnames ,Half,Third" />
-    <Exec Command="&quot;$(SolutionDir)Build\pngquant.exe&quot; &quot;$(SolutionDir)Caroline\Content\sprites.png&quot; --ext .png --force" />
+    <Exec Command="cmd java -jar &quot;$(SolutionDir)Build\compiler.jar&quot; --js &quot;$(SolutionDir)Caroline\Scripts\game.js&quot; --js_output_file &quot;$(SolutionDir)Caroline\Scripts\game.min.js&quot;" />
+    <Exec Command="cmd &quot;$(SolutionDir)Build\Python27\Scripts\glue.exe&quot; --source &quot;$(SolutionDir)Caroline\Content\Sprites&quot; --output &quot;$(SolutionDir)Caroline\Content&quot; --css=&quot;$(SolutionDir)Caroline\Content&quot; --sprite-namespace= --namespace=" />
+    <Exec Command="cmd &quot;$(SolutionDir)Build\SpriteRatio.exe&quot; -source &quot;$(SolutionDir)Caroline\Content\sprites.css&quot; -out &quot;$(SolutionDir)Caroline\Content\sprites.css&quot; -ratio 1,0.5,0.35 -rnames ,Half,Third" />
+    <Exec Command="cmd &quot;$(SolutionDir)Build\pngquant.exe&quot; &quot;$(SolutionDir)Caroline\Content\sprites.png&quot; --ext .png --force" />
   </Target>
   <Target Name="AfterBuild">
   </Target>
