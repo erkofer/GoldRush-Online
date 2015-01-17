@@ -1,81 +1,234 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Caroline.App.Models
+﻿namespace Caroline.App.Models
 {
-    public partial class GameState
+    public partial class GameState : ICompressable<GameState>
     {
-        public partial class Item
+        public GameState Compress(GameState oldState)
+        {
+            // create it eagerly because we are compressing lists
+            var newState = new GameState();
+
+            // ISERROR
+            if (_IsError != oldState._IsError)
+            {
+                newState._IsError = _IsError;
+            }
+
+            // ITEMS
+            CompressableHelpers.CompressList(Items, oldState.Items, newState.Items);
+
+            // MESSAGE
+            if (_Message != null)
+            {
+                var oldMessage = oldState._Message;
+                if (oldMessage == null)
+                {
+                    newState._Message = _Message;
+                }
+                else
+                {
+                    var message = _Message.Compress(oldMessage);
+                    if (message != null)
+                    {
+                        newState._Message = message;
+                    }
+                }
+            }
+
+            // GAMESCHEMA
+            if (_GameSchema != null)
+            {
+                var oldSchema = oldState._GameSchema;
+                if (oldSchema == null)
+                {
+                    newState._GameSchema = _GameSchema;
+                }
+                else
+                {
+                    var schema = _GameSchema.Compress(oldSchema);
+                    if (schema != null)
+                    {
+                        newState._GameSchema = schema;
+                    }
+                }
+            }
+
+            // STOREITEMUPDATE
+            CompressableHelpers.CompressList(_StoreItemsUpdate,
+                oldState._StoreItemsUpdate,
+                newState._StoreItemsUpdate);
+
+            // STATITEMSUPDATE
+            CompressableHelpers.CompressList(_StatItemsUpdate, oldState._StatItemsUpdate, newState._StatItemsUpdate);
+
+            //CONFIGITEMS
+            CompressableHelpers.CompressList(_ConfigItems, oldState._ConfigItems, newState._ConfigItems);
+
+            return newState;
+        }
+
+        public partial class Item : ICompressable<Item>, IIdentifiableObject
         {
             public Item Compress(Item oldItem)
             {
-                Item newItem = null;
-                if (this.Quantity != oldItem.Quantity) 
+                if (Quantity != oldItem.Quantity)
                 {
-                    if (newItem == null) 
-                    { 
-                        newItem = new Item();
-                        newItem.Id = this.Id;
-                    }
-                    newItem.Quantity = this.Quantity;
+                    return new Item { Id = Id, Quantity = Quantity };
                 }
-                return newItem;
+                return null;
             }
         }
 
-        public partial class StoreItem
+        public partial class ChatMessage : ICompressable<ChatMessage>
+        {
+            public ChatMessage Compress(ChatMessage oldObject)
+            {
+                ChatMessage message = null;
+                if (oldObject.Text != Text)
+                {
+                    if (message == null)
+                        message = new ChatMessage();
+                    message.Text = Text;
+                }
+                if (oldObject.Sender != Sender)
+                {
+                    if (message == null)
+                        message = new ChatMessage();
+                    message.Sender = Sender;
+                }
+                if (oldObject.Time != Time)
+                {
+                    if (message == null)
+                        message = new ChatMessage();
+                    message.Time = Time;
+                }
+                if (oldObject.Permissions != Permissions)
+                {
+                    if (message == null)
+                        message = new ChatMessage();
+                    message.Permissions = Permissions;
+                }
+                return message;
+            }
+        }
+
+        public partial class Schematic : ICompressable<Schematic>
+        {
+            public Schematic Compress(Schematic oldObject)
+            {
+                // create it eagerly because we are compressing lists
+                var schematic = new Schematic();
+                CompressableHelpers.CompressList(_Items, oldObject._Items, schematic._Items);
+                CompressableHelpers.CompressList(_StoreItems, oldObject._StoreItems, schematic._StoreItems);
+                return schematic;
+            }
+
+            public partial class SchemaItem : ICompressable<SchemaItem>, IIdentifiableObject
+            {
+                public SchemaItem Compress(SchemaItem oldObject)
+                {
+                    SchemaItem schematic = null;
+                    if (oldObject._Name != _Name)
+                    {
+                        if (schematic == null)
+                            schematic = new SchemaItem { _Id = _Id };
+                        schematic._Name = _Name;
+                    }
+                    if (oldObject._Worth != _Worth)
+                    {
+                        if (schematic == null)
+                            schematic = new SchemaItem { _Id = _Id };
+                        schematic._Worth = _Worth;
+                    }
+                    if (oldObject._Category != _Category)
+                    {
+                        if (schematic == null)
+                            schematic = new SchemaItem { _Id = _Id };
+                        schematic._Category = _Category;
+                    }
+                    return schematic;
+                }
+            }
+
+            public partial class SchemaStoreItem : ICompressable<SchemaStoreItem>, IIdentifiableObject
+            {
+                public SchemaStoreItem Compress(SchemaStoreItem oldObject)
+                {
+                    SchemaStoreItem schematic = null;
+                    if (oldObject._Category != _Category)
+                    {
+                        if (schematic == null)
+                            schematic = new SchemaStoreItem { _Id = _Id };
+                        schematic._Category = _Category;
+                    }
+                    if (oldObject._Name != _Name)
+                    {
+                        if (schematic == null)
+                            schematic = new SchemaStoreItem { _Id = _Id };
+                        schematic._Name = _Name;
+                    }
+                    if (oldObject._Price != _Price)
+                    {
+                        if (schematic == null)
+                            schematic = new SchemaStoreItem { _Id = _Id };
+                        schematic._Price = _Price;
+                    }
+                    // ReSharper disable once CompareOfFloatsByEqualityOperator
+                    if (oldObject._Factor != _Factor)
+                    {
+                        if (schematic == null)
+                            schematic = new SchemaStoreItem { _Id = _Id };
+                        schematic._Factor = _Factor;
+                    }
+                    if (oldObject._MaxQuantity != _MaxQuantity)
+                    {
+                        if (schematic == null)
+                            schematic = new SchemaStoreItem { _Id = _Id };
+                        schematic._MaxQuantity = _MaxQuantity;
+                    }
+                    return schematic;
+                }
+            }
+        }
+
+        public partial class StoreItem : ICompressable<StoreItem>, IIdentifiableObject
         {
             public StoreItem Compress(StoreItem oldItem)
             {
-                StoreItem newItem = null;
-                if(this.Quantity !=oldItem.Quantity)
-                {
-                    if(newItem == null)
-                    {
-                        newItem = new StoreItem();
-                        newItem.Id = this.Id;
-                    }
-                    newItem.Quantity = this.Quantity;
-                }
-                return newItem;
+                if (Quantity != oldItem.Quantity)
+                    return new StoreItem { _Id = _Id, Quantity = Quantity };
+                return null;
             }
         }
 
-        public GameState Compress(GameState oldState)
+        public partial class StatItem : ICompressable<StatItem>, IIdentifiableObject
         {
-            GameState newState = null;
-            //var itemMat= oldState.Items.GroupBy(item => item.Id)
-            // INVENTORY
-            foreach (var item in this.Items) // Switch these loops around? If an item is not contained in the old state then it does not need to be compressed.
+            public StatItem Compress(StatItem oldObject)
             {
-                foreach (var oldItem in oldState.Items)
+                StatItem stat = null;
+                if (_PrestigeQuantity != oldObject._PrestigeQuantity)
                 {
-                    if (item.Id != oldItem.Id) continue;
-                    var newItem = item.Compress(oldItem);
-                    if (newItem == null) continue;
-                    if (newState == null) 
-                        newState = new GameState();
-                    newState.Items.Add(newItem);
+                    if (stat == null)
+                        stat = new StatItem { _Id = _Id };
+                    stat._PrestigeQuantity = _PrestigeQuantity;
                 }
+                if (_LifeTimeQuantity != oldObject._LifeTimeQuantity)
+                {
+                    if (stat == null)
+                        stat = new StatItem { _Id = _Id };
+                    stat._LifeTimeQuantity = _LifeTimeQuantity;
+                }
+                return stat;
             }
+        }
 
-            // STORE
-            foreach (var item in this.StoreItemsUpdate)
+        public partial class ConfigItem : ICompressable<ConfigItem>, IIdentifiableObject
+        {
+            public ConfigItem Compress(ConfigItem oldObject)
             {
-                foreach (var oldItem in oldState.StoreItemsUpdate)
-                {
-                    if (item.Id != oldItem.Id) continue;
-                    var newItem = item.Compress(oldItem);
-                    if (newItem == null) continue;
-                    if (newState == null) newState = new GameState();
-                    newState.StoreItemsUpdate.Add(newItem);
-                }
+                if (_Enabled != oldObject._Enabled)
+                    return new ConfigItem { _Id = _Id, _Enabled = _Enabled };
+                return null;
             }
-
-            return newState;
         }
     }
 }

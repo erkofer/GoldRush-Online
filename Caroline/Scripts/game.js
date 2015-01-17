@@ -1,103 +1,90 @@
-﻿var Utils;
+var Utils;
 (function (Utils) {
     function addEvent(elem, type, eventHandle) {
         if (elem == null || typeof (elem) == 'undefined')
             return;
         if (elem.addEventListener) {
             elem.addEventListener(type, eventHandle, false);
-        } else if (elem.attachEvent) {
+        }
+        else if (elem.attachEvent) {
             elem.attachEvent("on" + type, eventHandle);
-        } else {
+        }
+        else {
             elem["on" + type] = eventHandle;
         }
     }
     Utils.addEvent = addEvent;
     ;
-
     function cssSwap(element, initialVal, finalVal) {
         if (element.classList.contains(initialVal))
             element.classList.remove(initialVal);
-
         element.classList.add(finalVal);
     }
     Utils.cssSwap = cssSwap;
-
     function cssifyName(name) {
         return name.split(' ').join('_');
     }
     Utils.cssifyName = cssifyName;
-
     function createButton(text, id) {
         var button;
         var textcontent;
-
         button = document.createElement("div");
         textcontent = document.createElement("div");
         textcontent.textContent = text;
-
         if (id) {
             textcontent.id = id;
         }
-
         button.classList.add("button");
         button.appendChild(textcontent);
-
         return button;
     }
     Utils.createButton = createButton;
-
     function isNumber(obj) {
         return !isNaN(parseFloat(obj));
     }
     Utils.isNumber = isNumber;
-
     function formatNumber(n) {
         if (!n)
             return '0';
-
         if (n > 999999999999999) {
             return (n / 1000000000000000).toFixed(3) + "Qa";
-        } else if (n > 999999999999) {
+        }
+        else if (n > 999999999999) {
             return (n / 1000000000000).toFixed(3) + "T";
-        } else if (n > 999999999) {
+        }
+        else if (n > 999999999) {
             return (n / 1000000000).toFixed(3) + "B";
-        } else if (n > 999999) {
+        }
+        else if (n > 999999) {
             return (n / 1000000).toFixed(3) + "M";
-        } else {
+        }
+        else {
             return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
     }
     Utils.formatNumber = formatNumber;
-
     function convertServerTimeToLocal(time) {
         var hours = +time.split(':')[0];
         var minutes = +(time.split(':')[1]).split(' ')[0];
         var amOrPm = (time.split(':')[1]).split(' ')[1];
-
         if (amOrPm == 'PM')
             hours += 12;
-
         var offset = new Date().getTimezoneOffset();
         hours -= ((offset / 60) - offset % 60);
         minutes -= offset % 60;
-
         if (hours < 0)
             hours = 24 - hours;
-
         if (minutes < 0) {
             minutes = 60 - minutes;
             hours--;
         }
-
         if (hours > 23) {
             hours = hours - 24;
         }
-
         if (minutes > 59) {
             minutes = minutes - 60;
             hours++;
         }
-
         return (hours < 10 ? '0' : '') + hours + ':' + (minutes < 10 ? '0' : '') + minutes;
     }
     Utils.convertServerTimeToLocal = convertServerTimeToLocal;
@@ -109,7 +96,6 @@ var Tabs;
     Tabs.bottomPadding = 200;
     var tabContainers = new Array();
     var selectedTab;
-
     var TabContainer = (function () {
         function TabContainer(container) {
             this.container = container;
@@ -125,50 +111,41 @@ var Tabs;
             button.classList.add('tab-button');
             this.container.appendChild(button);
             tab.button = button;
-
             if (this.lowestId == 0) {
                 tab.button.classList.add('active');
-            } else {
+            }
+            else {
                 tab.button.classList.add('inactive');
                 tab.pane.style.display = 'none';
             }
-
             // IDs are incremented here. to get their initial value we must subtract.
             var id = this.lowestId++;
             var contId = this.id;
-
             button.addEventListener('click', function () {
                 Tabs.activateTab(contId, id);
             });
-
             this.tabs.push(tab);
             this.container.appendChild(button);
-
             return this.lowestId - 1;
         };
-
         TabContainer.prototype.activate = function (id) {
             for (var i = 0; i < this.tabs.length; i++) {
                 this.tabs[i].deactivate();
             }
             this.tabs[id].activate();
         };
-
         TabContainer.prototype.css = function (id, className) {
             this.tabs[id].button.classList.add(className);
         };
         return TabContainer;
     })();
-
     var gameTabs = new TabContainer(document.getElementById('tabContainer'));
-
     function registerGameTab(pane, css) {
         var id = gameTabs.newTab(pane);
         if (css)
             gameTabs.css(id, css);
     }
     Tabs.registerGameTab = registerGameTab;
-
     function updateGameTabs() {
         if (selectedTab) {
             var height = selectedTab.scrollHeight;
@@ -181,16 +158,13 @@ var Tabs;
         }
     }
     Tabs.updateGameTabs = updateGameTabs;
-
     Utils.addEvent(window, 'resize', Tabs.updateGameTabs);
     setInterval(updateGameTabs, 20);
-
     function activateTab(containerId, tabId) {
         tabContainers[containerId].activate(tabId);
         updateGameTabs();
     }
     Tabs.activateTab = activateTab;
-
     var Tab = (function () {
         function Tab() {
         }
@@ -198,7 +172,6 @@ var Tabs;
             Utils.cssSwap(this.button, 'active', 'inactive');
             this.pane.style.display = 'none';
         };
-
         Tab.prototype.activate = function () {
             Utils.cssSwap(this.button, 'inactive', 'active');
             this.pane.style.display = 'block';
@@ -225,12 +198,10 @@ var Chat;
             chatWindow.style.border = '1px solid #adadad';
             chatWindow.style.height = '280px';
             chatWindow.style.boxShadow = '1px -1px 2px rgb(200,200,200)';
-
             var chatHeader = document.createElement('DIV');
             chatHeader.style.height = '30px';
             chatHeader.style.backgroundColor = 'rgb(160, 160, 160)';
             chatWindow.appendChild(chatHeader);
-
             var chatRoomTab = document.createElement('DIV');
             chatRoomTab.style.color = 'white';
             chatRoomTab.style.fontSize = '18px';
@@ -243,7 +214,6 @@ var Chat;
                 document.getElementById('chatpane').style.display = 'block';
             });
             chatHeader.appendChild(chatRoomTab);
-
             var debugTab = document.createElement('DIV');
             debugTab.style.color = 'white';
             debugTab.id = 'debugtab';
@@ -258,7 +228,6 @@ var Chat;
             });
             debugTab.style.display = 'none';
             chatHeader.appendChild(debugTab);
-
             debugLogContainer = document.createElement('DIV');
             debugLogContainer.id = 'debugpane';
             debugLogContainer.style.width = '100%';
@@ -266,14 +235,12 @@ var Chat;
             debugLogContainer.style.display = 'none';
             debugLogContainer.style.position = 'relative';
             chatWindow.appendChild(debugLogContainer);
-
             chatLogContainer = document.createElement('DIV');
             chatLogContainer.id = 'chatpane';
             chatLogContainer.style.width = '100%';
             chatLogContainer.style.height = '230px';
             chatLogContainer.style.position = 'relative';
             chatWindow.appendChild(chatLogContainer);
-
             var debugLog = document.createElement('DIV');
             debugLog.id = 'debuglog';
             debugLog.style.position = 'absolute';
@@ -282,7 +249,6 @@ var Chat;
             debugLog.style.width = '100%';
             debugLog.style.overflow = 'auto';
             debugLogContainer.appendChild(debugLog);
-
             var chatLog = document.createElement('DIV');
             chatLog.id = 'chatlog';
             chatLog.style.position = 'absolute';
@@ -291,7 +257,6 @@ var Chat;
             chatLog.style.width = '100%';
             chatLog.style.overflow = 'auto';
             chatLogContainer.appendChild(chatLog);
-
             var chatInput = document.createElement('INPUT');
             chatInput.setAttribute('TYPE', 'TEXT');
             chatInput.style.width = '100%';
@@ -304,13 +269,11 @@ var Chat;
             chatInput.addEventListener('keydown', function (e) {
                 if (e.keyCode == 13)
                     sendGlobalMessagePress();
-
                 if (e.keyCode == 68 && e.altKey)
                     document.getElementById('debugtab').style.display = 'inline-block';
             });
             chatInput.id = 'chattext';
             chatWindow.appendChild(chatInput);
-
             var chatSend = document.createElement('INPUT');
             chatSend.setAttribute('TYPE', 'BUTTON');
             chatSend.setAttribute('VALUE', 'SEND');
@@ -324,18 +287,15 @@ var Chat;
                 sendGlobalMessagePress();
             });
             chatWindow.appendChild(chatSend);
-
             document.body.appendChild(chatWindow);
         }
     }
     Chat.initialize = initialize;
     initialize();
-
     function sendGlobalMessagePress() {
         Connection.sendGlobalMessage(document.getElementById('chattext').value);
         document.getElementById('chattext').value = '';
     }
-
     function log(message) {
         var debugLog = document.getElementById('debuglog');
         var debugItem = document.createElement('DIV');
@@ -343,7 +303,6 @@ var Chat;
         debugLog.appendChild(debugItem);
     }
     Chat.log = log;
-
     function receiveGlobalMessage(sender, message, time, perms) {
         var chatLog = document.getElementById('chatlog');
         var chatItem = document.createElement('DIV');
@@ -364,7 +323,6 @@ var Chat;
         chatItem.appendChild(nameSpan);
         chatItem.appendChild(dividerSpan);
         chatItem.appendChild(messageSpan);
-
         chatLog.appendChild(chatItem);
     }
     Chat.receiveGlobalMessage = receiveGlobalMessage;
@@ -375,15 +333,12 @@ var tooltip;
     var tooltips = new Array();
     var activeTooltipId;
     var activeTooltip;
-
     var intervalId;
     var appearDelay = 0.25;
     var currentDelay = 0;
     var x;
     var y;
-
     var focusedElement;
-
     var Tooltip = (function () {
         function Tooltip() {
             this.html = document.createElement("div");
@@ -400,8 +355,6 @@ var tooltip;
             enumerable: true,
             configurable: true
         });
-
-
         Object.defineProperty(Tooltip.prototype, "content", {
             get: function () {
                 return this.html.getElementsByClassName('tooltip-content')[0];
@@ -413,10 +366,8 @@ var tooltip;
             enumerable: true,
             configurable: true
         });
-
         return Tooltip;
     })();
-
     function show(id, x, y) {
         var tooltip = tooltips[id];
         if (activeTooltipId !== id) {
@@ -427,7 +378,6 @@ var tooltip;
         document.body.appendChild(activeTooltip);
         move(x, y);
     }
-
     function move(x, y) {
         var rect = activeTooltip.getBoundingClientRect();
         var length = rect.right - rect.left;
@@ -436,14 +386,12 @@ var tooltip;
             activeTooltip.style.left = ((x - length) - 15) + "px";
         else
             activeTooltip.style.left = (x + 15) + "px";
-
         if ((y - height) > 0)
             activeTooltip.style.top = (y - height) + "px";
         else {
             activeTooltip.style.top = (y + 5) + "px";
         }
     }
-
     function hide() {
         if (activeTooltip) {
             activeTooltip.parentElement.removeChild(activeTooltip);
@@ -451,7 +399,6 @@ var tooltip;
         activeTooltip = null;
         activeTooltipId = null;
     }
-
     function complexModify(id, content, title) {
         var tt = tooltips[id];
         if (title) {
@@ -462,54 +409,46 @@ var tooltip;
         tt.content = content;
     }
     _tooltip.complexModify = complexModify;
-
     function modify(id, content, title) {
         var tt = tooltips[id];
         if (title)
             tt.header.textContent = title;
-
         tt.content.textContent = content;
     }
     _tooltip.modify = modify;
-
     function retrieveContent(id) {
         return tooltips[id].content;
     }
     _tooltip.retrieveContent = retrieveContent;
-
     function complexCreate(element, content, title) {
         var tt = new Tooltip();
         addListeners(element);
-
         if (title)
             tt.header = title;
-
         tt.content = content;
-
         tooltips.push(tt);
         if (element.dataset) {
             element.dataset['tooltip'] = registeredTooltips;
-        } else {
+        }
+        else {
             element.setAttribute('data-tooltip', registeredTooltips.toString());
         }
         registeredTooltips++;
     }
     _tooltip.complexCreate = complexCreate;
-
     function create(element, content, title) {
         var text = document.createElement('div');
         text.textContent = content;
-
         if (title) {
             var header = document.createElement('div');
             header.textContent = title;
             complexCreate(element, text, header);
-        } else {
+        }
+        else {
             complexCreate(element, text);
         }
     }
     _tooltip.create = create;
-
     function addListeners(element) {
         element.onmouseenter = function (e) {
             var id = +e.target.getAttribute('data-tooltip');
@@ -526,7 +465,6 @@ var tooltip;
             }
             focusedElement = e.target;
         };
-
         element.onmousemove = function (e) {
             var pos = mousePosition(e);
             if (!intervalId) {
@@ -535,7 +473,6 @@ var tooltip;
             x = pos.x;
             y = pos.y;
         };
-
         element.onmouseleave = function (e) {
             focusedElement = null;
             clearInterval(intervalId);
@@ -543,11 +480,11 @@ var tooltip;
             hide();
         };
     }
-
     function mousePosition(e) {
         if (e.pageX || e.pageY) {
             return { x: e.pageX, y: e.pageY };
-        } else if (e.clientX || e.clientY) {
+        }
+        else if (e.clientX || e.clientY) {
             return {
                 x: e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft,
                 y: e.clientY + document.body.scrollTop + document.documentElement.scrollTop
@@ -576,7 +513,6 @@ var Inventory;
         return Item;
     })();
     Inventory.Item = Item;
-
     (function (Category) {
         Category[Category["NFS"] = 0] = "NFS";
         Category[Category["ORE"] = 1] = "ORE";
@@ -587,12 +523,10 @@ var Inventory;
     })(Inventory.Category || (Inventory.Category = {}));
     var Category = Inventory.Category;
     ;
-
     function getSelectedItemQuantity() {
         return selectedItem ? selectedItem.quantity : 0;
     }
     Inventory.getSelectedItemQuantity = getSelectedItemQuantity;
-
     function selectItem(id) {
         if (id) {
             if (selectedItem != null) {
@@ -601,25 +535,22 @@ var Inventory;
             selectedItem = Inventory.items[id];
             selectedItemImage.classList.add(Utils.cssifyName(selectedItem.name));
             limitTextQuantity();
-        } else {
+        }
+        else {
             selectedItemImage.classList.remove(Utils.cssifyName(selectedItem.name));
             selectedItem = null;
         }
-
         selectedItemPane.style.display = selectedItem == null ? 'none' : 'block';
     }
     Inventory.selectItem = selectItem;
-
     function sellSelectedItem(quantity) {
         Connection.sellItem(selectedItem.id, quantity ? quantity : 1);
     }
     Inventory.sellSelectedItem = sellSelectedItem;
-
     function sellAllSelectedItem() {
         sellSelectedItem(selectedItem.quantity);
     }
     Inventory.sellAllSelectedItem = sellAllSelectedItem;
-
     function limitTextQuantity() {
         var textbox = document.getElementById('selecteditemquantity');
         var quantity = +textbox.value;
@@ -629,16 +560,12 @@ var Inventory;
             }
         }
     }
-
     function add(item) {
         Inventory.items[item.id] = item;
-
         if (!inventoryPane)
             draw();
-
         inventory.appendChild(drawItem(item));
     }
-
     function draw() {
         // SELECTED ITEM HEADER
         inventoryPane = document.createElement('DIV');
@@ -655,7 +582,6 @@ var Inventory;
             Inventory.selectItem();
         });
         selectedItemPane.appendChild(selectedItemPaneCloser);
-
         selectedItemImage = document.createElement('DIV');
         selectedItemImage.classList.add('selected-item-image');
         var selectedItemQuantity = document.createElement('INPUT');
@@ -666,7 +592,6 @@ var Inventory;
         selectedItemQuantity.addEventListener('input', function () {
             limitTextQuantity();
         });
-
         var sellItems = Utils.createButton('Sell', '');
         sellItems.classList.add('selected-item-quantity');
         sellItems.addEventListener('click', function () {
@@ -677,21 +602,17 @@ var Inventory;
             }
             limitTextQuantity();
         });
-
         var sellAllItems = Utils.createButton('Sell all', '');
         sellAllItems.classList.add('selected-item-quantity');
         sellAllItems.addEventListener('click', function () {
             Inventory.sellAllSelectedItem();
             limitTextQuantity();
         });
-
         selectedItemPane.appendChild(selectedItemImage);
         selectedItemPane.appendChild(sellAllItems);
-
         selectedItemPane.appendChild(sellItems);
         selectedItemPane.appendChild(selectedItemQuantity);
         inventoryPane.appendChild(selectedItemPane);
-
         // CONFIG CONTROLS
         var configDiv = document.createElement('DIV');
         configDiv.style.textAlign = 'center';
@@ -709,17 +630,13 @@ var Inventory;
         configPanel.appendChild(sellAllConfig);
         configDiv.appendChild(configPanel);
         inventoryPane.appendChild(configDiv);
-
         // CONFIG TABLE
         inventory = document.createElement('DIV');
         inventoryPane.appendChild(inventory);
-
         Tabs.registerGameTab(inventoryPane, 'Inventory');
     }
-
     function toggleConfig() {
     }
-
     function drawItem(item) {
         var itemElement = document.createElement('DIV');
         item.container = itemElement;
@@ -728,7 +645,6 @@ var Inventory;
             Inventory.selectItem(item.id);
         });
         tooltip.create(itemElement, item.name);
-
         // VALUE
         var itemValueContainer = document.createElement('DIV');
         itemValueContainer.classList.add("item-text");
@@ -743,7 +659,6 @@ var Inventory;
         itemValueContainer.appendChild(itemCurrency);
         itemValueContainer.appendChild(itemValue);
         itemElement.appendChild(itemValueContainer);
-
         // IMAGE
         var itemImage = document.createElement('DIV');
         itemImage.style.width = '64px';
@@ -754,23 +669,19 @@ var Inventory;
         image.classList.add(item.name.replace(' ', '_'));
         itemImage.appendChild(image);
         itemElement.appendChild(itemImage);
-
-        // QUANTITY
+        // QUANTITY 
         var itemQuantity = document.createElement('DIV');
         item.quantityElm = itemQuantity;
         itemQuantity.classList.add("item-text");
         itemQuantity.textContent = Utils.formatNumber(0);
         itemElement.appendChild(itemQuantity);
-
         return itemElement;
     }
-
     function addItem(id, name, worth, category) {
         if (!Inventory.items[id])
             add(new Item(id, name, worth, category));
     }
     Inventory.addItem = addItem;
-
     function changeQuantity(id, quantity) {
         Inventory.items[id].quantityElm.textContent = Utils.formatNumber(quantity);
         Inventory.items[id].quantity = quantity;
@@ -791,22 +702,18 @@ var Connection;
         Chat.log(JSON.stringify(Komodo.decode(msg)));
         Chat.log(roughSizeOfObject(JSON.stringify(Komodo.decode(msg))) - roughSizeOfObject(msg) + " bytes saved.");
         msg = Komodo.decode(msg);
-
         // CHAT MESSAGES
         if (msg.Message != null) {
             Chat.receiveGlobalMessage(msg.Message.Sender, msg.Message.Text, msg.Message.Time, msg.Message.Permissions);
         }
-
         // GAME SCHEMA
         if (msg.GameSchema != null) {
             loadSchema(msg.GameSchema);
         }
-
         // INVENTORY UPDATES
         if (msg.Items != null) {
             updateInventory(msg.Items);
         }
-
         // STORE UPDATES
         if (msg.StoreItemsUpdate != null) {
             updateStore(msg.StoreItemsUpdate);
@@ -818,41 +725,33 @@ var Connection;
     var actions = new Komodo.ClientActions();
     setInterval(function () {
         var encoded = actions.encode64();
-
         // if (encoded!='') {
         send(encoded);
-
         //}
         actions = new Komodo.ClientActions();
     }, 1000);
-
     function loadSchema(schema) {
         for (var i = 0; i < schema.Items.length; i++) {
             Inventory.addItem(schema.Items[i].Id, schema.Items[i].Name, schema.Items[i].Worth, schema.Items[i].Category);
             Statistics.addItem(schema.Items[i].Id, schema.Items[i].Name);
         }
-
         for (var i = 0; i < schema.StoreItems.length; i++) {
             var item = schema.StoreItems[i];
             Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.MaxQuantity);
         }
     }
-
     function updateStats(items) {
         for (var i = 0; i < items.length; i++)
             Statistics.changeStats(items[i].Id, items[i].PrestigeQuantity, items[i].LifeTimeQuantity);
     }
-
     function updateInventory(items) {
         for (var i = 0; i < items.length; i++)
             Inventory.changeQuantity(items[i].Id, items[i].Quantity);
     }
-
     function updateStore(items) {
         for (var i = 0; i < items.length; i++)
             Store.changeQuantity(items[i].Id, items[i].Quantity);
     }
-
     function sellItem(id, quantity) {
         var inventoryAction = new Komodo.ClientActions.InventoryAction();
         var sellAction = new Komodo.ClientActions.InventoryAction.SellAction();
@@ -862,7 +761,6 @@ var Connection;
         actions.InventoryActions.push(inventoryAction);
     }
     Connection.sellItem = sellItem;
-
     function purchaseItem(id, quantity) {
         var storeAction = new Komodo.ClientActions.StoreAction();
         var purchaseAction = new Komodo.ClientActions.StoreAction.PurchaseAction();
@@ -872,14 +770,12 @@ var Connection;
         actions.StoreActions.push(storeAction);
     }
     Connection.purchaseItem = purchaseItem;
-
     function sellAllItems() {
         var inventoryAction = new Komodo.ClientActions.InventoryAction();
         inventoryAction.SellAll = true;
         actions.InventoryActions.push(inventoryAction);
     }
     Connection.sellAllItems = sellAllItems;
-
     function sendGlobalMessage(message) {
         /*var clientActions = new Komodo.ClientActions();
         var socialAction = new Komodo.ClientActions.SocialAction();
@@ -887,7 +783,7 @@ var Connection;
         chatAction.GlobalMessage = message;
         socialAction.Chat = chatAction;
         clientActions.SocialActions.push(socialAction);
-        
+
         Connection.send(clientActions);*/
         var socialAction = new Komodo.ClientActions.SocialAction();
         var chatAction = new Komodo.ClientActions.SocialAction.ChatAction();
@@ -896,7 +792,6 @@ var Connection;
         actions.SocialActions.push(socialAction);
     }
     Connection.sendGlobalMessage = sendGlobalMessage;
-
     function send(message) {
         if (message.encode64) {
             var encoded = message.encode64();
@@ -906,30 +801,30 @@ var Connection;
             Chat.log("Encoded: ");
             Chat.log(message.encode64());
             Komodo.send(message.encode64());
-        } else {
+        }
+        else {
             Chat.log("Sent " + roughSizeOfObject(message) + " bytes to komodo.");
             Komodo.send(message);
         }
     }
     Connection.send = send;
-
     function roughSizeOfObject(object) {
         var objectList = [];
         var stack = [object];
         var bytes = 0;
-
         while (stack.length) {
             var value = stack.pop();
-
             if (typeof value === 'boolean') {
                 bytes += 4;
-            } else if (typeof value === 'string') {
+            }
+            else if (typeof value === 'string') {
                 bytes += value.length * 2;
-            } else if (typeof value === 'number') {
+            }
+            else if (typeof value === 'number') {
                 bytes += 8;
-            } else if (typeof value === 'object' && objectList.indexOf(value) === -1) {
+            }
+            else if (typeof value === 'object' && objectList.indexOf(value) === -1) {
                 objectList.push(value);
-
                 for (var i in value) {
                     stack.push(value[i]);
                 }
@@ -953,18 +848,15 @@ var Store;
     })(Store.Category || (Store.Category = {}));
     var Category = Store.Category;
     ;
-
     var StoreItem = (function () {
         function StoreItem() {
         }
         return StoreItem;
     })();
-
     function draw() {
         storePane = document.createElement('div');
         document.getElementById('paneContainer').appendChild(storePane);
         Tabs.registerGameTab(storePane, 'Store');
-
         for (var enumMember in Category) {
             var isValueProperty = parseInt(enumMember, 10) >= 0;
             if (isValueProperty) {
@@ -975,28 +867,23 @@ var Store;
             }
         }
     }
-
     function drawCategory(name) {
         var categoryContainer = document.createElement('div');
         categoryContainer.classList.add('store-category');
         categories[name] = categoryContainer;
-
         var categoryHeader = document.createElement('div');
         categoryHeader.textContent = name;
         categoryHeader.classList.add('store-category-header');
         categoryContainer.appendChild(categoryHeader);
         storePane.appendChild(categoryContainer);
     }
-
     function tempFix() {
         draw();
     }
     Store.tempFix = tempFix;
-
     function addItem(id, category, price, factor, name, maxQuantity) {
         if (!storePane)
             draw();
-
         if (!items[id]) {
             var item = new StoreItem();
             item.id = id;
@@ -1005,7 +892,6 @@ var Store;
             item.factor = factor;
             item.name = name;
             item.maxQuantity = maxQuantity ? maxQuantity : 0;
-
             var categoryContainer = categories[Category[category]];
             if (categoryContainer == null) {
                 categoryContainer = categories["MINING"];
@@ -1015,7 +901,6 @@ var Store;
         }
     }
     Store.addItem = addItem;
-
     function changeQuantity(id, quantity) {
         var item = items[id];
         item.quantity = quantity;
@@ -1024,10 +909,8 @@ var Store;
             item.nameElm.textContent = item.name + ' (' + ((item.quantity) ? item.quantity : 0) + '/' + item.maxQuantity + ')';
     }
     Store.changeQuantity = changeQuantity;
-
     function add() {
     }
-
     function drawItem(item) {
         var itemContainer = document.createElement('div');
         itemContainer.classList.add('store-item');
@@ -1036,12 +919,12 @@ var Store;
         header.classList.add('store-item-header');
         if (item.maxQuantity <= 1) {
             header.textContent = item.name;
-        } else {
+        }
+        else {
             header.textContent = item.name + ' (' + item.quantity + '/' + item.maxQuantity + ')';
         }
         item.nameElm = header;
         itemContainer.appendChild(header);
-
         // IMAGE
         var itemImage = document.createElement('DIV');
         itemImage.style.width = '64px';
@@ -1052,10 +935,8 @@ var Store;
         image.classList.add(Utils.cssifyName(item.name));
         itemImage.appendChild(image);
         itemContainer.appendChild(itemImage);
-
         var footer = document.createElement('div');
         footer.classList.add('store-item-footer');
-
         var priceContainer = document.createElement('div');
         priceContainer.classList.add('item-text');
         var price = document.createElement('div');
@@ -1068,7 +949,6 @@ var Store;
         coins.style.display = 'inline-block';
         priceContainer.appendChild(coins);
         priceContainer.appendChild(price);
-
         var buttonContainer = document.createElement('div');
         var button = Utils.createButton('Buy', '');
         var id = item.id;
@@ -1076,7 +956,8 @@ var Store;
             button.addEventListener('click', function () {
                 Connection.purchaseItem(id);
             });
-        } else {
+        }
+        else {
             var quantityInput = document.createElement('INPUT');
             quantityInput.type = 'TEXT';
             quantityInput.style.width = '40px';
@@ -1087,14 +968,10 @@ var Store;
                     Connection.purchaseItem(id, +quantityInput.value);
             });
         }
-
         buttonContainer.appendChild(button);
-
         footer.appendChild(buttonContainer);
         footer.appendChild(priceContainer);
-
         itemContainer.appendChild(footer);
-
         return itemContainer;
     }
 })(Store || (Store = {}));
@@ -1108,23 +985,18 @@ var Statistics;
         }
         return Item;
     })();
-
     function changeStats(id, prestige, lifetime) {
         var item = items[id];
-
         item.prestigeRow.textContent = prestige ? Utils.formatNumber(prestige) : '0';
         item.alltimeRow.textContent = lifetime ? Utils.formatNumber(lifetime) : '0';
     }
     Statistics.changeStats = changeStats;
-
     function addItem(id, name) {
         if (!statsPane)
             draw();
-
         if (!items[id]) {
             var item = new Item();
             items[id] = item;
-
             var row = itemsBody.insertRow(itemsBody.rows.length);
             row.classList.add('table-row');
             item.alltimeRow = row.insertCell(0);
@@ -1140,25 +1012,20 @@ var Statistics;
         }
     }
     Statistics.addItem = addItem;
-
     function draw() {
         statsPane = document.createElement('DIV');
         document.getElementById('paneContainer').appendChild(statsPane);
         Tabs.registerGameTab(statsPane, 'Statistics');
-
         statsPane.appendChild(drawItemsTable());
     }
-
     function drawItemsTable() {
         var itemsTable = document.createElement('TABLE');
-
         var header = itemsTable.createTHead();
         var titleRow = header.insertRow(0);
         titleRow.classList.add('table-header');
         var titleCell = titleRow.insertCell(0);
         titleCell.textContent = 'Item Statistics';
         titleCell.setAttribute('colspan', '3');
-
         var descriptionsRow = header.insertRow(1);
         descriptionsRow.classList.add('table-subheader');
         var lifetime = descriptionsRow.insertCell(0);
@@ -1170,9 +1037,7 @@ var Statistics;
         var item = descriptionsRow.insertCell(0);
         item.textContent = 'Item';
         item.style.width = '20%';
-
         itemsBody = itemsTable.createTBody();
-
         return itemsTable;
     }
 })(Statistics || (Statistics = {}));
