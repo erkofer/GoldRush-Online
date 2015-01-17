@@ -1,5 +1,5 @@
 ﻿using Caroline.Connections;
-using Microsoft.AspNet.SignalR;
+using Caroline.Middleware;
 using Microsoft.Owin;
 using Owin;
 
@@ -11,6 +11,8 @@ namespace Caroline
         public void Configuration(IAppBuilder app)
         {
             ConfigureAuth(app);
+            app.Use<AnonymousProfileComponent>();
+            SimpleInjectorInitializer.Initialize();
             app.MapSignalR<GameConnection>("/neon/komodo/dragons");
            // app.MapConnection<GameConnection>("/neon/komodo/dragons");
         }

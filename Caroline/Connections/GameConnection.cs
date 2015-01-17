@@ -11,7 +11,12 @@ namespace Caroline.Connections
 {
     public class GameConnection : PersistentConnection
     {
-        readonly GameManager _gameManager = new GameManager();
+        readonly GameManager _gameManager;
+
+        public GameConnection(GameManager games)
+        {
+            _gameManager = games;
+        }
         
         protected override async Task OnConnected(IRequest request, string connectionId)
         {

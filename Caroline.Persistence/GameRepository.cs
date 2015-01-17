@@ -7,8 +7,8 @@ namespace Caroline.Persistence
 {
     public sealed class GameRepository : Repository<Game>, IGameRepository
     {
-        public GameRepository(GoldRushDbContext context)
-            : base(context, context.Set<Game>())
+        public GameRepository(IGoldRushDbContext context)
+            : base(context, context.Games)
         {
         }
 
@@ -32,7 +32,7 @@ namespace Caroline.Persistence
 
             // link the game to the user
             user.GameId = game.Id;
-            Context.Entry(user).State = EntityState.Modified;
+            EfContext.Entry(user).State = EntityState.Modified;
 
             await Context.SaveChangesAsync();
 
