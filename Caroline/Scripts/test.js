@@ -9,6 +9,12 @@
         console.log(decodeMsg(msg));
     });*/
     Komodo.connection.start();
+
+    function restart() {
+        Komodo.connection.stop();
+        Komodo.connection.start();
+    }
+    Komodo.restart = restart;
     
     var ProtoBuf = dcodeIO.ProtoBuf,
         ByteBuffer = ProtoBuf.ByteBuffer;

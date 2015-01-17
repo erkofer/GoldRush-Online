@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Caroline.Persistence;
@@ -17,16 +19,16 @@ namespace Caroline.Domain
         public ApplicationUserManager(IUserStore<ApplicationUser> store)
             : base(store)
         {
-            
+
         }
 
         public static ApplicationUserManager Create(IdentityFactoryOptions<ApplicationUserManager> options, IOwinContext context)
         {
             var manager = new ApplicationUserManager(new UserStore<ApplicationUser>(context.Get<GoldRushDbContext>()));
             // Configure validation logic for usernames
-            manager.UserValidator = new UserValidator<ApplicationUser>(manager)
+            manager.UserValidator = new GoldRushUserValidator(manager)
             {
-                AllowOnlyAlphanumericUserNames = true
+                AllowOnlyAlphanumericUserNames = false
             };
 
             // Configure validation logic for passwords
@@ -51,6 +53,41 @@ namespace Caroline.Domain
                     new DataProtectorTokenProvider<ApplicationUser>(dataProtectionProvider.Create("ASP.NET Identity"));
             }
             return manager;
+        }
+    }
+
+    public class GoldRushUserValidator : UserValidator<ApplicationUser>
+    {
+        public GoldRushUserValidator(UserManager<ApplicationUser, string> manager)
+            : base(manager)
+        {
+        }
+        const string Base64Characters = @"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+        const string RegisteredCharacters = @"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ";
+        static readonly HashSet<char> Base64CharactersHash = new HashSet<char>(Base64Characters);
+        static readonly HashSet<char> RegisteredCharactersHash = new HashSet<char>(RegisteredCharacters);
+
+        public override async Task<IdentityResult> ValidateAsync(ApplicationUser item)
+        {
+            var baseResult = await base.ValidateAsync(item);
+            
+            var hash = item.IsAnonymous ? Base64CharactersHash : RegisteredCharactersHash;
+            List<char> illegalChars = null;
+            for (int i = 0; i < item.UserName.Length; i++)
+            {
+                var character = item.UserName[i];
+                if (hash.Contains(character)) continue;
+
+                if (illegalChars == null)
+                    illegalChars = new List<char>();
+                illegalChars.Add(character);
+            }
+
+            if (illegalChars != null && illegalChars.Count > 0)
+            {
+                return new IdentityResult(baseResult.Errors.Concat(new[] { "Your username may only contain letters, numbers, spaces and underscores." }));
+            }
+            return baseResult;
         }
     }
 

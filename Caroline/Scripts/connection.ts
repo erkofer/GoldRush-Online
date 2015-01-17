@@ -2,7 +2,8 @@
 ///<reference path="inventory.ts"/>
 
 module Connection {
-    declare var Komodo: { connection: any; ClientActions: any; decode: any; send: any;};
+    declare var Komodo: { connection: any; ClientActions: any; decode: any; send: any; restart: any };
+    var conInterval;
     Komodo.connection.received(function (msg) {
         Chat.log("Recieved " + roughSizeOfObject(msg) + " bytes from komodo.");
         Chat.log("Encoded: ");
@@ -31,15 +32,37 @@ module Connection {
             updateStats(msg.StatItemsUpdate);
         }
     });
+
+    export function restart() {
+        Komodo.restart();
+        
+    }
+
+
     var actions = new Komodo.ClientActions();
-    setInterval(function () {
-        var encoded = actions.encode64();
-       // if (encoded!='') {
+
+    Komodo.connection.stateChanged(function (change) {
+        if (change.newState === (<any>$).signalR.connectionState.connected) {
+            connected();
+        }
+        if (change.newState === (<any>$).signalR.connectionState.disconnected) {
+            clearInterval(conInterval);
+        }
+   });
+
+   function connected() {
+        console.log('Connection opened');
+        conInterval = setInterval(function () {
+            var encoded = actions.encode64();
+            // if (encoded!='') {
             send(encoded);
-        //}
-       
-        actions = new Komodo.ClientActions();
-    }, 1000);
+            //}
+
+            actions = new Komodo.ClientActions();
+        }, 1000);
+    }
+
+    
 
     function loadSchema(schema: any) {
         for (var i = 0; i < schema.Items.length; i++) {

@@ -67,3 +67,34 @@
 .table-row:hover {
     background: rgb(103, 132, 154);
 }
+/*Registration*/
+
+.account-manager {
+    background: #496D89;
+}
+
+.account-user{
+    background: #496D89;
+}
+
+.account-user:hover {
+    background: #5D7793;
+}
+
+.account-option {
+    background: #7B98AE;
+}
+
+.account-option:hover{
+    background:#85A2B8;
+}
+/*modal*/
+.modal-window {
+    box-shadow: 3px 3px 5px 2px rgba(0, 0, 0, 0.3);
+    background-color: white;
+}
+
+.modal-header {
+    border-bottom: solid 1px rgb(212, 212, 212);
+    background: linear-gradient(rgb(200, 200, 200), rgb(238, 238, 238));
+}

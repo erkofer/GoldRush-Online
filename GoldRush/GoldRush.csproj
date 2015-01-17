@@ -48,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Game.cs" />
+    <Compile Include="GameObjects\Crafting.cs" />
     <Compile Include="GameObjects\GameConfig.cs" />
     <Compile Include="APIs\GameFactory.cs" />
     <Compile Include="GameObjects\GameObjects.cs" />

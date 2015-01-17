@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Caroline.Persistence
 {
     public abstract class Repository<TEntity, TId> : IRepository<TEntity, TId>
-        where TEntity : class, IIdentifiableEntity<TId>, new()
+        where TEntity : class, new()
         where TId : IEquatable<TId>
     {
         protected Repository(GoldRushDbContext context, DbSet<TEntity> set)
@@ -28,13 +28,7 @@ namespace Caroline.Persistence
             Context.Entry(entity).State = EntityState.Deleted;
         }
 
-        public void Remove(TId id)
-        {
-            var entity = from e in Set
-                         where e.EntityId.Equals(id)
-                         select e;
-            Context.Entry(entity).State = EntityState.Deleted;
-        }
+        public abstract void Remove(TId id);
 
         public virtual void Update(TEntity entity)
         {
@@ -46,12 +40,7 @@ namespace Caroline.Persistence
             return await (from e in Set select e).ToListAsync();
         }
 
-        public virtual async Task<TEntity> Get(TId id)
-        {
-            return await (from e in Set
-                          where e.EntityId.Equals(id)
-                          select e).SingleAsync();
-        }
+        public abstract Task<TEntity> Get(TId id);
 
         protected DbSet<TEntity> Set { get; set; }
 
@@ -59,7 +48,7 @@ namespace Caroline.Persistence
     }
 
     public abstract class Repository<TEntity> : Repository<TEntity, int>
-        where TEntity : class, IIdentifiableEntity<int>, new()
+        where TEntity : class, new()
     {
         protected Repository(GoldRushDbContext context, DbSet<TEntity> set) : base(context, set)
         {

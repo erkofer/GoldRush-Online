@@ -19,7 +19,11 @@ namespace Caroline.App
                 var games = work.Games;
 
                 // get game save, create it if it doesn't exist
-                var save = await games.GetByUseridAsync(userId) ?? await games.AddByUserIdAsync(userId, new Game());
+                var save = await games.GetByUserIdAsync(userId) ?? await games.AddByUserIdAsync(userId, new Game());
+                if (save == null)
+                {
+                    return new GameState {IsError = true};
+                }
                 var saveData = save.SaveData;
                 var saveObject = saveData != null ? ProtoBufHelpers.Deserialize<SaveState>(saveData) : null;
 

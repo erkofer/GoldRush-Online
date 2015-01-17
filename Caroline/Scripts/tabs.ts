@@ -28,11 +28,10 @@
             tab.button = button;
 
             if (this.lowestId == 0) {
-                tab.button.classList.add('active');
+                tab.activate();
             }
             else {
-                tab.button.classList.add('inactive');
-                tab.pane.style.display = 'none';
+                tab.deactivate();
             }
 
             // IDs are incremented here. to get their initial value we must subtract.
@@ -96,11 +95,13 @@
         deactivate() {
             Utils.cssSwap(this.button, 'active', 'inactive');
             this.pane.style.display = 'none';
+            this.pane.style.overflow = 'hidden';
         }
 
         activate() {
             Utils.cssSwap(this.button, 'inactive', 'active');
             this.pane.style.display = 'block';
+            this.pane.style.overflow = 'visible';
             selectedTab = this.pane;
         }
     }
