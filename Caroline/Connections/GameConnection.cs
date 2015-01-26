@@ -14,13 +14,8 @@ namespace Caroline.Connections
 {
     public class GameConnection : PersistentConnection
     {
-        readonly GameManager _gameManager;
+        readonly GameManager _gameManager = new GameManager();
 
-        public GameConnection(GameManager games)
-        {
-            _gameManager = games;
-        }
-        
         protected override async Task OnConnected(IRequest request, string connectionId)
         {
             var state = await _gameManager.Update(HttpContext.Current.User.Identity.GetUserId(), connectionId);
@@ -63,7 +58,7 @@ namespace Caroline.Connections
         async Task<ApplicationUser> GetUserName(string userId)
         {
             var account = new AccountViewModel();
-                    
+
             using (var work = new UnitOfWork())
             {
                 return await work.Users.Get(userId);

@@ -17,7 +17,7 @@ namespace Caroline.Persistence
             var entity = from e in Set
                          where e.Id == id
                          select e;
-            EfContext.Entry(entity).State = EntityState.Deleted;
+            Context.Entry(entity).State = EntityState.Deleted;
         }
 
         public override async Task<ApplicationUser> Get(string id)

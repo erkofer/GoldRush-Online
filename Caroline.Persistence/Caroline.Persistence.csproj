@@ -56,11 +56,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DisposableBase.cs" />
     <Compile Include="GameRepository.cs" />
     <Compile Include="GoldRushDbContext.cs" />
     <Compile Include="IGameRepository.cs" />
-    <Compile Include="IGoldRushDbContext.cs" />
     <Compile Include="IRepository.cs" />
     <Compile Include="IUnitOfWork.cs" />
     <Compile Include="IUserRepository.cs" />

@@ -1,30 +1,25 @@
 ﻿using System;
+using System.Web;
 using System.Web.Caching;
 using Caroline.App.Models;
+using JetBrains.Annotations;
 
 namespace Caroline.App
 {
-    public class GoldRushCache : IGoldRushCache
+    class GoldRushCache
     {
-        private readonly Cache _backingStore;
-
-        public GoldRushCache(Cache backingStore)
-        {
-            _backingStore = backingStore;
-        }
-
+        [CanBeNull]
         public GameState GetGameData(string sessionGuid)
         {
-            if (sessionGuid == null) throw new ArgumentNullException("sessionGuid");
-            return _backingStore.Get("game_" + sessionGuid) as GameState;
+            return HttpRuntime.Cache.Get("game_" + sessionGuid) as GameState;
         }
 
-        public void SetGameData(string sessionGuid, GameState state)
+        public void SetGameData([NotNull] string sessionGuid, [NotNull] GameState state)
         {
             if (sessionGuid == null) throw new ArgumentNullException("sessionGuid");
             if (state == null) throw new ArgumentNullException("state");
-
-            _backingStore.Add("game_" + sessionGuid, state,
+            
+            HttpRuntime.Cache.Add("game_" + sessionGuid, state,
                 dependencies: null, 
                 absoluteExpiration: Cache.NoAbsoluteExpiration, 
                 slidingExpiration: TimeSpan.FromSeconds(30), 

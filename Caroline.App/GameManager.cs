@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Caroline.App.Models;
 using Caroline.Persistence;
 using Caroline.Persistence.Models;
@@ -7,24 +6,17 @@ using GoldRush;
 
 namespace Caroline.App
 {
-    public class GameManager : DisposableBase, IGameManager
+    public class GameManager : IGameManager
     {
-        readonly IUnitOfWork _work;
-        readonly GameFactory _gameFactory;
-        readonly IGoldRushCache _goldRushCache;
-
-        public GameManager(IUnitOfWork work, GameFactory gameFactory, IGoldRushCache cache)
-        {
-            _work = work;
-            _gameFactory = gameFactory;
-            _goldRushCache = cache;
-        }
+        readonly GameFactory _gameFactory = new GameFactory();
+        readonly GoldRushCache _goldRushCache = new GoldRushCache();
 
         public async Task<GameState> Update(string userId, string sessionGuid, ClientActions input = null)
         {
-            GuardDispose();
-
-            var games = _work.Games;
+            GameState dataToSend;
+            using (var work = new UnitOfWork())
+            {
+                var games = work.Games;
 
                 // get game save, create it if it doesn't exist
                 var save = await games.GetByUserIdAsync(userId) ?? await games.AddByUserIdAsync(userId, new Game());
@@ -40,14 +32,15 @@ namespace Caroline.App
                 game.Load(saveObject);
 
                 // update save with new input
-            var dataToSend = game.Update(input);
+                dataToSend = game.Update(input);
 
                 // save to the database
                 var saveDto = game.Save();
                 save.SaveData = ProtoBufHelpers.Serialize(saveDto);
                 games.Update(save);
 
-            await _work.SaveChangesAsync();
+                await work.SaveChangesAsync();
+            }
 
             if (dataToSend == null)
                 dataToSend = new GameState();
@@ -59,16 +52,9 @@ namespace Caroline.App
                 dataToSend = dataToSend.Compress(previousState);
             return dataToSend;
         }
-
-        protected override void DisposeObj()
-        {
-            _work.Dispose();
-        }
     }
 
-
-
-    public interface IGameManager : IDisposable
+    public interface IGameManager
     {
         Task<GameState> Update(string userId, string sessionGuid, ClientActions input = null);
     }

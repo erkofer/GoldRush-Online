@@ -16,12 +16,14 @@ namespace Caroline.Areas.Api.Controllers
 {
     public class AccountController : Controller
     {
-        readonly IUnitOfWork _work;
-        ApplicationUserManager _userManager;
+        private ApplicationUserManager _userManager;
 
-        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, IUnitOfWork work)
+        public AccountController()
         {
-            _work = work;
+        }
+
+        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager)
+        {
             UserManager = userManager;
             SignInManager = signInManager;
         }
@@ -53,7 +55,7 @@ namespace Caroline.Areas.Api.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return JsonConvert.SerializeObject(new SuccessViewModel { Success = false });
+                return JsonConvert.SerializeObject(new SuccessViewModel{Success = false});
             }
             // This doesn't count login failures towards account lockout
             // To enable password failures to trigger account lockout, change to shouldLockout: true
@@ -106,8 +108,11 @@ namespace Caroline.Areas.Api.Controllers
             var account = new AccountViewModel();
             ApplicationUser user;
 
-            user = await _work.Users.Get(userId);
-            
+            using (var work = new UnitOfWork())
+            {
+                user = await work.Users.Get(userId);
+            }
+
             if (user == null)
                 account.SignedIn = false;
             else

@@ -1,33 +1,45 @@
-﻿using System;
+﻿using System.Data.Entity;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Identity.EntityFramework;
 
 namespace Caroline.Persistence
 {
     public class UnitOfWork : IUnitOfWork
     {
-        readonly IGoldRushDbContext _context;
+        GoldRushDbContext _Context;
+        DbSet<IdentityRole> _roles;
+        IGameRepository _games;
+        IUserRepository _users;
 
-        public UnitOfWork(IGameRepository games, IUserRepository users, IGoldRushDbContext context)
+        GoldRushDbContext Context
         {
-            if (games == null) throw new ArgumentNullException("games");
-            if (users == null) throw new ArgumentNullException("users");
-            if (context == null) throw new ArgumentNullException("context");
-            _context = context;
-            Games = games;
-            Users = users;
+            get { return _Context ?? (_Context = new GoldRushDbContext()); }
         }
 
-        public IGameRepository Games { get; private set; }
-        public IUserRepository Users { get; private set; }
+        public DbSet<IdentityRole> Roles
+        {
+            get { return _roles ?? (_roles = Context.Set<IdentityRole>()); }
+        }
+
+        public IGameRepository Games
+        {
+            get { return _games ?? (_games = new GameRepository(Context)); }
+        }
+        public IUserRepository Users
+        {
+            get { return _users ?? (_users = new UserRepository(Context)); }
+        }
 
         public async Task SaveChangesAsync()
         {
-            await _context.SaveChangesAsync();
+            if (_Context != null)
+                await _Context.SaveChangesAsync();
         }
 
         public void Dispose()
         {
-            _context.Dispose();
+            if (_Context != null)
+                _Context.Dispose();
         }
     }
 }

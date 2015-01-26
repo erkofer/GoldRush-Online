@@ -54,41 +54,6 @@ namespace Caroline.Domain
             }
             return manager;
         }
-
-        public static async Task<bool> TryMigrateAnonymousAccountOrRegister(HttpContextBase context, RegisterViewModel model)
-        {
-            if (model.Password != model.ConfirmPassword)
-                return false;
-
-            using (var work = new UnitOfWork())
-            {
-                if (context.User.Identity.IsAuthenticated)
-                {
-                    // migrate from an anonymous account
-                    var id = context.User.Identity.GetUserId();
-                    var anonUser = await work.Users.Get(id);
-                    if (!anonUser.IsAnonymous)
-                        return false;
-
-                    anonUser.IsAnonymous = false;
-                    anonUser.PasswordHash = new PasswordHasher().HashPassword(model.Password);
-                    anonUser.Email = model.Email;
-                    anonUser.UserName = anonUser.UserName;
-                    work.Users.Update(anonUser);
-                    await work.SaveChangesAsync();
-
-                    return true;
-                }
-
-                // register a new account
-                var store = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>());
-                var user = new ApplicationUser();
-                user.Email = model.Email;
-                user.UserName = model.UserName;
-                var result = await store.CreateAsync(user, model.Password);
-                return result.Succeeded;
-            }
-        }
     }
 
     public class GoldRushUserValidator : UserValidator<ApplicationUser>

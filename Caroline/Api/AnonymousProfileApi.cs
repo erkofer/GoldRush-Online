@@ -22,8 +22,8 @@ namespace Caroline.Api
         const string AnonymousProfileCookieName = "GoldRushAnonymousId";
 
         public static bool GenerateAnonymousProfileIfNotAuthenticated(
-            HttpContextBase context, 
-            string[] usernamesWhiteList = null, 
+            HttpContextBase context,
+            string[] usernamesWhiteList = null,
             string[] rolesWhiteList = null)
         {
             RegisterAnonymouslyIfLoggedOff(context);
@@ -93,20 +93,20 @@ namespace Caroline.Api
         {
             try
             {
-            var cookie = context.Request[AnonymousProfileCookieName];
-            AnonymousUserCookie user = null;
-            if (cookie != null)
+                var cookie = context.Request[AnonymousProfileCookieName];
+                AnonymousUserCookie user = null;
+                if (cookie != null)
                     user = JsonConvert.DeserializeObject<AnonymousUserCookie>(cookie);
 
-            if (user == null)
-                return false;
+                if (user == null)
+                    return false;
                 var userManager = context.GetOwinContext().GetUserManager<ApplicationSignInManager>();
                 var username = Convert.ToBase64String(MachineKey.Unprotect(Convert.FromBase64String(user.UserName)) ?? new byte[] { });
                 var password = Convert.ToBase64String(MachineKey.Unprotect(Convert.FromBase64String(user.Password)) ?? new byte[] { });
                 var signInResult = userManager.PasswordSignInAsync(username, password, true, false);
 
-            return signInResult.Result == SignInStatus.Success;
-        }
+                return signInResult.Result == SignInStatus.Success;
+            }
             catch (CryptographicException)
             {
                 return false;
