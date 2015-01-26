@@ -24,7 +24,9 @@ namespace GoldRush
 
         public Random Random;
         public Items Items;
+        //GameId = 200
         public Upgrades Upgrades;
+        //GameId =400
         public Gatherers Gatherers;
         public Store Store;
         public Dictionary<int,GameObject> All;

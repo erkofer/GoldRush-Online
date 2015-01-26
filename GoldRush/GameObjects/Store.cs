@@ -12,23 +12,38 @@ namespace GoldRush
         {
             var coins = game.Items.Coins;
             //TODO: Finish up the store.
+            
+            // Items
+
             EmptyVial = new StoreItem(game.Items.EmptyVial, GameConfig.StoreItems.EmptyVial);
             All.Add(EmptyVial.Item.Id, EmptyVial);
 
             Gunpowder = new StoreItem(game.Items.Gunpowder, GameConfig.StoreItems.Gunpowder);
             All.Add(Gunpowder.Item.Id, Gunpowder);
 
-            Researcher = new StoreItem(game.Upgrades.Researcher, GameConfig.StoreItems.Researcher);
-            All.Add(Researcher.Item.Id, Researcher);
+
+            // Upgrades
 
             // ENABLE AFTER BACKPACK CRAFTING.
             Botanist = new StoreItem(game.Upgrades.Botanist, GameConfig.StoreItems.Botanist);
             //All.Add(Botanist.Item.Id, Botanist);
 
+            Researcher = new StoreItem(game.Upgrades.Researcher, GameConfig.StoreItems.Researcher);
+            All.Add(Researcher.Item.Id, Researcher);
+
             Foreman = new StoreItem(game.Upgrades.Foreman, GameConfig.StoreItems.Foreman);
             All.Add(Foreman.Item.Id, Foreman);
 
-            // GATHERERS
+            ClickUpgradeT1 = new StoreItem(game.Upgrades.ClickUpgradeT1, GameConfig.StoreItems.ClickUpgradeT1);
+            All.Add(ClickUpgradeT1.Item.Id, ClickUpgradeT1);
+
+            ClickUpgradeT2 = new StoreItem(game.Upgrades.ClickUpgradeT2, GameConfig.StoreItems.ClickUpgradeT2);
+            All.Add(ClickUpgradeT2.Item.Id, ClickUpgradeT2);
+
+            ClickUpgradeT3 = new StoreItem(game.Upgrades.ClickUpgradeT3, GameConfig.StoreItems.ClickUpgradeT3);
+            All.Add(ClickUpgradeT3.Item.Id, ClickUpgradeT3);
+
+            // Gatherers
 
             Miner = new StoreItem(game.Gatherers.Miner, GameConfig.StoreItems.Miner);
             All.Add(Miner.Item.Id, Miner);
@@ -51,14 +66,7 @@ namespace GoldRush
             BigTexan = new StoreItem(game.Gatherers.BigTexan, GameConfig.StoreItems.BigTexan);
             All.Add(BigTexan.Item.Id, BigTexan);
 
-            ClickUpgradeT1 = new StoreItem(game.Upgrades.ClickUpgradeT1, GameConfig.StoreItems.ClickUpgradeT1);
-            All.Add(ClickUpgradeT1.Item.Id, ClickUpgradeT1);
-
-            ClickUpgradeT2 = new StoreItem(game.Upgrades.ClickUpgradeT2, GameConfig.StoreItems.ClickUpgradeT2);
-            All.Add(ClickUpgradeT2.Item.Id, ClickUpgradeT2);
-
-            ClickUpgradeT3 = new StoreItem(game.Upgrades.ClickUpgradeT3, GameConfig.StoreItems.ClickUpgradeT3);
-            All.Add(ClickUpgradeT3.Item.Id, ClickUpgradeT3);
+           
 
             // If you want an item to be purchased with a different currency define it above.
             foreach (var storeItem in All)

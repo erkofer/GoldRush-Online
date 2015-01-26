@@ -65,6 +65,8 @@ namespace GoldRush
             }
         }
 
+        
+
         public void Mine()
         {
             Mine(1);
@@ -104,7 +106,7 @@ namespace GoldRush
             /// </summary>
             public int ChanceOfNothing { get; set; }
 
-            private double resourcesPerSecondEfficiency;
+            private double resourcesPerSecondEfficiency=1;
             /// <summary>
             /// The percentage increase of resources gathered per second by upgrades.
             /// </summary>
@@ -127,7 +129,7 @@ namespace GoldRush
                 return BaseResourcesPerSecond + ResourcesPerSecondBaseIncrease;
             } }
 
-            private double probabilityModifier;
+            private double probabilityModifier=1;
             /// <summary>
             /// The increased chance of finding rarer ores.
             /// </summary>
@@ -137,7 +139,7 @@ namespace GoldRush
             /// <summary>
             /// The quantity of resources gathered per second.
             /// </summary>
-            public double ResourcesPerSecond { get { return (TotalBaseResourcesPerSecond * (ResourcesPerSecondEfficiency+1))*Quantity; } }
+            public double ResourcesPerSecond { get { return (TotalBaseResourcesPerSecond * (ResourcesPerSecondEfficiency))*Quantity; } }
 
             /// <summary>
             /// A buffer to hold left over efficiency.
@@ -162,9 +164,21 @@ namespace GoldRush
             private List<int> totalProbability;
 
             /// <summary>
+            /// The totaled probability of all resources.
+            /// </summary>
+            private int totaledProbability;
+
+            /// <summary>
             /// Determines when we must recalculate mining stuff.
             /// </summary>
             private bool recalculate=true;
+
+            int factorial(int i)
+            {
+                if (i <= 1)
+                    return 1;
+                return i * factorial(i - 1);
+            }
 
             public override bool Active
             {
@@ -188,18 +202,22 @@ namespace GoldRush
 
             private void recalculateMiningStuff()
             {
+                totaledProbability = 0;
                 totalProbability = new List<int>();
                 var total = 0;
                 foreach (var resource in PossibleResources)
+                {
                     totalProbability.Add(total += resource.Probability);
+                    totaledProbability += resource.Probability;
+                }
 
                 if (ProbabilityModifier <= 0) return;
                 
                 for (var i = 0; i < totalProbability.Count; i++)
                     if (totalProbability[i] < (total/2))
-                        totalProbability[i] *= (int) Math.Floor(ProbabilityModifier + 1);
+                        totalProbability[i] *= (int) Math.Floor(ProbabilityModifier);
                     else
-                        totalProbability[i] /= (int) Math.Floor(ProbabilityModifier + 1);
+                        totalProbability[i] /= (int) Math.Floor(ProbabilityModifier);
             }
              
 
@@ -229,20 +247,47 @@ namespace GoldRush
 
                 if (PossibleResources.Count <= 0) return;
 
-                
-                for (var i = 0; i < resourcesGained; i++)
+                if (ms <= 10000) // if less than ten seconds have passed since we last mined.
                 {
-                    if (totalProbability.ToArray().Length < 1) break;
+                    for (var i = 0; i < resourcesGained; i++)
+                    {
+                        if (totalProbability.ToArray().Length < 1) break;
 
-                    var random = _game.Random.Next(ChanceOfNothing + 1);
-                    Debug.Print(ChanceOfNothing.ToString()+' '+random.ToString());
-                    if (ChanceOfNothing != random) continue;
+                        var random = _game.Random.Next(ChanceOfNothing + 1);
 
+                        if (ChanceOfNothing != random) continue;
 
-                    var chance = _game.Random.Next(1, totalProbability[totalProbability.Count - 1]);
-                    var roll = Array.BinarySearch(totalProbability.ToArray(), chance);
-                    if (roll < 0) roll = ~roll;
-                    PossibleResources[roll].Quantity++;
+                        var chance = _game.Random.Next(1, totalProbability[totalProbability.Count - 1]);
+                        var roll = Array.BinarySearch(totalProbability.ToArray(), chance);
+                        if (roll < 0) roll = ~roll;
+                        PossibleResources[roll].Quantity++;
+                    }
+                }
+                else
+                {
+                    for (var i = 0; i < PossibleResources.Count; i++)
+                    {
+                        double ticks = (ms /1000);
+                        double r = (PossibleResources[-i].Probability / totaledProbability) * resourcesGained;
+                        double luck = (_game.Random.Next(0, 11) / 10);
+                        double probability = 1 / Math.Pow(2.71828, r);
+                        int resourcesToGain = 0;
+                        
+                        if(r < 10)
+                        {
+                            while (luck > probability)
+                            {
+                                resourcesToGain++;
+                                probability += Math.Pow(r, resourcesToGain) / (factorial(resourcesToGain) * Math.Pow(2.71828, r));
+                            }
+                        }
+                        else
+                        {
+                            double deviation = Math.Sqrt(ticks*r*(1-r));
+                            resourcesToGain = (int)Math.Floor((ticks*r) + (((_game.Random.Next(0, 11)/10) - 0.5)*deviation));
+                        }
+                        PossibleResources[i].Quantity+=resourcesToGain;
+                    }
                 }
             }
         }

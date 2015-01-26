@@ -557,6 +557,7 @@ var Tabs;
 var Inventory;
 (function (Inventory) {
     Inventory.items = new Array();
+    Inventory.configClickers = new Array();
     var inventoryPane;
     var inventory;
     var selectedItemPane;
@@ -746,6 +747,13 @@ var Inventory;
         Tabs.registerGameTab(inventoryPane, 'Inventory');
     }
 
+    function modifyConfig(id, enabled) {
+        if (!Inventory.configClickers[id])
+            console.log(id);
+        Inventory.configClickers[id].checked = enabled;
+    }
+    Inventory.modifyConfig = modifyConfig;
+
     function toggleConfig() {
         if (configTableContainer.classList.contains('closed')) {
             configTableContainer.classList.remove('closed');
@@ -827,12 +835,6 @@ var Inventory;
                 selectedItemCell = row.cells[cellIndex];
                 selectedConfigCell = row.cells[cellIndex - 1];
             }
-            for (var curRow = 0; curRow < rows; curRow++) {
-                var inspectedRow = configTableBody.rows[i];
-                var cells = inspectedRow.cells.length;
-                for (var curCell = 0; curCell < cells; curCell++) {
-                }
-            }
 
             var nameAndImage = document.createElement('DIV');
             nameAndImage.classList.add('item-text');
@@ -847,6 +849,11 @@ var Inventory;
             selectedItemCell.appendChild(nameAndImage);
             var configChecker = document.createElement('INPUT');
             configChecker.type = 'CHECKBOX';
+            var id = item.id;
+            Inventory.configClickers[id] = configChecker;
+            configChecker.addEventListener('change', function (e) {
+                Connection.configureItem(id, Inventory.configClickers[id].checked);
+            });
             selectedConfigCell.appendChild(configChecker);
         }
 
@@ -897,6 +904,11 @@ var Connection;
         if (msg.StatItemsUpdate != null) {
             updateStats(msg.StatItemsUpdate);
         }
+        if (msg.ConfigItems != null) {
+            updateInventoryConfigurations(msg.ConfigItems);
+        }
+
+        Crafting.addCraftingItem();
     });
 
     function restart() {
@@ -917,6 +929,10 @@ var Connection;
 
     function connected() {
         console.log('Connection opened');
+        var encoded = actions.encode64();
+        send(encoded);
+        actions = new Komodo.ClientActions();
+
         conInterval = setInterval(function () {
             var encoded = actions.encode64();
 
@@ -948,6 +964,11 @@ var Connection;
             Inventory.changeQuantity(items[i].Id, items[i].Quantity);
     }
 
+    function updateInventoryConfigurations(items) {
+        for (var i = 0; i < items.length; i++)
+            Inventory.modifyConfig(items[i].Id, items[i].Enabled);
+    }
+
     function updateStore(items) {
         for (var i = 0; i < items.length; i++)
             Store.changeQuantity(items[i].Id, items[i].Quantity);
@@ -962,6 +983,16 @@ var Connection;
         actions.InventoryActions.push(inventoryAction);
     }
     Connection.sellItem = sellItem;
+
+    function configureItem(id, enabled) {
+        var inventoryAction = new Komodo.ClientActions.InventoryAction();
+        var configAction = new Komodo.ClientActions.InventoryAction.ConfigAction();
+        configAction.Id = id;
+        configAction.Enabled = enabled;
+        inventoryAction.Config = configAction;
+        actions.InventoryActions.push(inventoryAction);
+    }
+    Connection.configureItem = configureItem;
 
     function purchaseItem(id, quantity) {
         var storeAction = new Komodo.ClientActions.StoreAction();
@@ -1030,6 +1061,62 @@ var Connection;
         return bytes;
     }
 })(Connection || (Connection = {}));
+var Crafting;
+(function (Crafting) {
+    var storePane;
+    var processorSection;
+    var craftingSection;
+    var cellDescriptions = ['Action', 'Description', 'Input', 'Output', 'Name'];
+    var cellWidths = ['10%', '30%', '15%', '15%', '10%'];
+
+    function draw() {
+        storePane = document.createElement('DIV');
+        document.getElementById('paneContainer').appendChild(storePane);
+        Tabs.registerGameTab(storePane, 'Crafting');
+
+        processorSection = document.createElement('DIV');
+        storePane.appendChild(processorSection);
+
+        craftingSection = document.createElement('DIV');
+        storePane.appendChild(craftingSection);
+        drawCraftingTable();
+    }
+
+    function drawCraftingTable() {
+        var craftingTable = document.createElement('TABLE');
+        craftingTable.classList.add('block-table');
+
+        var header = craftingTable.createTHead();
+        var titleRow = header.insertRow(0);
+        titleRow.classList.add('table-subheader');
+        var realTitleRow = header.insertRow(0);
+        realTitleRow.classList.add('table-header');
+
+        var titleCell = realTitleRow.insertCell(0);
+        titleCell.colSpan = cellDescriptions.length;
+        titleCell.textContent = 'Crafting Table';
+
+        for (var i = 0; i < cellDescriptions.length; i++) {
+            var cell = titleRow.insertCell(0);
+            cell.style.width = cellWidths[i];
+            cell.textContent = cellDescriptions[i];
+        }
+
+        craftingSection.appendChild(craftingTable);
+    }
+
+    function addCraftingItem() {
+        if (!storePane)
+            draw();
+    }
+    Crafting.addCraftingItem = addCraftingItem;
+
+    function addCraftingUpgrade() {
+        if (!storePane)
+            draw();
+    }
+    Crafting.addCraftingUpgrade = addCraftingUpgrade;
+})(Crafting || (Crafting = {}));
 var modal;
 (function (modal) {
     var timeOpened = 0;

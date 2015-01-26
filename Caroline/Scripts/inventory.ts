@@ -3,6 +3,7 @@
 ///<reference path="tabs.ts"/>
 module Inventory {
     export var items = new Array<Item>();
+    export var configClickers = new Array<HTMLElement>();
     var inventoryPane: HTMLElement;
     var inventory: HTMLElement;
     var selectedItemPane:HTMLElement;
@@ -199,6 +200,12 @@ module Inventory {
         Tabs.registerGameTab(inventoryPane, 'Inventory');
     }
 
+    export function modifyConfig(id: number, enabled: boolean) {
+        if (!configClickers[id])
+            console.log(id);
+        (<HTMLInputElement>configClickers[id]).checked = enabled;
+    }
+
     export function toggleConfig() {
         if (configTableContainer.classList.contains('closed')) {
             configTableContainer.classList.remove('closed')
@@ -281,13 +288,14 @@ module Inventory {
                 selectedItemCell = (<HTMLTableElement>row).cells[cellIndex];
                 selectedConfigCell = (<HTMLTableElement>row).cells[cellIndex-1];
             }
+            /* For doing stuff with empty cells.
             for (var curRow = 0; curRow < rows; curRow++) {
                 var inspectedRow = (<HTMLTableElement>configTableBody).rows[i];
                 var cells = (<HTMLTableElement>inspectedRow).cells.length;
                 for (var curCell = 0; curCell < cells; curCell++) {
 
                 }
-            }
+            }*/
 
             var nameAndImage = document.createElement('DIV');
             nameAndImage.classList.add('item-text');
@@ -302,6 +310,11 @@ module Inventory {
             (<HTMLElement>selectedItemCell).appendChild(nameAndImage);
             var configChecker = <HTMLInputElement>document.createElement('INPUT');
             configChecker.type = 'CHECKBOX';
+            var id = item.id;
+            configClickers[id] = configChecker;
+            configChecker.addEventListener('change', function (e) {
+                Connection.configureItem(id, (<HTMLInputElement>configClickers[id]).checked);
+            });
             (<HTMLElement>selectedConfigCell).appendChild(configChecker);
 
         }

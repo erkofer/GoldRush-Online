@@ -611,3 +611,7 @@ td {
     -ms-user-select: none;
     user-select: none;
 }
+/*Crafting*/
+.block-table{
+    width:100%;
+}

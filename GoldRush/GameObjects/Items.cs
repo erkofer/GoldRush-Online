@@ -65,6 +65,7 @@ namespace GoldRush
 
         public enum Category
         {
+            NOTFORSALE=0,
             ORE = 1,
             GEM = 2,
             INGREDIENT = 3,

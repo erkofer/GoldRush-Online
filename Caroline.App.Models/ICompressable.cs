@@ -153,6 +153,7 @@ namespace Caroline.App.Models
             for (int i = 0; i < 2; i++)
             {
                 var list = i == 0 ? oldList : newList;
+                
                 var lastId = 0;
                 for (var j = 0; j < list.Count; j++)
                 {

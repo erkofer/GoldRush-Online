@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace GoldRush
 {
-    internal class GameConfig
+    internal static class GameConfig
     {
-        public static int LowestId = 0;
+        public static int LowestId;
 
         public class Config
         {
@@ -20,17 +20,23 @@ namespace GoldRush
                 Id = ++LowestId;
             }
         }
-
-        public class Items
+        // 0 - 300
+        public static class Items
         {
             public class ItemConfig : Config
             {
+                public ItemConfig()
+                {
+                    if (LowestId > 300) LowestId = 0;
+                }
+
                 public int Worth;
                 public GoldRush.Items.Category Category;
             }
 
             public class ResourceConfig : ItemConfig
             {
+
                 public int Probability;
             }
 
@@ -66,8 +72,8 @@ namespace GoldRush
             public static ItemConfig EmptyVial = new ItemConfig { Name = "Empty vial", Worth = 500, Category = GoldRush.Items.Category.CRAFTING };
             public static ItemConfig Gunpowder = new ItemConfig { Name = "Gunpowder", Worth = 1250, Category = GoldRush.Items.Category.CRAFTING };
             public static ResourceConfig Logs = new ResourceConfig { Name = "Logs", Worth = 250, Probability = 0, Category = GoldRush.Items.Category.CRAFTING };
-            public static ResourceConfig Oil = new ResourceConfig { Name = "Oil", Worth = 0, Probability=0};
-            public static ItemConfig Coins = new ItemConfig {Name = "Coins", Worth = 0};
+            public static ResourceConfig Oil = new ResourceConfig { Name = "Oil", Worth = 0, Probability = 0, Category = GoldRush.Items.Category.NOTFORSALE };
+            public static ItemConfig Coins = new ItemConfig { Name = "Coins", Worth = 0, Category = GoldRush.Items.Category.NOTFORSALE };
             public static ItemConfig ClickingPotion = new ItemConfig { Name = "Clicking Potion", Worth = 25000, Category = GoldRush.Items.Category.POTION };
             public static ItemConfig SmeltingPotion = new ItemConfig { Name = "Smelting Potion", Worth = 50000, Category = GoldRush.Items.Category.POTION };
             public static ItemConfig SpeechPotion = new ItemConfig { Name = "Speech Potion", Worth = 100000, Category = GoldRush.Items.Category.POTION };
@@ -77,11 +83,15 @@ namespace GoldRush
 
             
         }
-
-        public class Gatherers
+        // 600-900
+        public static class Gatherers
         {
             public class GathererConfig : Config
             {
+                public GathererConfig()
+                {
+                    if (LowestId < 600 || LowestId > 900) LowestId = 600;
+                }
                 public double BaseResourcesPerSecond;
             }
 
@@ -95,11 +105,16 @@ namespace GoldRush
             public static GathererConfig Pumpjack = new GathererConfig() { Name = "Pumpjack", BaseResourcesPerSecond = 0.2};
             public static GathererConfig BigTexan = new GathererConfig() { Name = "Big Texan", BaseResourcesPerSecond = 0.5};
         }
-
-        public class StoreItems
+        // 900-1200
+        public static class StoreItems
         {
             public class StoreItemConfig
             {
+                public StoreItemConfig()
+                {
+                    if (LowestId < 900 || LowestId > 1200) LowestId = 900;
+                }
+
                 public int BasePrice;
                 public Store.Category Category;
                 // the maximum of this item you can purchase. 0 means infinite.
@@ -126,15 +141,20 @@ namespace GoldRush
             public static StoreItemConfig ClickUpgradeT2 = new StoreItemConfig() { BasePrice = 100000, Category = Store.Category.MINING };
             public static StoreItemConfig ClickUpgradeT3 = new StoreItemConfig() { BasePrice = 1000000, Category = Store.Category.MINING };
         }
-
-        public class Upgrades
+        // 300-600
+        public static class Upgrades
         {
-            public class UpgradeConfig:Config{
 
+            public class UpgradeConfig:Config{
+                
             }
 
             public class BuffConfig : UpgradeConfig
             {
+                public BuffConfig()
+                {
+                    if (LowestId < 300 || LowestId > 600) LowestId = 300;
+                }
                 public int Duration;
             }
 

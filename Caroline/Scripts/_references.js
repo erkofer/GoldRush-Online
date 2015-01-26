@@ -11,4 +11,3 @@
 /// <reference path="protoify.js" />
 /// <reference path="respond.js" />
 /// <reference path="test.js" />
-/// <reference path="register.js" />

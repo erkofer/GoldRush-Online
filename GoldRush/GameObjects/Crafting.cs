@@ -28,6 +28,102 @@ namespace GoldRush
             All[id].Craft(quantity);
         }
 
+        internal class Processor
+        {
+            public Processor()
+            {
+
+            }
+
+            /// <summary>
+            /// A list of recipes the processor can craft.
+            /// </summary>
+            public List<ProcessorRecipe> Recipes;
+
+            /// <summary>
+            /// The speed the processor completes recipes at.
+            /// </summary>
+            public double Speed = 1;
+
+            /// <summary>
+            /// The recipe currently being crafted by the processor.
+            /// </summary>
+            private ProcessorRecipe selectedRecipe;
+
+            /// <summary>
+            /// The number of iterations the recipe should be crafted for.
+            /// </summary>
+            private int recipesToCraft;
+
+            /// <summary>
+            /// The number of iterations the recipe has been crafted for.
+            /// </summary>
+            private int recipesCrafted;
+
+            private int recipesLeftToCraft { get { return recipesToCraft - recipesCrafted; } }
+
+            /// <summary>
+            /// The progress on the current crafting iteration.
+            /// </summary>
+            private double recipeProgress;
+
+            public void Stop()
+            {
+                var remainingRecipes = (double)recipesLeftToCraft;
+                remainingRecipes *= 0.5;
+                remainingRecipes = Math.Floor(remainingRecipes);
+
+                // Refund half of the ingredients.
+                foreach(var ingredient in selectedRecipe.Ingredients)
+                    ingredient.Provide((int)remainingRecipes);
+
+                // Reset the processor.
+                recipesCrafted = 0;
+                recipesToCraft = 0;
+                recipeProgress = 0;
+            }
+
+            public void Start(int recipeIndex, int iterations)
+            {
+                if (Recipes[recipeIndex] == null || recipesLeftToCraft != 0) return;
+
+                selectedRecipe = Recipes[recipeIndex];
+
+                if (!selectedRecipe.Has(iterations)) return;
+
+                foreach (var ingredient in selectedRecipe.Ingredients)
+                    ingredient.Consume(iterations);
+
+                recipesToCraft = iterations;
+                recipesCrafted = 0;
+                recipeProgress = 0;
+            }
+
+            public void Update(int ms)
+            {
+                if (recipesLeftToCraft == 0) return;
+
+                var ticks = ms / 1000;
+                recipeProgress += ticks * Speed;
+
+                if (!(recipeProgress > selectedRecipe.Duration)) return;
+
+                var iterations = Math.Floor(recipeProgress / selectedRecipe.Duration);
+                Craft((int)iterations);
+            }
+
+            private void Craft(int iterations)
+            {
+                recipeProgress %= selectedRecipe.Duration;
+
+                if (iterations > recipesLeftToCraft)
+                    iterations = recipesLeftToCraft;
+
+                foreach(var resultant in selectedRecipe.Resultants)
+                    resultant.Provide(iterations);
+            }
+        }
+
         /// <summary>
         /// A collection of ingredients and resultants.
         /// </summary>
@@ -62,7 +158,7 @@ namespace GoldRush
             /// </summary>
             /// <param name="iterations">The number of crafting iterations.</param>
             /// <returns>Whether the player has the required ingredients.</returns>
-            private bool Has(int iterations)
+            public bool Has(int iterations)
             {
                 foreach (Ingredient ingredient in Ingredients)
                     if (ingredient.Item.Quantity < ingredient.Quantity * iterations) return false;
@@ -98,7 +194,7 @@ namespace GoldRush
         /// <summary>
         /// A collection of ingredients and resulants with a duration.
         /// </summary>
-        class ProcessorRecipe : Recipe
+        internal class ProcessorRecipe : Recipe
         {
             public ProcessorRecipe()
             {

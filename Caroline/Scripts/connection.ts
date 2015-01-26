@@ -31,11 +31,16 @@ module Connection {
         if (msg.StatItemsUpdate != null) {
             updateStats(msg.StatItemsUpdate);
         }
+        if (msg.ConfigItems != null) {
+            updateInventoryConfigurations(msg.ConfigItems);
+        }
+        // Crafting
+        //temp
+        Crafting.addCraftingItem();
     });
 
     export function restart() {
         Komodo.restart();
-        
     }
 
 
@@ -51,15 +56,19 @@ module Connection {
    });
 
    function connected() {
-        console.log('Connection opened');
-        conInterval = setInterval(function () {
-            var encoded = actions.encode64();
-            // if (encoded!='') {
-            send(encoded);
-            //}
+       console.log('Connection opened');
+       var encoded = actions.encode64();
+       send(encoded);
+       actions = new Komodo.ClientActions();
 
-            actions = new Komodo.ClientActions();
-        }, 1000);
+       conInterval = setInterval(function () {
+           var encoded = actions.encode64();
+           // if (encoded!='') {
+           send(encoded);
+           //}
+
+           actions = new Komodo.ClientActions();
+       }, 1000);
     }
 
     
@@ -86,6 +95,11 @@ module Connection {
             Inventory.changeQuantity(items[i].Id, items[i].Quantity);
     }
 
+    function updateInventoryConfigurations(items: any) {
+        for (var i = 0; i < items.length; i++)
+            Inventory.modifyConfig(items[i].Id, items[i].Enabled);
+    }
+
     function updateStore(items: any) {
         for (var i = 0; i < items.length; i++)
             Store.changeQuantity(items[i].Id, items[i].Quantity);
@@ -98,6 +112,16 @@ module Connection {
         sellAction.Quantity = quantity;
         inventoryAction.Sell = sellAction;
         actions.InventoryActions.push(inventoryAction);
+    }
+
+    export function configureItem(id: number, enabled: boolean) {
+        var inventoryAction = new Komodo.ClientActions.InventoryAction();
+        var configAction = new Komodo.ClientActions.InventoryAction.ConfigAction();
+        configAction.Id = id;
+        configAction.Enabled = enabled;
+        inventoryAction.Config = configAction;
+        actions.InventoryActions.push(inventoryAction);
+        //ConfigAction
     }
 
     export function purchaseItem(id: number, quantity?: number) {

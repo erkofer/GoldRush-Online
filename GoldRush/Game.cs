@@ -123,6 +123,13 @@ namespace GoldRush
                 state.StatItemsUpdate.Add(stateStatsItem);
                 state.Items.Add(stateItem);
 
+                if (item.Value.Category != Items.Category.NOTFORSALE)
+                {
+                    var configItem = new GameState.ConfigItem();
+                    configItem.Id = item.Value.Id;
+                    configItem.Enabled = item.Value.IncludeInSellAll;
+                    state.ConfigItems.Add(configItem);
+                }
             }
             
             
@@ -159,6 +166,11 @@ namespace GoldRush
                 stateItem.PrestigeQuantity = toSaveItem.PrestigeTimeTotal;
                 stateItem.AlltimeQuantity = toSaveItem.LifeTimeTotal;
                 saveState.Items.Add(stateItem);
+
+                var configStateItem = new SaveState.ItemConfig();
+                configStateItem.Id = toSaveItem.Id;
+                configStateItem.Enabled = toSaveItem.IncludeInSellAll;
+                saveState.ItemConfigs.Add(configStateItem);
             }
             return saveState;
         }
@@ -175,6 +187,11 @@ namespace GoldRush
                         toLoadItem.Quantity = item.Quantity;
                         toLoadItem.PrestigeTimeTotal = item.PrestigeQuantity;
                         toLoadItem.LifeTimeTotal = item.AlltimeQuantity;
+                    }
+                    foreach (var item in save.ItemConfigs)
+                    {
+                        var toLoadItem = objs.Items.All[item.Id];
+                        toLoadItem.IncludeInSellAll = item.Enabled;
                     }
                 }
             }

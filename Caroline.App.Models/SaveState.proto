@@ -14,4 +14,10 @@ message SaveState
 		optional int32 AlltimeQuantity=4;
 	}
 	repeated Item Items=1;
+
+	message ItemConfig {
+		optional int32 Id=1;
+		optional bool Enabled=2;
+	}
+	repeated ItemConfig ItemConfigs=2;
 }

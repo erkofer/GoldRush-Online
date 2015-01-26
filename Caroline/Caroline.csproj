@@ -37,7 +37,7 @@
     <TypeScriptSourceMap>true</TypeScriptSourceMap>
     <OutputPath>bin\</OutputPath>
     <TypeScriptModuleKind>amd</TypeScriptModuleKind>
-    <TypeScriptSourceMap> Scripts/utils.ts Scripts/modal.ts Scripts/register.ts Scripts/tabs.ts Scripts/connection.ts Scripts/chat.ts Scripts/inventory.ts Scripts/store.ts Scripts/stats.ts</TypeScriptSourceMap>
+    <TypeScriptSourceMap> Scripts/utils.ts Scripts/modal.ts Scripts/register.ts Scripts/tabs.ts Scripts/connection.ts Scripts/chat.ts Scripts/inventory.ts Scripts/store.ts Scripts/stats.ts Scripts/crafting.ts</TypeScriptSourceMap>
     <TypeScriptOutFile>game.js</TypeScriptOutFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -409,6 +409,7 @@
   <ItemGroup>
     <TypeScriptCompile Include="Scripts\chat.ts" />
     <TypeScriptCompile Include="Scripts\connection.ts" />
+    <TypeScriptCompile Include="Scripts\crafting.ts" />
     <TypeScriptCompile Include="Scripts\inventory.ts" />
     <TypeScriptCompile Include="Scripts\modal.ts" />
     <TypeScriptCompile Include="Scripts\register.ts" />
