@@ -9,7 +9,7 @@ namespace Caroline.App
     public class GameManager : IGameManager
     {
         readonly GameFactory _gameFactory = new GameFactory();
-        readonly GameStateCache _gameStateCache = new GameStateCache();
+        readonly GoldRushCache _goldRushCache = new GoldRushCache();
 
         public async Task<GameState> Update(string userId, string sessionGuid, ClientActions input = null)
         {
@@ -46,8 +46,8 @@ namespace Caroline.App
                 dataToSend = new GameState();
 
             // minify the GameState by only sending differences since the last state
-            var previousState = _gameStateCache.GetGameData(sessionGuid);
-            _gameStateCache.SetGameData(sessionGuid, dataToSend);
+            var previousState = _goldRushCache.GetGameData(sessionGuid);
+            _goldRushCache.SetGameData(sessionGuid, dataToSend);
             if (previousState != null)
                 dataToSend = dataToSend.Compress(previousState);
             return dataToSend;

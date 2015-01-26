@@ -6,7 +6,7 @@ using JetBrains.Annotations;
 
 namespace Caroline.App
 {
-    class GameStateCache
+    class GoldRushCache
     {
         [CanBeNull]
         public GameState GetGameData(string sessionGuid)

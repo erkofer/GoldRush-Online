@@ -47,9 +47,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CompressableHelpers.cs" />
     <Compile Include="GameState.cs" />
     <Compile Include="ICompressable.cs" />
     <Compile Include="IIdentifiableObject.cs" />
+    <Compile Include="Pair.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

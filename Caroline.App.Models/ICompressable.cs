@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 
 namespace Caroline.App.Models
 {
@@ -11,6 +7,7 @@ namespace Caroline.App.Models
         [CanBeNull]
         T Compress([NotNull]T oldObject);
     }
+<<<<<<< HEAD
 
     internal static class CompressableHelpers
     {
@@ -187,4 +184,6 @@ namespace Caroline.App.Models
         [CanBeNull]
         public T Old;
     }
+=======
+>>>>>>> 9ef1548173dc7dbaf0f762123fb3bd3768b547a3
 }
