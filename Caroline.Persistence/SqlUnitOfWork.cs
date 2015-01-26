@@ -4,7 +4,7 @@ using Microsoft.AspNet.Identity.EntityFramework;
 
 namespace Caroline.Persistence
 {
-    public class UnitOfWork : IUnitOfWork
+    public class SqlUnitOfWork : IUnitOfWork
     {
         GoldRushDbContext _Context;
         DbSet<IdentityRole> _roles;
@@ -23,11 +23,11 @@ namespace Caroline.Persistence
 
         public IGameRepository Games
         {
-            get { return _games ?? (_games = new GameRepository(Context)); }
+            get { return _games ?? (_games = new SqlGameSqlRepository(Context)); }
         }
         public IUserRepository Users
         {
-            get { return _users ?? (_users = new UserRepository(Context)); }
+            get { return _users ?? (_users = new SqlUserSqlRepository(Context)); }
         }
 
         public async Task SaveChangesAsync()

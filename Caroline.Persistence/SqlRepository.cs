@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace Caroline.Persistence
 {
-    public abstract class Repository<TEntity, TId> : IRepository<TEntity, TId>
+    public abstract class SqlRepository<TEntity, TId> : IRepository<TEntity, TId>
         where TEntity : class, new()
         where TId : IEquatable<TId>
     {
-        protected Repository(GoldRushDbContext context, DbSet<TEntity> set)
+        protected SqlRepository(GoldRushDbContext context, DbSet<TEntity> set)
         {
             Context = context;
             Set = set;
@@ -47,10 +47,10 @@ namespace Caroline.Persistence
         protected GoldRushDbContext Context { get; set; }
     }
 
-    public abstract class Repository<TEntity> : Repository<TEntity, int>
+    public abstract class SqlRepository<TEntity> : SqlRepository<TEntity, int>
         where TEntity : class, new()
     {
-        protected Repository(GoldRushDbContext context, DbSet<TEntity> set) : base(context, set)
+        protected SqlRepository(GoldRushDbContext context, DbSet<TEntity> set) : base(context, set)
         {
         }
     }

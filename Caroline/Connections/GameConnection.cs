@@ -59,7 +59,7 @@ namespace Caroline.Connections
         {
             var account = new AccountViewModel();
 
-            using (var work = new UnitOfWork())
+            using (var work = new SqlUnitOfWork())
             {
                 return await work.Users.Get(userId);
             }

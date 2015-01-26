@@ -14,7 +14,7 @@ namespace Caroline.App
         public async Task<GameState> Update(string userId, string sessionGuid, ClientActions input = null)
         {
             GameState dataToSend;
-            using (var work = new UnitOfWork())
+            using (var work = new SqlUnitOfWork())
             {
                 var games = work.Games;
 

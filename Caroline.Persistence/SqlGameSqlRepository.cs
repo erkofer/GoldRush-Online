@@ -5,9 +5,9 @@ using Caroline.Persistence.Models;
 
 namespace Caroline.Persistence
 {
-    public sealed class GameRepository : Repository<Game>, IGameRepository
+    public sealed class SqlGameSqlRepository : SqlRepository<Game>, IGameRepository
     {
-        public GameRepository(GoldRushDbContext context)
+        public SqlGameSqlRepository(GoldRushDbContext context)
             : base(context, context.Set<Game>())
         {
         }

@@ -108,7 +108,7 @@ namespace Caroline.Areas.Api.Controllers
             var account = new AccountViewModel();
             ApplicationUser user;
 
-            using (var work = new UnitOfWork())
+            using (var work = new SqlUnitOfWork())
             {
                 user = await work.Users.Get(userId);
             }
