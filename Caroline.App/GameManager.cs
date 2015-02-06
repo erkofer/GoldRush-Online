@@ -22,7 +22,7 @@ namespace Caroline.App
                 var save = await games.GetByUserIdAsync(userId) ?? await games.AddByUserIdAsync(userId, new Game());
                 if (save == null)
                 {
-                    return new GameState {IsError = true};
+                    return new GameState { IsError = true };
                 }
                 var saveData = save.SaveData;
                 var saveObject = saveData != null ? ProtoBufHelpers.Deserialize<SaveState>(saveData) : null;
@@ -36,7 +36,7 @@ namespace Caroline.App
 
                 // save to the database
                 var saveDto = game.Save();
-                save.SaveData = ProtoBufHelpers.Serialize(saveDto);
+                save.SaveData = ProtoBufHelpers.SerializeToString(saveDto);
                 games.Update(save);
 
                 await work.SaveChangesAsync();

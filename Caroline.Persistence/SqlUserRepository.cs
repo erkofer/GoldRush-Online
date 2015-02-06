@@ -5,9 +5,9 @@ using Caroline.Persistence.Models;
 
 namespace Caroline.Persistence
 {
-    public sealed class SqlUserSqlRepository : SqlRepository<ApplicationUser, string>, IUserRepository
+    public sealed class SqlUserRepository : SqlRepository<ApplicationUser, string>, IUserRepository
     {
-        public SqlUserSqlRepository(GoldRushDbContext context)
+        public SqlUserRepository(GoldRushDbContext context)
             : base(context, context.Set<ApplicationUser>())
         {
         }

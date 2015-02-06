@@ -40,15 +40,39 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\EntityFramework.6.1.1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
+    <Reference Include="JetBrains.Annotations">
+      <HintPath>..\packages\JetBrains.Annotations.8.0.5.0\lib\net20\JetBrains.Annotations.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.AspNet.Identity.Core">
       <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.1.0\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNet.Identity.EntityFramework">
       <HintPath>..\packages\Microsoft.AspNet.Identity.EntityFramework.2.1.0\lib\net45\Microsoft.AspNet.Identity.EntityFramework.dll</HintPath>
     </Reference>
+    <Reference Include="Nito.AsyncEx">
+      <HintPath>..\packages\Nito.AsyncEx.3.0.0\lib\net45\Nito.AsyncEx.dll</HintPath>
+    </Reference>
+    <Reference Include="Nito.AsyncEx.Concurrent">
+      <HintPath>..\packages\Nito.AsyncEx.3.0.0\lib\net45\Nito.AsyncEx.Concurrent.dll</HintPath>
+    </Reference>
+    <Reference Include="Nito.AsyncEx.Enlightenment">
+      <HintPath>..\packages\Nito.AsyncEx.3.0.0\lib\net45\Nito.AsyncEx.Enlightenment.dll</HintPath>
+    </Reference>
+    <Reference Include="protobuf-net, Version=2.0.0.668, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\protobuf-net.2.0.0.668\lib\net40\protobuf-net.dll</HintPath>
+    </Reference>
+    <Reference Include="StackExchange.Redis">
+      <HintPath>..\packages\StackExchange.Redis.1.0.394\lib\net45\StackExchange.Redis.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.VarintBitConverter">
+      <HintPath>..\packages\VarintBitConverter.1.0.0.0\lib\Net40\System.VarintBitConverter.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -56,7 +80,32 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="SqlGameSqlRepository.cs" />
+    <Compile Include="CarolineScriptsRepo.cs" />
+    <Compile Include="EntityIdentifier.cs" />
+    <Compile Include="Extensions\ArrayEx.cs" />
+    <Compile Include="Extensions\CarolineScriptsRepoEx.cs" />
+    <Compile Include="Extensions\RedisDbEx.cs" />
+    <Compile Include="Extensions\TypeEx.cs" />
+    <Compile Include="IDatabaseTable.cs" />
+    <Compile Include="IEntityTable.cs" />
+    <Compile Include="IIdentifier.cs" />
+    <Compile Include="ISerializer.cs" />
+    <Compile Include="ProtoBufHelpers.cs" />
+    <Compile Include="ProtoBufSerializer.cs" />
+    <Compile Include="RedisEntityTable.cs" />
+    <Compile Include="RedisLongTable.cs" />
+    <Compile Include="RedisPropertiesTable.cs" />
+    <EmbeddedResource Include="RedisScripts\NewTable.lua" />
+    <EmbeddedResource Include="RedisScripts\StringGetSetExpiry.lua" />
+    <Compile Include="RedisScripts\ScriptsNamespace.cs" />
+    <None Include="RedisScripts\TryLock.lua" />
+    <Compile Include="RedisTable.cs" />
+    <Compile Include="RedisDb.cs" />
+    <Compile Include="EmbeddedResourcesDictionary.cs" />
+    <Compile Include="ReadonlyTypeSafeDictionary.cs" />
+    <Compile Include="CarolineRedisDb.cs" />
+    <Compile Include="SetMode.cs" />
+    <Compile Include="SqlGameRepository.cs" />
     <Compile Include="GoldRushDbContext.cs" />
     <Compile Include="IGameRepository.cs" />
     <Compile Include="IRepository.cs" />
@@ -74,7 +123,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlRepository.cs" />
     <Compile Include="SqlUnitOfWork.cs" />
-    <Compile Include="SqlUserSqlRepository.cs" />
+    <Compile Include="SqlUserRepository.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Caroline.Persistence.Models\Caroline.Persistence.Models.csproj">
@@ -89,6 +138,7 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+    <EmbeddedResource Include="RedisScripts\RateLimit.lua" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201412301108027_Init.resx">
