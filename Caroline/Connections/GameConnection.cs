@@ -19,7 +19,7 @@ namespace Caroline.Connections
         protected override async Task OnConnected(IRequest request, string connectionId)
         {
             var state = await _gameManager.Update(HttpContext.Current.User.Identity.GetUserId(), connectionId);
-            await Connection.Send(connectionId, ProtoBufHelpers.Serialize(state));
+            await Connection.Send(connectionId, ProtoBufHelpers.SerializeToString(state));
         }
 
         protected override async Task OnReceived(IRequest request, string connectionId, string data)
@@ -29,7 +29,7 @@ namespace Caroline.Connections
             if (actions.SocialActions != null) await Socialize(request, connectionId, actions);
 
             var state = await _gameManager.Update(HttpContext.Current.User.Identity.GetUserId(), connectionId, actions);
-            await Connection.Send(connectionId, ProtoBufHelpers.Serialize(state));
+            await Connection.Send(connectionId, ProtoBufHelpers.SerializeToString(state));
         }
 
         protected override bool AuthorizeRequest(IRequest request)
@@ -87,7 +87,7 @@ namespace Caroline.Connections
             if (Array.IndexOf(server, sender) != -1) message.Permissions = "server";
             state.Message = message;
 
-            Connection.Broadcast(ProtoBufHelpers.Serialize(state));
+            Connection.Broadcast(ProtoBufHelpers.SerializeToString(state));
         }
 
         private void SendServerMessage(string connectionId, string text)
@@ -100,7 +100,7 @@ namespace Caroline.Connections
             message.Time = DateTime.UtcNow.ToShortTimeString();
             state.Message = message;
 
-            Connection.Send(connectionId, ProtoBufHelpers.Serialize(state));
+            Connection.Send(connectionId, ProtoBufHelpers.SerializeToString(state));
         }
     }
 }

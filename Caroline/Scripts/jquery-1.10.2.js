@@ -7503,7 +7503,7 @@ jQuery.fn.extend({
 	}
 });
 
-//Serialize an array of form elements or a set of
+//SerializeToString an array of form elements or a set of
 //key/values into a query string
 jQuery.param = function( a, traditional ) {
 	var prefix,
@@ -7521,7 +7521,7 @@ jQuery.param = function( a, traditional ) {
 
 	// If an array was passed in, assume that it is an array of form elements.
 	if ( jQuery.isArray( a ) || ( a.jquery && !jQuery.isPlainObject( a ) ) ) {
-		// Serialize the form elements
+		// SerializeToString the form elements
 		jQuery.each( a, function() {
 			add( this.name, this.value );
 		});
@@ -7542,7 +7542,7 @@ function buildParams( prefix, obj, traditional, add ) {
 	var name;
 
 	if ( jQuery.isArray( obj ) ) {
-		// Serialize array item.
+		// SerializeToString array item.
 		jQuery.each( obj, function( i, v ) {
 			if ( traditional || rbracket.test( prefix ) ) {
 				// Treat each array item as a scalar.
@@ -7555,13 +7555,13 @@ function buildParams( prefix, obj, traditional, add ) {
 		});
 
 	} else if ( !traditional && jQuery.type( obj ) === "object" ) {
-		// Serialize object item.
+		// SerializeToString object item.
 		for ( name in obj ) {
 			buildParams( prefix + "[" + name + "]", obj[ name ], traditional, add );
 		}
 
 	} else {
-		// Serialize scalar item.
+		// SerializeToString scalar item.
 		add( prefix, obj );
 	}
 }

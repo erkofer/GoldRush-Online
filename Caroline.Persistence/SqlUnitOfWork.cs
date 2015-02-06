@@ -1,13 +1,10 @@
-﻿using System.Data.Entity;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Identity.EntityFramework;
+﻿using System.Threading.Tasks;
 
 namespace Caroline.Persistence
 {
     public class SqlUnitOfWork : IUnitOfWork
     {
         GoldRushDbContext _Context;
-        DbSet<IdentityRole> _roles;
         IGameRepository _games;
         IUserRepository _users;
 
@@ -16,18 +13,13 @@ namespace Caroline.Persistence
             get { return _Context ?? (_Context = new GoldRushDbContext()); }
         }
 
-        public DbSet<IdentityRole> Roles
-        {
-            get { return _roles ?? (_roles = Context.Set<IdentityRole>()); }
-        }
-
         public IGameRepository Games
         {
-            get { return _games ?? (_games = new SqlGameSqlRepository(Context)); }
+            get { return _games ?? (_games = new SqlGameRepository(Context)); }
         }
         public IUserRepository Users
         {
-            get { return _users ?? (_users = new SqlUserSqlRepository(Context)); }
+            get { return _users ?? (_users = new SqlUserRepository(Context)); }
         }
 
         public async Task SaveChangesAsync()

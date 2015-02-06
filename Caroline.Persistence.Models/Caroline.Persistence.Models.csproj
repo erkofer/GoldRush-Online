@@ -38,6 +38,9 @@
     <Reference Include="Microsoft.AspNet.Identity.EntityFramework">
       <HintPath>..\packages\Microsoft.AspNet.Identity.EntityFramework.2.1.0\lib\net45\Microsoft.AspNet.Identity.EntityFramework.dll</HintPath>
     </Reference>
+    <Reference Include="protobuf-net">
+      <HintPath>..\packages\protobuf-net.2.0.0.668\lib\net40\protobuf-net.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
@@ -50,9 +53,15 @@
   <ItemGroup>
     <Compile Include="ApplicationUser.cs" />
     <Compile Include="Game.cs" />
+    <Compile Include="IIdentifiableEntity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="User.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProtoBuf Include="csharp_options.proto" />
+    <ProtoBuf Include="descriptor.proto" />
+    <ProtoBuf Include="Game.proto" />
+    <ProtoBuf Include="User.proto" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -70,4 +79,10 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <PropertyGroup>
+    <ProtoGenFile>$(SolutionDir)\Build\ProtoGen\protogen</ProtoGenFile>
+    <ProtoBufTaskPath>..\Build\ProtoGen\</ProtoBufTaskPath>
+    <ProtoGenPath>..\Build\ProtoGen\</ProtoGenPath>
+  </PropertyGroup>
+  <Import Project="$(ProtoBufTaskPath)ProtoBuf.MSBuildTask.targets" />
 </Project>

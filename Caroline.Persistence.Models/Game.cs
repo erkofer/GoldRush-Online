@@ -1,8 +1,6 @@
 ﻿namespace Caroline.Persistence.Models
 {
-    public class Game
+    public partial class Game : IIdentifiableEntity<long>
     {
-        public int Id { get; set; }
-        public string SaveData { get; set; }
     }
 }
