@@ -7,10 +7,10 @@ option optimize_for = SPEED;
 
 message User
 {
-	optional sint64 Id = 1;
 	optional string Email = 2;
-	optional string Username = 3;
-	optional string PasswordHash = 4
-	optional bool IsAnonymous = 5;
-	optional Game CurrentGameId = 6;
+	optional string UserName = 3;
+	optional string PasswordHash = 4;
+    optional string SecurityStamp = 5;
+	optional bool IsAnonymous = 6;
+	// repeated long RetiredGameIds
 }

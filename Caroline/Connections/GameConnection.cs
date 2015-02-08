@@ -6,9 +6,11 @@ using Caroline.App.Models;
 using Caroline.Areas.Api.Models;
 using Caroline.Persistence;
 using Caroline.Persistence.Models;
+using Caroline.Persistence.Redis;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.SignalR;
 using System;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Caroline.Connections
 {
@@ -86,7 +88,6 @@ namespace Caroline.Connections
             if (Array.IndexOf(moderators, sender) != -1) message.Permissions = "moderator";
             if (Array.IndexOf(server, sender) != -1) message.Permissions = "server";
             state.Message = message;
-
             Connection.Broadcast(ProtoBufHelpers.SerializeToString(state));
         }
 

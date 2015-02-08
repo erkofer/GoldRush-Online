@@ -70,6 +70,10 @@
       <Project>{7D8032AB-3C86-4894-B5FA-302AC5B474E5}</Project>
       <Name>Caroline.Persistence.Models</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Caroline.Persistence.Redis\Caroline.Persistence.Redis.csproj">
+      <Project>{41A2679F-2075-4FAD-8306-CE7645A68EBA}</Project>
+      <Name>Caroline.Persistence.Redis</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Caroline.Persistence\Caroline.Persistence.csproj">
       <Project>{A62BAB30-0EE1-4D60-A7CB-B06E277EB79E}</Project>
       <Name>Caroline.Persistence</Name>

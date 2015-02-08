@@ -80,34 +80,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CarolineScriptsRepo.cs" />
-    <Compile Include="EntityIdentifier.cs" />
-    <Compile Include="Extensions\ArrayEx.cs" />
-    <Compile Include="Extensions\CarolineScriptsRepoEx.cs" />
-    <Compile Include="Extensions\RedisDbEx.cs" />
-    <Compile Include="Extensions\TypeEx.cs" />
-    <Compile Include="IDatabaseTable.cs" />
-    <Compile Include="IEntityTable.cs" />
-    <Compile Include="IIdentifier.cs" />
-    <Compile Include="ISerializer.cs" />
-    <Compile Include="ProtoBufHelpers.cs" />
-    <Compile Include="ProtoBufSerializer.cs" />
-    <Compile Include="RedisEntityTable.cs" />
-    <Compile Include="RedisLongTable.cs" />
-    <Compile Include="RedisPropertiesTable.cs" />
-    <EmbeddedResource Include="RedisScripts\NewTable.lua" />
-    <EmbeddedResource Include="RedisScripts\StringGetSetExpiry.lua" />
-    <Compile Include="RedisScripts\ScriptsNamespace.cs" />
-    <None Include="RedisScripts\TryLock.lua" />
-    <Compile Include="RedisTable.cs" />
-    <Compile Include="RedisDb.cs" />
-    <Compile Include="EmbeddedResourcesDictionary.cs" />
-    <Compile Include="ReadonlyTypeSafeDictionary.cs" />
     <Compile Include="CarolineRedisDb.cs" />
-    <Compile Include="SetMode.cs" />
+    <Compile Include="IGameRepository.cs" />
+    <Compile Include="RedisUserStore.cs" />
     <Compile Include="SqlGameRepository.cs" />
     <Compile Include="GoldRushDbContext.cs" />
-    <Compile Include="IGameRepository.cs" />
     <Compile Include="IRepository.cs" />
     <Compile Include="IUnitOfWork.cs" />
     <Compile Include="IUserRepository.cs" />
@@ -130,6 +107,10 @@
       <Project>{7D8032AB-3C86-4894-B5FA-302AC5B474E5}</Project>
       <Name>Caroline.Persistence.Models</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Caroline.Persistence.Redis\Caroline.Persistence.Redis.csproj">
+      <Project>{41a2679f-2075-4fad-8306-ce7645a68eba}</Project>
+      <Name>Caroline.Persistence.Redis</Name>
+    </ProjectReference>
     <ProjectReference Include="..\GoldRush\GoldRush.csproj">
       <Project>{60aa2d41-1721-46b8-954c-76beaec6199f}</Project>
       <Name>GoldRush</Name>
@@ -138,7 +119,6 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
-    <EmbeddedResource Include="RedisScripts\RateLimit.lua" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201412301108027_Init.resx">
@@ -147,6 +127,9 @@
     <EmbeddedResource Include="Migrations\201501090813265_AnonymousUsers.resx">
       <DependentUpon>201501090813265_AnonymousUsers.cs</DependentUpon>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Extensions\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

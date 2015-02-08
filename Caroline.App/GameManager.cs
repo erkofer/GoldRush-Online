@@ -2,6 +2,7 @@
 using Caroline.App.Models;
 using Caroline.Persistence;
 using Caroline.Persistence.Models;
+using Caroline.Persistence.Redis;
 using GoldRush;
 
 namespace Caroline.App

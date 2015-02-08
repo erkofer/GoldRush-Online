@@ -3,11 +3,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{3261C8B7-479C-4A15-801C-29414628145B}</ProjectGuid>
+    <ProjectGuid>{8D3DAA43-511F-4245-9C34-F4BBCB70F9E2}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Caroline.Persistence.Tests</RootNamespace>
-    <AssemblyName>Caroline.Persistence.Tests</AssemblyName>
+    <RootNamespace>Caroline.Persistence.Redis.Tests</RootNamespace>
+    <AssemblyName>Caroline.Persistence.Redis.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -50,16 +50,21 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="ArrayExTests.cs" />
+    <Compile Include="EmbeddedResourcesDictionaryTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Resources\NestedResourcesScope.cs" />
+    <Compile Include="ScriptsRepoTests.cs" />
+    <Compile Include="TestBase.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Caroline.Persistence.Models\Caroline.Persistence.Models.csproj">
-      <Project>{7d8032ab-3c86-4894-b5fa-302ac5b474e5}</Project>
-      <Name>Caroline.Persistence.Models</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Caroline.Persistence\Caroline.Persistence.csproj">
-      <Project>{a62bab30-0ee1-4d60-a7cb-b06e277eb79e}</Project>
-      <Name>Caroline.Persistence</Name>
+    <EmbeddedResource Include="EmbeddedResource.Resource" />
+    <EmbeddedResource Include="Resources\NestedEmbeddedResource.Resource" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Caroline.Persistence.Redis\Caroline.Persistence.Redis.csproj">
+      <Project>{41a2679f-2075-4fad-8306-ce7645a68eba}</Project>
+      <Name>Caroline.Persistence.Redis</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>

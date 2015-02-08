@@ -6,7 +6,6 @@ option (google.protobuf.csharp_file_options).namespace = "Caroline.Persistence.M
 option optimize_for = SPEED;
 
 message Game
-{	
-	optional sint64 Id = 1;
+{
 	optional string SaveData = 2;
 }
