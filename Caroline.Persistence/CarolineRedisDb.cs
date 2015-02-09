@@ -1,4 +1,5 @@
-﻿using System.Configuration;
+﻿using System;
+using System.Configuration;
 using System.Threading.Tasks;
 using Caroline.Persistence.Models;
 using Caroline.Persistence.Redis;
@@ -34,8 +35,9 @@ namespace Caroline.Persistence
             return new CarolineRedisDb
             {
                 Ids = ids = db.SetLong(1),
-                Games = db.Set<Game>(2, ids),
-                Users = db.Set<User>(3, ids)
+                Games = db.Set<Game>(2),
+                Users = db.Set<User>(3, ids),
+                GameSessions = db.Set<GameSession>(4, TimeSpan.FromSeconds(60))
             };
         }
 
@@ -43,6 +45,8 @@ namespace Caroline.Persistence
 
         public IEntityTable<Game> Games { get; private set; }
 
-        public IEntityTable<User> Users { get; private set; }
+        public IAutoKeyEntityTable<User> Users { get; private set; }
+
+        public IEntityTable<GameSession> GameSessions { get; set; }
     }
 }

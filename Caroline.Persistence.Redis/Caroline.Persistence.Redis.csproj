@@ -32,6 +32,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Caroline.Persistence.Redis, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Caroline.Persistence\bin\Debug\Caroline.Persistence.Redis.dll</HintPath>
+    </Reference>
     <Reference Include="JetBrains.Annotations">
       <HintPath>..\packages\JetBrains.Annotations.8.0.5.0\lib\net20\JetBrains.Annotations.dll</HintPath>
     </Reference>
@@ -65,6 +69,7 @@
     <Compile Include="Extensions\CarolineScriptsRepoEx.cs" />
     <Compile Include="Extensions\DatabaseAreaEx.cs" />
     <Compile Include="IDatabaseArea.cs" />
+    <Compile Include="IAutoKeyEntityTable.cs" />
     <Compile Include="IEntityTable.cs" />
     <Compile Include="IIdentifiableEntity.cs" />
     <Compile Include="IIdentifier.cs" />
@@ -74,6 +79,7 @@
     <Compile Include="ProtoBufHelpers.cs" />
     <Compile Include="ProtoBufSerializer.cs" />
     <Compile Include="ReadonlyTypeSafeDictionary.cs" />
+    <Compile Include="RedisEntityTable.cs" />
     <Compile Include="RootDatabaseArea.cs" />
     <Compile Include="RedisDbMultiplexer.cs" />
     <Compile Include="AutoKeyRedisEntityTable.cs" />
@@ -86,6 +92,7 @@
     <EmbeddedResource Include="RedisScripts\NewTable.lua" />
     <EmbeddedResource Include="RedisScripts\RateLimit.lua" />
     <EmbeddedResource Include="RedisScripts\StringGetSetExpiry.lua" />
+    <EmbeddedResource Include="RedisScripts\IncrementExpiry.lua" />
     <None Include="RedisScripts\TryLock.lua" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

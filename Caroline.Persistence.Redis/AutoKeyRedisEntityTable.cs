@@ -5,7 +5,7 @@ using StackExchange.Redis;
 
 namespace Caroline.Persistence.Redis
 {
-    class AutoKeyRedisEntityTable<TEntity> : IEntityTable<TEntity>
+    class AutoKeyRedisEntityTable<TEntity> : IAutoKeyEntityTable<TEntity>
     {
         readonly IDatabase _db;
         readonly ILongTable _idIncrementDb;
@@ -13,8 +13,9 @@ namespace Caroline.Persistence.Redis
         readonly ISerializer<TEntity> _serializer;
         readonly IIdentifier<TEntity, long> _identifier;
         readonly CarolineScriptsRepo _scripts;
+        readonly TimeSpan? _defaultExpiry;
 
-        public AutoKeyRedisEntityTable(IDatabaseArea db, ILongTable idIncrementDb, long idIncrementKey, ISerializer<TEntity> serializer, IIdentifier<TEntity, long> identifier)
+        public AutoKeyRedisEntityTable(IDatabaseArea db, ILongTable idIncrementDb, long idIncrementKey, ISerializer<TEntity> serializer, IIdentifier<TEntity, long> identifier, TimeSpan? defaultExpiry = null)
         {
             _db = db.Area;
             _scripts = db.Scripts;
@@ -22,6 +23,7 @@ namespace Caroline.Persistence.Redis
             _idIncrementKey = idIncrementKey;
             _serializer = serializer;
             _identifier = identifier;
+            _defaultExpiry = defaultExpiry;
         }
 
         public async Task<bool> Set(TEntity entity, SetMode mode, TimeSpan? expiry = null)
@@ -44,13 +46,14 @@ namespace Caroline.Persistence.Redis
                     throw new ArgumentOutOfRangeException("mode");
             }
             var value = _serializer.Serialize(entity);
-            return await _db.StringSetAsync(key, value, expiry, when);
+            return await _db.StringSetAsync(key, value, expiry ?? _defaultExpiry, when);
         }
 
         public async Task<TEntity> GetSet(TEntity entity, TimeSpan? expiry = null)
         {
             var key = VarintBitConverter.GetVarintBytes(_identifier.GetId(entity));
             var value = _serializer.Serialize(entity);
+            expiry = expiry ?? _defaultExpiry;
             RedisValue previous;
             if (expiry == null)
                 previous = await _db.StringGetSetAsync(key, value);

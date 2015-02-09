@@ -36,5 +36,6 @@ namespace Caroline.Persistence.Redis
         /// </summary>
         public byte[] RateLimit { get; set; }
         public byte[] StringGetSetExpiry { get; set; }
+        public byte[] IncrementExpiry { get; set; }
     }
 }

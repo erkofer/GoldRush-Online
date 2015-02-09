@@ -4,29 +4,41 @@ namespace Caroline.Persistence.Redis.Extensions
 {
     public static class DatabaseAreaEx
     {
-        public static IDatabaseArea CreateArea(this IDatabaseArea area, long id)
+        public static IDatabaseArea CreateSubArea(this IDatabaseArea area, long id)
         {
             return area.CreateSubArea(VarintBitConverter.GetVarintBytes(id));
         }
 
-        public static IEntityTable<TEntity> Set<TEntity>(this IDatabaseArea area, long id, ILongTable idIncrementDb, ISerializer<TEntity> serializer, IIdentifier<TEntity, long> identifier)
+        public static IAutoKeyEntityTable<TEntity> Set<TEntity>(this IDatabaseArea area, long id, ILongTable idIncrementDb, ISerializer<TEntity> serializer, IIdentifier<TEntity, long> identifier, TimeSpan? defaultExpiry = null)
         {
             if (id <= 0)
                 throw new ArgumentOutOfRangeException("id", "Id must be greater than 0.");
-            var db = area.CreateArea(id);
-            return new AutoKeyRedisEntityTable<TEntity>(db, idIncrementDb, id, serializer, identifier);
+            var db = area.CreateSubArea(id);
+            return new AutoKeyRedisEntityTable<TEntity>(db, idIncrementDb, id, serializer, identifier, defaultExpiry);
         }
 
-        public static IEntityTable<TEntity> Set<TEntity>(this IDatabaseArea area, long id, ILongTable idIncrementDb)
+        public static IAutoKeyEntityTable<TEntity> Set<TEntity>(this IDatabaseArea area, long id, ILongTable idIncrementDb, TimeSpan? defaultExpiry = null)
             where TEntity : IIdentifiableEntity<long>
         {
-            return area.Set(id, idIncrementDb, Objects<TEntity>.Serializer, Objects<TEntity, long>.Identifier);
+            return area.Set(id, idIncrementDb, Objects<TEntity>.Serializer, Objects<TEntity, long>.Identifier, defaultExpiry);
         }
 
-        public static ILongTable SetLong(this IDatabaseArea area, long id)
+        public static IEntityTable<TEntity> Set<TEntity>(this IDatabaseArea area, long id, ISerializer<TEntity> serializer, IIdentifier<TEntity, byte[]> identifier, TimeSpan? defaultExpiry = null)
         {
-            var db = area.CreateArea(id);
-            return new RedisLongTable(db);
+            var db = area.CreateSubArea(id);
+            return new RedisEntityTable<TEntity>(db, serializer, identifier, defaultExpiry);
+        } 
+
+        public static IEntityTable<TEntity> Set<TEntity>(this IDatabaseArea area, long id, TimeSpan? defaultExpiry = null)
+            where TEntity : IIdentifiableEntity<byte[]>
+        {
+            return area.Set(id, Objects<TEntity>.Serializer, Objects<TEntity, byte[]>.Identifier, defaultExpiry);
+        }
+
+        public static ILongTable SetLong(this IDatabaseArea area, long id, TimeSpan? defaultExpiry = null)
+        {
+            var db = area.CreateSubArea(id);
+            return new RedisLongTable(db, defaultExpiry);
         }
 
         static class Objects<TEntity>
