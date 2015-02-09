@@ -1,14 +1,14 @@
 ﻿namespace Caroline.Persistence.Redis
 {
-    public class EntityIdentifier<TEntity> 
-        : IIdentifier<TEntity> where TEntity : IIdentifiableEntity<long>
+    public class EntityIdentifier<TEntity, TId> 
+        : IIdentifier<TEntity, TId> where TEntity : IIdentifiableEntity<TId>
     {
-        public long GetId(TEntity entity)
+        public TId GetId(TEntity entity)
         {
             return entity.Id;
         }
 
-        public void SetId(TEntity entity, long value)
+        public void SetId(TEntity entity, TId value)
         {
             entity.Id = value;
         }

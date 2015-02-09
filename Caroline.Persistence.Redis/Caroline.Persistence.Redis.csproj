@@ -58,27 +58,27 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CarolineScriptsRepo.cs" />
+    <Compile Include="DatabaseWrapper.cs" />
     <Compile Include="EmbeddedResourcesDictionary.cs" />
     <Compile Include="EntityIdentifier.cs" />
     <Compile Include="Extensions\ArrayEx.cs" />
     <Compile Include="Extensions\CarolineScriptsRepoEx.cs" />
-    <Compile Include="Extensions\RedisDbEx.cs" />
-    <Compile Include="IDatabaseTable.cs" />
+    <Compile Include="Extensions\DatabaseAreaEx.cs" />
+    <Compile Include="IDatabaseArea.cs" />
     <Compile Include="IEntityTable.cs" />
     <Compile Include="IIdentifiableEntity.cs" />
     <Compile Include="IIdentifier.cs" />
+    <Compile Include="ILongTable.cs" />
     <Compile Include="ISerializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProtoBufHelpers.cs" />
     <Compile Include="ProtoBufSerializer.cs" />
     <Compile Include="ReadonlyTypeSafeDictionary.cs" />
-    <Compile Include="RedisDb.cs" />
+    <Compile Include="RootDatabaseArea.cs" />
     <Compile Include="RedisDbMultiplexer.cs" />
-    <Compile Include="RedisEntityTable.cs" />
+    <Compile Include="AutoKeyRedisEntityTable.cs" />
     <Compile Include="RedisLongTable.cs" />
-    <Compile Include="RedisPropertiesTable.cs" />
     <Compile Include="RedisScripts\ScriptsNamespace.cs" />
-    <Compile Include="RedisTable.cs" />
     <Compile Include="SetMode.cs" />
   </ItemGroup>
   <ItemGroup>

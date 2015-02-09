@@ -30,12 +30,16 @@ namespace Caroline.Persistence
             }
 
             var db = _redisConnection.Connect();
+            ILongTable ids;
             return new CarolineRedisDb
             {
-                Games = db.Set<Game>(1),
-                Users = db.Set<User>(2)
+                Ids = ids = db.SetLong(1),
+                Games = db.Set<Game>(2, ids),
+                Users = db.Set<User>(3, ids)
             };
         }
+
+        public ILongTable Ids { get; set; }
 
         public IEntityTable<Game> Games { get; private set; }
 

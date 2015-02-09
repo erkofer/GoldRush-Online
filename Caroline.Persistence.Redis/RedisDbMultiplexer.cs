@@ -22,10 +22,10 @@ namespace Caroline.Persistence.Redis
             _connection = connection;
             _scripts = scripts;
         }
-
-        public RedisDb Connect(int database = 0, byte[] keyPrefix = null)
+        
+        public IDatabaseArea Connect(int database = 0)
         {
-            return new RedisDb(_connection.GetDatabase(database), _scripts, keyPrefix);
+            return new RootDatabaseArea(_connection.GetDatabase(database), _scripts);
         }
     }
 }

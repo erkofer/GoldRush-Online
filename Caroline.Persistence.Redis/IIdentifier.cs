@@ -1,8 +1,8 @@
 ﻿namespace Caroline.Persistence.Redis
 {
-    public interface IIdentifier<in TEntity>
+    public interface IIdentifier<in TEntity, TId>
     {
-        long GetId(TEntity entity);
-        void SetId(TEntity entity, long value);
+        TId GetId(TEntity entity);
+        void SetId(TEntity entity, TId value);
     }
 }
