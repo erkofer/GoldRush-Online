@@ -59,6 +59,10 @@
     <Reference Include="Owin">
       <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
+    <Reference Include="protobuf-net, Version=2.0.0.668, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\protobuf-net.2.0.0.668\lib\net40\protobuf-net.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Web" />
@@ -80,6 +84,10 @@
     <ProjectReference Include="..\Caroline.Persistence.Models\Caroline.Persistence.Models.csproj">
       <Project>{7d8032ab-3c86-4894-b5fa-302ac5b474e5}</Project>
       <Name>Caroline.Persistence.Models</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Caroline.Persistence.Redis\Caroline.Persistence.Redis.csproj">
+      <Project>{41A2679F-2075-4FAD-8306-CE7645A68EBA}</Project>
+      <Name>Caroline.Persistence.Redis</Name>
     </ProjectReference>
     <ProjectReference Include="..\Caroline.Persistence\Caroline.Persistence.csproj">
       <Project>{a62bab30-0ee1-4d60-a7cb-b06e277eb79e}</Project>

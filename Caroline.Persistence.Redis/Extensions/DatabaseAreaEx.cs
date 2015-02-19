@@ -41,6 +41,12 @@ namespace Caroline.Persistence.Redis.Extensions
             return new RedisLongTable(db, defaultExpiry);
         }
 
+        public static IStringTable SetString(this IDatabaseArea area, long id)
+        {
+            var db = area.CreateSubArea(id);
+            return new RedisStringTable(db);
+        }
+
         static class Objects<TEntity>
         {
             public static readonly ISerializer<TEntity> Serializer = new ProtoBufSerializer<TEntity>();

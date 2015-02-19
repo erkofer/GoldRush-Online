@@ -3,7 +3,7 @@ using JetBrains.Annotations;
 
 namespace Caroline.Persistence.Redis.Extensions
 {
-    static class ArrayEx
+    public static class ArrayEx
     {
         public static byte[] Combine([NotNull]params byte[][] arrays)
         {

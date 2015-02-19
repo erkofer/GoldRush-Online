@@ -22,6 +22,12 @@ namespace Caroline.Persistence.Redis
             _defaultExpiry = defaultExpiry;
         }
 
+        public async Task<TEntity> Get(TEntity id)
+        {
+            var entity = await _db.StringGetAsync(_identifier.GetId(id));
+            return _serializer.Deserialize(entity);
+        }
+
         public async Task<bool> Set(TEntity entity, TimeSpan? expiry = null)
         {
             var key = _identifier.GetId(entity);
@@ -40,6 +46,11 @@ namespace Caroline.Persistence.Redis
             else
                 previous = await _db.StringGetSetExpiryAsync(_scripts, key, value, expiry.Value);
             return previous.HasValue ? _serializer.Deserialize(previous) : default(TEntity);
+        }
+
+        public Task<bool> Delete(TEntity entity)
+        {
+            return _db.KeyDeleteAsync(_identifier.GetId(entity));
         }
     }
 }

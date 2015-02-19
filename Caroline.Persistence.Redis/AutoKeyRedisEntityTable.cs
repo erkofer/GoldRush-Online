@@ -26,6 +26,12 @@ namespace Caroline.Persistence.Redis
             _defaultExpiry = defaultExpiry;
         }
 
+        public async Task<TEntity> Get(long id)
+        {
+            var entity = await _db.StringGetAsync(VarintBitConverter.GetVarintBytes(id));
+            return entity.HasValue ? _serializer.Deserialize(entity) : default(TEntity);
+        }
+
         public async Task<bool> Set(TEntity entity, SetMode mode, TimeSpan? expiry = null)
         {
             byte[] key;
@@ -46,7 +52,12 @@ namespace Caroline.Persistence.Redis
                     throw new ArgumentOutOfRangeException("mode");
             }
             var value = _serializer.Serialize(entity);
-            return await _db.StringSetAsync(key, value, expiry ?? _defaultExpiry, when);
+            var result = await _db.StringSetAsync(key, value, expiry ?? _defaultExpiry, when);
+            if (mode == SetMode.Add && result == false)
+                await LogUtility.LogMessage(
+                    "AutoIncrementRedisEntityTable.Set(SetMode.Add) failed. " +
+                    "Retrieved a unique autoincrement id, then it was taken");
+            return result;
         }
 
         public async Task<TEntity> GetSet(TEntity entity, TimeSpan? expiry = null)
@@ -60,6 +71,11 @@ namespace Caroline.Persistence.Redis
             else
                 previous = await _db.StringGetSetExpiryAsync(_scripts, key, value, expiry.Value);
             return previous.HasValue ? _serializer.Deserialize(previous) : default(TEntity);
+        }
+
+        public Task<bool> Delete(long id)
+        {
+            return _db.KeyDeleteAsync(VarintBitConverter.GetVarintBytes(id));
         }
     }
 }

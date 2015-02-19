@@ -1,4 +1,4 @@
-﻿package Caroline.Persistence.Models;
+package Caroline.Persistence.Models;
 
 import "csharp_options.proto";
 option (google.protobuf.csharp_file_options).namespace = "Caroline.Persistence.Models";

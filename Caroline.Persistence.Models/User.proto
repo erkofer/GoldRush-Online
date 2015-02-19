@@ -12,5 +12,21 @@ message User
 	optional string PasswordHash = 4;
     optional string SecurityStamp = 5;
 	optional bool IsAnonymous = 6;
+	repeated UserLogin Logins = 7;
+	optional bool EmailConfirmed = 8;
+	repeated UserClaim Claims = 9;
+	
 	// repeated long RetiredGameIds
+}
+
+message UserLogin
+{
+	optional string LoginProvider = 1;
+	optional string ProviderKey = 2;
+}
+
+message UserClaim
+{
+	optional string ClaimType = 1;
+	optional string ClaimValue = 2;
 }

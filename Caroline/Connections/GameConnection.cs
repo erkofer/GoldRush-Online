@@ -10,7 +10,6 @@ using Caroline.Persistence.Redis;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.SignalR;
 using System;
-using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Caroline.Connections
 {

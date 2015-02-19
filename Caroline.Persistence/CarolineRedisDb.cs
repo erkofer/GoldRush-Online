@@ -37,7 +37,10 @@ namespace Caroline.Persistence
                 Ids = ids = db.SetLong(1),
                 Games = db.Set<Game>(2),
                 Users = db.Set<User>(3, ids),
-                GameSessions = db.Set<GameSession>(4, TimeSpan.FromSeconds(60))
+                GameSessions = db.Set<GameSession>(4, TimeSpan.FromSeconds(60)),
+                UserNames = db.SetString(5),
+                Logins = db.SetString(6),
+                Emails = db.SetString(7)
             };
         }
 
@@ -48,5 +51,9 @@ namespace Caroline.Persistence
         public IAutoKeyEntityTable<User> Users { get; private set; }
 
         public IEntityTable<GameSession> GameSessions { get; set; }
+
+        public IStringTable UserNames { get; set; }
+        public IStringTable Logins { get; set; }
+        public IStringTable Emails { get; set; }
     }
 }
