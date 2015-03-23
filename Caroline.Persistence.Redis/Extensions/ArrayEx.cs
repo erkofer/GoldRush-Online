@@ -41,7 +41,7 @@ namespace Caroline.Persistence.Redis.Extensions
 
         public static string GetStringNoEncoding(this byte[] bytes)
         {
-            var chars = new char[bytes.Length / sizeof(char)];
+            var chars = new char[bytes.Length / sizeof(char) + (bytes.Length % 2 == 1? 1 : 0) ];
             Buffer.BlockCopy(bytes, 0, chars, 0, bytes.Length);
             return new string(chars);
         }

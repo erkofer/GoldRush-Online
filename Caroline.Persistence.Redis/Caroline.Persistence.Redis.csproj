@@ -47,9 +47,6 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.VarintBitConverter">
-      <HintPath>..\packages\VarintBitConverter.1.0.0.0\lib\Net40\System.VarintBitConverter.dll</HintPath>
-    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -64,6 +61,8 @@
     <Compile Include="Extensions\ArrayEx.cs" />
     <Compile Include="Extensions\CarolineScriptsRepoEx.cs" />
     <Compile Include="Extensions\DatabaseAreaEx.cs" />
+    <Compile Include="Extensions\IntEx.cs" />
+    <Compile Include="Extensions\LongEx.cs" />
     <Compile Include="IDatabaseArea.cs" />
     <Compile Include="IAutoKeyEntityTable.cs" />
     <Compile Include="IEntityTable.cs" />
@@ -72,11 +71,10 @@
     <Compile Include="ILongTable.cs" />
     <Compile Include="ISerializer.cs" />
     <Compile Include="IStringTable.cs" />
-    <Compile Include="LogUtility.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProtoBufHelpers.cs" />
     <Compile Include="ProtoBufSerializer.cs" />
-    <Compile Include="ReadonlyTypeSafeDictionary.cs" />
+    <Compile Include="ReadOnlyTypeSafeDictionary.cs" />
     <Compile Include="RedisEntityTable.cs" />
     <Compile Include="RedisTable.cs" />
     <Compile Include="RootDatabaseArea.cs" />
@@ -88,7 +86,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <EmbeddedResource Include="RedisScripts\NewTable.lua" />
     <EmbeddedResource Include="RedisScripts\RateLimit.lua" />
     <EmbeddedResource Include="RedisScripts\StringGetSetExpiry.lua" />
     <EmbeddedResource Include="RedisScripts\IncrementExpiry.lua" />

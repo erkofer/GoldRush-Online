@@ -2,20 +2,23 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using StackExchange.Redis;
 
 namespace Caroline.Persistence.Redis
 {
-    public class DatabaseWrapper : IDatabaseArea, IDatabase
+    public class DatabaseWrapper : IDatabaseArea
     {
+        [NotNull]
         readonly IDatabase _impl;
         readonly RedisKey _prefix;
         readonly CarolineScriptsRepo _scripts;
 
-        public DatabaseWrapper(IDatabase impl, RedisKey prefix, CarolineScriptsRepo scripts)
+        public DatabaseWrapper([NotNull] IDatabase impl, RedisKey prefix, CarolineScriptsRepo scripts)
         {
+            if (impl == null) throw new ArgumentNullException("impl");
             _impl = impl;
-            _prefix = prefix;
+            _prefix = prefix + ":";
             _scripts = scripts;
         }
 
@@ -1395,7 +1398,7 @@ namespace Caroline.Persistence.Redis
             return new DatabaseWrapper(_impl, area, Scripts);
         }
 
-        public IDatabase Area { get { return _impl; } }
+        public IDatabase Parent { get { return _impl; } }
         public CarolineScriptsRepo Scripts { get { return _scripts; } }
     }
 }

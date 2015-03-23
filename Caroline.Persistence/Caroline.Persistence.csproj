@@ -69,9 +69,6 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.VarintBitConverter">
-      <HintPath>..\packages\VarintBitConverter.1.0.0.0\lib\Net40\System.VarintBitConverter.dll</HintPath>
-    </Reference>
     <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -81,26 +78,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CarolineRedisDb.cs" />
-    <Compile Include="IGameRepository.cs" />
     <Compile Include="RedisUserStore.cs" />
-    <Compile Include="SqlGameRepository.cs" />
-    <Compile Include="GoldRushDbContext.cs" />
-    <Compile Include="IRepository.cs" />
-    <Compile Include="IUnitOfWork.cs" />
-    <Compile Include="IUserRepository.cs" />
-    <Compile Include="Migrations\201412301108027_Init.cs" />
-    <Compile Include="Migrations\201412301108027_Init.Designer.cs">
-      <DependentUpon>201412301108027_Init.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201501090813265_AnonymousUsers.cs" />
-    <Compile Include="Migrations\201501090813265_AnonymousUsers.Designer.cs">
-      <DependentUpon>201501090813265_AnonymousUsers.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SqlRepository.cs" />
-    <Compile Include="SqlUnitOfWork.cs" />
-    <Compile Include="SqlUserRepository.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Caroline.Persistence.Models\Caroline.Persistence.Models.csproj">
@@ -119,14 +98,6 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Migrations\201412301108027_Init.resx">
-      <DependentUpon>201412301108027_Init.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201501090813265_AnonymousUsers.resx">
-      <DependentUpon>201501090813265_AnonymousUsers.cs</DependentUpon>
-    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Extensions\" />

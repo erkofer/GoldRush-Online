@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using Caroline.Api;
@@ -55,7 +54,7 @@ namespace Caroline.Areas.Api.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return JsonConvert.SerializeObject(new SuccessViewModel{Success = false});
+                return JsonConvert.SerializeObject(new SuccessViewModel { Success = false });
             }
             // This doesn't count login failures towards account lockout
             // To enable password failures to trigger account lockout, change to shouldLockout: true
@@ -81,7 +80,7 @@ namespace Caroline.Areas.Api.Controllers
             if (!ModelState.IsValid)
                 return JsonConvert.SerializeObject(new IdentityResult("Some fields are missing."));
 
-            var user = new ApplicationUser { UserName = model.UserName, Email = model.Email };
+            var user = new User { UserName = model.UserName, Email = model.Email };
             var result = await AnonymousProfileApi.TryMigrateAnonymousAccountOrRegister(HttpContext, model);
             if (!result.Succeeded)
             {
@@ -104,14 +103,12 @@ namespace Caroline.Areas.Api.Controllers
 
         public async Task<string> Info()
         {
-            var userId = HttpContext.User.Identity.GetUserId();
+            var userId = HttpContext.User.Identity.GetUserId<long>();
             var account = new AccountViewModel();
-            ApplicationUser user;
 
-            using (var work = new SqlUnitOfWork())
-            {
-                user = await work.Users.Get(userId);
-            }
+            var db = await CarolineRedisDb.CreateAsync();
+            User user = await db.Users.Get(new User { Id = userId });
+
 
             if (user == null)
                 account.SignedIn = false;

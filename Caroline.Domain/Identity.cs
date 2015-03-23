@@ -14,9 +14,9 @@ using Microsoft.Owin.Security;
 namespace Caroline.Domain
 {
     // Configure the application user manager used in this application. UserManager is defined in ASP.NET Identity and is used by the application.
-    public class ApplicationUserManager : UserManager<ApplicationUser>
+    public class ApplicationUserManager : UserManager<User,long>
     {
-        public ApplicationUserManager(IUserStore<ApplicationUser> store)
+        public ApplicationUserManager(IUserStore<User, long> store)
             : base(store)
         {
 
@@ -24,7 +24,7 @@ namespace Caroline.Domain
 
         public static ApplicationUserManager Create(IdentityFactoryOptions<ApplicationUserManager> options, IOwinContext context)
         {
-            var manager = new ApplicationUserManager(new UserStore<ApplicationUser>(context.Get<GoldRushDbContext>()));
+            var manager = new ApplicationUserManager(new RedisUserStore(CarolineRedisDb.Create()));
             // Configure validation logic for usernames
             manager.UserValidator = new GoldRushUserValidator(manager)
             {
@@ -50,15 +50,15 @@ namespace Caroline.Domain
             if (dataProtectionProvider != null)
             {
                 manager.UserTokenProvider =
-                    new DataProtectorTokenProvider<ApplicationUser>(dataProtectionProvider.Create("ASP.NET Identity"));
+                    new DataProtectorTokenProvider<User, long>(dataProtectionProvider.Create("ASP.NET Identity"));
             }
             return manager;
         }
     }
 
-    public class GoldRushUserValidator : UserValidator<ApplicationUser>
+    public class GoldRushUserValidator : UserValidator<User, long>
     {
-        public GoldRushUserValidator(UserManager<ApplicationUser, string> manager)
+        public GoldRushUserValidator(UserManager<User, long> manager)
             : base(manager)
         {
         }
@@ -67,7 +67,7 @@ namespace Caroline.Domain
         static readonly HashSet<char> Base64CharactersHash = new HashSet<char>(Base64Characters);
         static readonly HashSet<char> RegisteredCharactersHash = new HashSet<char>(RegisteredCharacters);
 
-        public override async Task<IdentityResult> ValidateAsync(ApplicationUser item)
+        public override async Task<IdentityResult> ValidateAsync(User item)
         {
             var baseResult = await base.ValidateAsync(item);
             
@@ -92,16 +92,16 @@ namespace Caroline.Domain
     }
 
     // Configure the application sign-in manager which is used in this application.
-    public class ApplicationSignInManager : SignInManager<ApplicationUser, string>
+    public class ApplicationSignInManager : SignInManager<User, long>
     {
         public ApplicationSignInManager(ApplicationUserManager userManager, IAuthenticationManager authenticationManager)
             : base(userManager, authenticationManager)
         {
         }
 
-        public override Task<ClaimsIdentity> CreateUserIdentityAsync(ApplicationUser user)
+        public override Task<ClaimsIdentity> CreateUserIdentityAsync(User user)
         {
-            return user.GenerateUserIdentityAsync((ApplicationUserManager)UserManager);
+            return user.GenerateUserIdentityAsync(UserManager);
         }
 
         public static ApplicationSignInManager Create(IdentityFactoryOptions<ApplicationSignInManager> options, IOwinContext context)

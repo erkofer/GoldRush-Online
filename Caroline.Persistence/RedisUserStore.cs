@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Caroline.Persistence.Models;
@@ -9,7 +10,7 @@ using Microsoft.AspNet.Identity;
 
 namespace Caroline.Persistence
 {
-    public class UserStore : IUserLoginStore<User, long>, IUserPasswordStore<User, long>, IUserSecurityStampStore<User, long>, IUserEmailStore<User, long>
+    public class RedisUserStore : IUserLoginStore<User, long>, IUserPasswordStore<User, long>, IUserSecurityStampStore<User, long>, IUserEmailStore<User, long>
     {
         readonly IStringTable _userNameLookup;
         readonly IStringTable _emailsLookup;
@@ -17,7 +18,7 @@ namespace Caroline.Persistence
         readonly IAutoKeyEntityTable<User> _users;
         bool _disposed;
 
-        public UserStore(CarolineRedisDb db)
+        public RedisUserStore(CarolineRedisDb db)
         {
             _users = db.Users;
             _userNameLookup = db.UserNames;
@@ -40,9 +41,10 @@ namespace Caroline.Persistence
         {
             Check(user);
             await _users.Set(user, mode);
-            var userId = VarintBitConverter.GetVarintBytes(user.Id).GetStringNoEncoding();
+            var userId = user.Id.ToStringInvariant();
             await _userNameLookup.Set(user.UserName, userId);
-            await _emailsLookup.Set(user.Email, userId);
+            if (!string.IsNullOrEmpty(user.Email))
+                await _emailsLookup.Set(user.Email, userId);
             foreach (UserLogin login in user.Logins)
             {
                 await _loginsLookup.Set(GetLoginKey(login), userId);
@@ -53,7 +55,7 @@ namespace Caroline.Persistence
         public async Task DeleteAsync(User user)
         {
             Check(user);
-            await _users.Delete(user.Id);
+            await _users.Delete(user);
             await _userNameLookup.Delete(user.UserName);
             await _emailsLookup.Delete(user.Email);
             foreach (UserLogin login in user.Logins)
@@ -65,7 +67,7 @@ namespace Caroline.Persistence
         public Task<User> FindByIdAsync(long userId)
         {
             ThrowIfDisposed();
-            return _users.Get(userId);
+            return _users.Get(new User { Id = userId });
         }
 
         public async Task<User> FindByNameAsync(string userName)
@@ -74,8 +76,8 @@ namespace Caroline.Persistence
             var userId = await _userNameLookup.Get(userName);
             if (userId == null)
                 return null;
-            var id = VarintBitConverter.ToInt64(userId.GetBytesNoEncoding());
-            return await _users.Get(id);
+            var id = long.Parse(userId, CultureInfo.InvariantCulture);
+            return await _users.Get(new User { Id = id });
         }
 
         public async Task AddLoginAsync(User user, UserLoginInfo login)
@@ -84,16 +86,16 @@ namespace Caroline.Persistence
             var userLogin = new UserLogin { LoginProvider = login.LoginProvider, ProviderKey = login.ProviderKey };
             user.Logins.Add(userLogin);
 
-            var dbUser = await _users.Get(user.Id);
+            var dbUser = await _users.Get(user);
             dbUser.Logins.Add(userLogin);
             await _users.Set(dbUser, SetMode.Overwrite);
-            await _loginsLookup.Set(GetLoginKey(login), VarintBitConverter.GetVarintBytes(dbUser.Id).GetStringNoEncoding());
+            await _loginsLookup.Set(GetLoginKey(login), dbUser.Id.ToStringInvariant());
         }
 
         public async Task RemoveLoginAsync(User user, UserLoginInfo login)
         {
             Check(user, login);
-            var dbUser = await _users.Get(user.Id);
+            var dbUser = await _users.Get(user);
 
             var badLogins = dbUser.Logins.Where(l => l.LoginProvider == login.LoginProvider && l.ProviderKey == login.ProviderKey);
             var goodLogins = dbUser.Logins.Except(badLogins).ToList();
@@ -116,7 +118,7 @@ namespace Caroline.Persistence
             var userId = await _loginsLookup.Get(GetLoginKey(login));
             if (userId == null)
                 return null;
-            return await _users.Get(VarintBitConverter.ToInt64(userId.GetBytesNoEncoding()));
+            return await _users.Get(new User { Id = long.Parse(userId, CultureInfo.InvariantCulture) });
         }
 
         static string GetLoginKey(UserLogin login)
@@ -205,7 +207,7 @@ namespace Caroline.Persistence
             var userId = await _emailsLookup.Get(email);
             if (userId == null)
                 return null;
-            return await _users.Get(VarintBitConverter.ToInt64(userId.GetBytesNoEncoding()));
+            return await _users.Get(new User { Id = long.Parse(userId, CultureInfo.InvariantCulture) });
         }
 
         #endregion

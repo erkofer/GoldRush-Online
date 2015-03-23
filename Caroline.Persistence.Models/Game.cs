@@ -1,16 +1,18 @@
 ﻿using System;
+using System.Globalization;
 using Caroline.Persistence.Redis;
+using Caroline.Persistence.Redis.Extensions;
 
 namespace Caroline.Persistence.Models
 {
-    public partial class Game : IIdentifiableEntity<byte[]>
+    public partial class Game : IIdentifiableEntity<string>
     {
         public long Id { get; set; }
 
-        byte[] IIdentifiableEntity<Byte[]>.Id
+        string IIdentifiableEntity<string>.Id
         {
-            get { return VarintBitConverter.GetVarintBytes(Id); }
-            set { Id = VarintBitConverter.ToInt64(value); }
+            get { return Id.ToStringInvariant(); }
+            set { Id = long.Parse(value, CultureInfo.InvariantCulture); }
         }
     }
 }

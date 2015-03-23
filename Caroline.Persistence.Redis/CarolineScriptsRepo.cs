@@ -5,9 +5,9 @@ using StackExchange.Redis;
 
 namespace Caroline.Persistence.Redis
 {
-    public class CarolineScriptsRepo : ReadonlyTypeSafeDictionary<byte[]>
+    public class CarolineScriptsRepo : ReadOnlyTypeSafeDictionary<byte[]>
     {
-        public static async Task<CarolineScriptsRepo> Create(IEnumerable<KeyValuePair<string, string>> scripts, IEnumerable<IServer> servers)
+        public static async Task<CarolineScriptsRepo> CreateAsync(IEnumerable<KeyValuePair<string, string>> scripts, IEnumerable<IServer> servers)
         {
             var scriptSha1 = new Dictionary<string, byte[]>();
             var serv = servers as IList<IServer> ?? servers.ToList();
@@ -20,13 +20,25 @@ namespace Caroline.Persistence.Redis
             }
             return new CarolineScriptsRepo(scriptSha1);
         }
+
+        public static CarolineScriptsRepo Create(IEnumerable<KeyValuePair<string, string>> scripts, IEnumerable<IServer> servers)
+        {
+            var scriptSha1 = new Dictionary<string, byte[]>();
+            var serv = servers as IList<IServer> ?? servers.ToList();
+            foreach (var pair in scripts)
+            {
+                for (int i = 0; i < serv.Count; i++)
+                {
+                    scriptSha1.Add(pair.Key, serv[i].ScriptLoad(pair.Value));
+                }
+            }
+            return new CarolineScriptsRepo(scriptSha1);
+        }
         
         CarolineScriptsRepo(IReadOnlyDictionary<string, byte[]> sha1)
             : base(sha1, '.')
         {
         }
-
-        public byte[] NewTable { get; set; }
 
         /// <summary>
         /// Return Value: 1 if rate limit exceeded, otherwise 0

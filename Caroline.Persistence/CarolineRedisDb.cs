@@ -15,7 +15,7 @@ namespace Caroline.Persistence
         static readonly AsyncLock StaticInitializationLock = new AsyncLock();
         static RedisDbMultiplexer _redisConnection;
 
-        public static async Task<CarolineRedisDb> Create()
+        public static async Task<CarolineRedisDb> CreateAsync()
         {
             using (await StaticInitializationLock.LockAsync())
             {
@@ -26,21 +26,46 @@ namespace Caroline.Persistence
                     var connectionString = ConfigurationManager.AppSettings.Get("redisConnectionString");
                     var config = ConfigurationOptions.Parse(connectionString);
                     _connection = ConnectionMultiplexer.Connect(config);
-                    _redisConnection = await RedisDbMultiplexer.Create(_connection);
+                    _redisConnection = await RedisDbMultiplexer.CreateAsync(_connection);
                 }
             }
 
+            return CreateDb();
+        }
+
+        public static CarolineRedisDb Create()
+        {
+            using (StaticInitializationLock.Lock())
+            {
+                // dont instantiate the multiplexer in a static constructor because if
+                // it throws an exception in the static ctor, then this class becomes unusable in the AppDomain
+                if (_connection == null)
+                {
+                    var connectionString = ConfigurationManager.AppSettings.Get("redisConnectionString");
+                    var config = ConfigurationOptions.Parse(connectionString);
+                    _connection = ConnectionMultiplexer.Connect(config);
+                    // If this throws an exception, run
+                    // GoldRush-Online\packages\Redis-64.2.8.17\redis-server.exe
+                    _redisConnection = RedisDbMultiplexer.Create(_connection);
+                }
+            }
+
+            return CreateDb();
+        }
+
+        static CarolineRedisDb CreateDb()
+        {
             var db = _redisConnection.Connect();
             ILongTable ids;
             return new CarolineRedisDb
             {
-                Ids = ids = db.SetLong(1),
-                Games = db.Set<Game>(2),
-                Users = db.Set<User>(3, ids),
-                GameSessions = db.Set<GameSession>(4, TimeSpan.FromSeconds(60)),
-                UserNames = db.SetString(5),
-                Logins = db.SetString(6),
-                Emails = db.SetString(7)
+                Ids = ids = db.SetLong("idincr"),
+                Games = db.Set<Game>("g"),
+                Users = db.Set<User>("u", ids),
+                GameSessions = db.Set<GameSession>("c", TimeSpan.FromSeconds(60)),
+                UserNames = db.SetString("uu"),
+                Logins = db.SetString("ul"),
+                Emails = db.SetString("ue")
             };
         }
 

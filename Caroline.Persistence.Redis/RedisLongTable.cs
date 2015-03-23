@@ -14,13 +14,13 @@ namespace Caroline.Persistence.Redis
         public RedisLongTable(IDatabaseArea db, TimeSpan? defaultExpiry)
         {
             _defaultExpiry = defaultExpiry;
-            _db = db.Area;
+            _db = db;
             _scripts = db.Scripts;
         }
 
-        public void IncrementFaf(long id, long incrementValue = 1, TimeSpan? expiry = null)
+        public void IncrementFaf(RedisKey id, long incrementValue = 1, TimeSpan? expiry = null)
         {
-            var key = VarintBitConverter.GetVarintBytes(id);
+            var key = id;
             expiry = expiry ?? _defaultExpiry;
             if (expiry != null)
                 _db.IncrementExpiryFaf(_scripts, key, incrementValue, expiry.Value);
@@ -28,10 +28,10 @@ namespace Caroline.Persistence.Redis
                 _db.StringIncrement(key, incrementValue, CommandFlags.FireAndForget);
         }
 
-        public Task<long> IncrementAsync(long id, long incrementValue = 1, TimeSpan? expiry = null)
+        public Task<long> IncrementAsync(RedisKey id, long incrementValue = 1, TimeSpan? expiry = null)
         {
             // key is entity type id, followed by entity id
-            var key = VarintBitConverter.GetVarintBytes(id);
+            var key = id;
             expiry = expiry ?? _defaultExpiry;
             return expiry != null 
                 ? _db.IncrementExpiryAsync(_scripts, key, incrementValue, expiry.Value) 

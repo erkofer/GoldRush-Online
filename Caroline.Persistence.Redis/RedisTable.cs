@@ -12,7 +12,7 @@ namespace Caroline.Persistence.Redis
 
         public RedisStringTable(IDatabaseArea db)
         {
-            _db = db.Area;
+            _db = db;
             _scripts = db.Scripts;
         }
 

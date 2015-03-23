@@ -197,8 +197,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Api\AnonymousProfileApi.cs" />
-    <Compile Include="Api\Mvc\AnonymousProfileAttribute.cs" />
-    <Compile Include="Api\SignalR\AnonymousProfileAttribute.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />

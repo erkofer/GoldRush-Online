@@ -52,9 +52,9 @@ namespace Caroline.Controllers
             var model = new IndexViewModel
             {
                 HasPassword = HasPassword(),
-                PhoneNumber = await UserManager.GetPhoneNumberAsync(User.Identity.GetUserId()),
-                TwoFactor = await UserManager.GetTwoFactorEnabledAsync(User.Identity.GetUserId()),
-                Logins = await UserManager.GetLoginsAsync(User.Identity.GetUserId()),
+                PhoneNumber = await UserManager.GetPhoneNumberAsync(User.Identity.GetUserId<long>()),
+                TwoFactor = await UserManager.GetTwoFactorEnabledAsync(User.Identity.GetUserId<long>()),
+                Logins = await UserManager.GetLoginsAsync(User.Identity.GetUserId<long>()),
                 BrowserRemembered = await AuthenticationManager.TwoFactorBrowserRememberedAsync(User.Identity.GetUserId())
             };
             return View(model);
@@ -64,7 +64,7 @@ namespace Caroline.Controllers
         // GET: /Manage/RemoveLogin
         public ActionResult RemoveLogin()
         {
-            var linkedAccounts = UserManager.GetLogins(User.Identity.GetUserId());
+            var linkedAccounts = UserManager.GetLogins(User.Identity.GetUserId<long>());
             ViewBag.ShowRemoveButton = HasPassword() || linkedAccounts.Count > 1;
             return View(linkedAccounts);
         }
@@ -76,10 +76,10 @@ namespace Caroline.Controllers
         public async Task<ActionResult> RemoveLogin(string loginProvider, string providerKey)
         {
             ManageMessageId? message;
-            var result = await UserManager.RemoveLoginAsync(User.Identity.GetUserId(), new UserLoginInfo(loginProvider, providerKey));
+            var result = await UserManager.RemoveLoginAsync(User.Identity.GetUserId<long>(), new UserLoginInfo(loginProvider, providerKey));
             if (result.Succeeded)
             {
-                var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+                var user = await UserManager.FindByIdAsync(User.Identity.GetUserId<long>());
                 if (user != null)
                 {
                     await SignInAsync(user, isPersistent: false);
@@ -111,7 +111,7 @@ namespace Caroline.Controllers
                 return View(model);
             }
             // Generate the token and send it
-            var code = await UserManager.GenerateChangePhoneNumberTokenAsync(User.Identity.GetUserId(), model.Number);
+            var code = await UserManager.GenerateChangePhoneNumberTokenAsync(User.Identity.GetUserId<long>(), model.Number);
             if (UserManager.SmsService != null)
             {
                 var message = new IdentityMessage
@@ -129,8 +129,8 @@ namespace Caroline.Controllers
         [HttpPost]
         public async Task<ActionResult> EnableTwoFactorAuthentication()
         {
-            await UserManager.SetTwoFactorEnabledAsync(User.Identity.GetUserId(), true);
-            var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+            await UserManager.SetTwoFactorEnabledAsync(User.Identity.GetUserId<long>(), true);
+            var user = await UserManager.FindByIdAsync(User.Identity.GetUserId<long>());
             if (user != null)
             {
                 await SignInAsync(user, isPersistent: false);
@@ -143,8 +143,8 @@ namespace Caroline.Controllers
         [HttpPost]
         public async Task<ActionResult> DisableTwoFactorAuthentication()
         {
-            await UserManager.SetTwoFactorEnabledAsync(User.Identity.GetUserId(), false);
-            var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+            await UserManager.SetTwoFactorEnabledAsync(User.Identity.GetUserId<long>(), false);
+            var user = await UserManager.FindByIdAsync(User.Identity.GetUserId<long>());
             if (user != null)
             {
                 await SignInAsync(user, isPersistent: false);
@@ -156,7 +156,7 @@ namespace Caroline.Controllers
         // GET: /Manage/VerifyPhoneNumber
         public async Task<ActionResult> VerifyPhoneNumber(string phoneNumber)
         {
-            var code = await UserManager.GenerateChangePhoneNumberTokenAsync(User.Identity.GetUserId(), phoneNumber);
+            var code = await UserManager.GenerateChangePhoneNumberTokenAsync(User.Identity.GetUserId<long>(), phoneNumber);
             // Send an SMS through the SMS provider to verify the phone number
             return phoneNumber == null ? View("Error") : View(new VerifyPhoneNumberViewModel { PhoneNumber = phoneNumber });
         }
@@ -171,10 +171,10 @@ namespace Caroline.Controllers
             {
                 return View(model);
             }
-            var result = await UserManager.ChangePhoneNumberAsync(User.Identity.GetUserId(), model.PhoneNumber, model.Code);
+            var result = await UserManager.ChangePhoneNumberAsync(User.Identity.GetUserId<long>(), model.PhoneNumber, model.Code);
             if (result.Succeeded)
             {
-                var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+                var user = await UserManager.FindByIdAsync(User.Identity.GetUserId<long>());
                 if (user != null)
                 {
                     await SignInAsync(user, isPersistent: false);
@@ -190,12 +190,12 @@ namespace Caroline.Controllers
         // GET: /Manage/RemovePhoneNumber
         public async Task<ActionResult> RemovePhoneNumber()
         {
-            var result = await UserManager.SetPhoneNumberAsync(User.Identity.GetUserId(), null);
+            var result = await UserManager.SetPhoneNumberAsync(User.Identity.GetUserId<long>(), null);
             if (!result.Succeeded)
             {
                 return RedirectToAction("Index", new { Message = ManageMessageId.Error });
             }
-            var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+            var user = await UserManager.FindByIdAsync(User.Identity.GetUserId<long>());
             if (user != null)
             {
                 await SignInAsync(user, isPersistent: false);
@@ -220,10 +220,10 @@ namespace Caroline.Controllers
             {
                 return View(model);
             }
-            var result = await UserManager.ChangePasswordAsync(User.Identity.GetUserId(), model.OldPassword, model.NewPassword);
+            var result = await UserManager.ChangePasswordAsync(User.Identity.GetUserId<long>(), model.OldPassword, model.NewPassword);
             if (result.Succeeded)
             {
-                var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+                var user = await UserManager.FindByIdAsync(User.Identity.GetUserId<long>());
                 if (user != null)
                 {
                     await SignInAsync(user, isPersistent: false);
@@ -249,10 +249,10 @@ namespace Caroline.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await UserManager.AddPasswordAsync(User.Identity.GetUserId(), model.NewPassword);
+                var result = await UserManager.AddPasswordAsync(User.Identity.GetUserId<long>(), model.NewPassword);
                 if (result.Succeeded)
                 {
-                    var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+                    var user = await UserManager.FindByIdAsync(User.Identity.GetUserId<long>());
                     if (user != null)
                     {
                         await SignInAsync(user, isPersistent: false);
@@ -274,12 +274,12 @@ namespace Caroline.Controllers
                 message == ManageMessageId.RemoveLoginSuccess ? "The external login was removed."
                 : message == ManageMessageId.Error ? "An error has occurred."
                 : "";
-            var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+            var user = await UserManager.FindByIdAsync(User.Identity.GetUserId<long>());
             if (user == null)
             {
                 return View("Error");
             }
-            var userLogins = await UserManager.GetLoginsAsync(User.Identity.GetUserId());
+            var userLogins = await UserManager.GetLoginsAsync(User.Identity.GetUserId<long>());
             var otherLogins = AuthenticationManager.GetExternalAuthenticationTypes().Where(auth => userLogins.All(ul => auth.AuthenticationType != ul.LoginProvider)).ToList();
             ViewBag.ShowRemoveButton = user.PasswordHash != null || userLogins.Count > 1;
             return View(new ManageLoginsViewModel
@@ -308,7 +308,7 @@ namespace Caroline.Controllers
             {
                 return RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
             }
-            var result = await UserManager.AddLoginAsync(User.Identity.GetUserId(), loginInfo.Login);
+            var result = await UserManager.AddLoginAsync(User.Identity.GetUserId<long>(), loginInfo.Login);
             return result.Succeeded ? RedirectToAction("ManageLogins") : RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
         }
 
@@ -324,7 +324,7 @@ namespace Caroline.Controllers
             }
         }
 
-        private async Task SignInAsync(ApplicationUser user, bool isPersistent)
+        private async Task SignInAsync(User user, bool isPersistent)
         {
             AuthenticationManager.SignOut(DefaultAuthenticationTypes.ExternalCookie, DefaultAuthenticationTypes.TwoFactorCookie);
             AuthenticationManager.SignIn(new AuthenticationProperties { IsPersistent = isPersistent }, await user.GenerateUserIdentityAsync(UserManager));
@@ -340,7 +340,7 @@ namespace Caroline.Controllers
 
         private bool HasPassword()
         {
-            var user = UserManager.FindById(User.Identity.GetUserId());
+            var user = UserManager.FindById(User.Identity.GetUserId<long>());
             if (user != null)
             {
                 return user.PasswordHash != null;
@@ -348,15 +348,15 @@ namespace Caroline.Controllers
             return false;
         }
 
-        private bool HasPhoneNumber()
-        {
-            var user = UserManager.FindById(User.Identity.GetUserId());
-            if (user != null)
-            {
-                return user.PhoneNumber != null;
-            }
-            return false;
-        }
+        //private bool HasPhoneNumber()
+        //{
+        //    var user = UserManager.FindById(User.Identity.GetUserId<long>());
+        //    if (user != null)
+        //    {
+        //        return user.PhoneNumber != null;
+        //    }
+        //    return false;
+        //}
 
         public enum ManageMessageId
         {

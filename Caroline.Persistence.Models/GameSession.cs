@@ -2,14 +2,14 @@
 
 namespace Caroline.Persistence.Models
 {
-    public partial class GameSession : IIdentifiableEntity<byte[]>
+    public partial class GameSession : IIdentifiableEntity<string>
     {
-        IPAddress EndPoint { get; set; }
+        IpAddress EndPoint { get; set; }
 
-        byte[] IIdentifiableEntity<byte[]>.Id
+        string IIdentifiableEntity<string>.Id
         {
-            get { return IPAddress.Serialize(EndPoint); }
-            set { EndPoint = IPAddress.Deserialize(value, 0); }
+            get { return IpAddress.Serialize(EndPoint); }
+            set { EndPoint = IpAddress.Deserialize(value); }
         }
     }
 }

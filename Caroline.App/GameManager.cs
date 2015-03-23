@@ -12,51 +12,47 @@ namespace Caroline.App
         readonly GameFactory _gameFactory = new GameFactory();
         readonly GoldRushCache _goldRushCache = new GoldRushCache();
 
-        public async Task<GameState> Update(string userId, string sessionGuid, ClientActions input = null)
+        public async Task<GameState> Update(long userId, string sessionGuid, ClientActions input = null)
         {
             GameState dataToSend;
-            using (var work = new SqlUnitOfWork())
-            {
-                var games = work.Games;
+            var db = await CarolineRedisDb.CreateAsync();
 
-                // get game save, create it if it doesn't exist
-                var save = await games.GetByUserIdAsync(userId) ?? await games.AddByUserIdAsync(userId, new Game());
-                if (save == null)
-                {
-                    return new GameState { IsError = true };
-                }
-                var saveData = save.SaveData;
-                var saveObject = saveData != null ? ProtoBufHelpers.Deserialize<SaveState>(saveData) : null;
+            var games = db.Games;
+            // get game save, create it if it doesn't exist
+            Game save;
+            save = await games.Get(new Game { Id = userId });
+            if (save == null)
+                await games.Set(save = new Game { Id = userId });
 
-                // load game save into an game instance
-                var game = _gameFactory.Create();
-                game.Load(saveObject);
+            var saveData = save.SaveData;
+            var saveObject = saveData != null ? ProtoBufHelpers.Deserialize<SaveState>(saveData) : null;
 
-                // update save with new input
-                dataToSend = game.Update(input);
+            // load game save into an game instance
+            var game = _gameFactory.Create();
+            game.Load(saveObject);
 
-                // save to the database
-                var saveDto = game.Save();
-                save.SaveData = ProtoBufHelpers.SerializeToString(saveDto);
-                games.Update(save);
+            // update save with new input
+            dataToSend = game.Update(input);
 
-                await work.SaveChangesAsync();
-            }
+            // save to the database
+            var saveDto = game.Save();
+            save.SaveData = ProtoBufHelpers.SerializeToString(saveDto);
+            await games.Set(save);
 
             if (dataToSend == null)
                 dataToSend = new GameState();
 
             // minify the GameState by only sending differences since the last state
-            var previousState = _goldRushCache.GetGameData(sessionGuid);
-            _goldRushCache.SetGameData(sessionGuid, dataToSend);
-            if (previousState != null)
-                dataToSend = dataToSend.Compress(previousState);
+            //var previousState = _goldRushCache.GetGameData(sessionGuid);
+            //_goldRushCache.SetGameData(sessionGuid, dataToSend);
+            //if (previousState != null)
+            //    dataToSend = dataToSend.Compress(previousState);
             return dataToSend;
         }
     }
 
     public interface IGameManager
     {
-        Task<GameState> Update(string userId, string sessionGuid, ClientActions input = null);
+        Task<GameState> Update(long userId, string sessionGuid, ClientActions input = null);
     }
 }

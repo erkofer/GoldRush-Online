@@ -15,15 +15,15 @@ namespace Caroline.Persistence.Redis.Tests
                 {"Resources.NestedEmbeddedResource.Resource", "Resource"}
             };
 
-            var result = new ReadonlyTypeSafeDictionaryMock(expected);
+            var result = new ReadOnlyTypeSafeDictionaryMock(expected);
 
             Assert.AreEqual("RESOURCERESOURCERESOURCE", result.EmbeddedResource);
             Assert.AreEqual("Resource", result.NestedEmbeddedResource);
         }
 
-        class ReadonlyTypeSafeDictionaryMock : ReadonlyTypeSafeDictionary<string>
+        class ReadOnlyTypeSafeDictionaryMock : ReadOnlyTypeSafeDictionary<string>
         {
-            public ReadonlyTypeSafeDictionaryMock(IReadOnlyDictionary<string, string> scripts)
+            public ReadOnlyTypeSafeDictionaryMock(IReadOnlyDictionary<string, string> scripts)
                 : base(scripts, '.')
             {
 

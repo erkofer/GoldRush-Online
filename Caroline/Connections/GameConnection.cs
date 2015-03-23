@@ -3,7 +3,6 @@ using System.Web;
 using Caroline.Api;
 using Caroline.App;
 using Caroline.App.Models;
-using Caroline.Areas.Api.Models;
 using Caroline.Persistence;
 using Caroline.Persistence.Models;
 using Caroline.Persistence.Redis;
@@ -19,7 +18,9 @@ namespace Caroline.Connections
 
         protected override async Task OnConnected(IRequest request, string connectionId)
         {
-            var state = await _gameManager.Update(HttpContext.Current.User.Identity.GetUserId(), connectionId);
+            await AnonymousProfileApi.GenerateAnonymousProfileIfNotAuthenticated(request.GetHttpContext());
+
+            var state = await _gameManager.Update(HttpContext.Current.User.Identity.GetUserId<long>(), connectionId);
             await Connection.Send(connectionId, ProtoBufHelpers.SerializeToString(state));
         }
 
@@ -29,24 +30,18 @@ namespace Caroline.Connections
 
             if (actions.SocialActions != null) await Socialize(request, connectionId, actions);
 
-            var state = await _gameManager.Update(HttpContext.Current.User.Identity.GetUserId(), connectionId, actions);
+            var state = await _gameManager.Update(HttpContext.Current.User.Identity.GetUserId<long>(), connectionId, actions);
             await Connection.Send(connectionId, ProtoBufHelpers.SerializeToString(state));
         }
 
-        protected override bool AuthorizeRequest(IRequest request)
-        {
-            // possibly extremely laggy
-            return AnonymousProfileApi.GenerateAnonymousProfileIfNotAuthenticated(request.GetHttpContext());
-        }
-
-        private async Task Socialize(IRequest request,string connectionId, ClientActions actions)
+        private async Task Socialize(IRequest request, string connectionId, ClientActions actions)
         {
             foreach (var action in actions.SocialActions)
             {
                 if (action.Chat != null)
                     if (action.Chat.GlobalMessage != null)
                     {
-                        var user = await GetUserName(request.GetHttpContext().User.Identity.GetUserId());
+                        var user = await GetUserName(request.GetHttpContext().User.Identity.GetUserId<long>());
                         if (!user.IsAnonymous)
                             SendGlobalChatMessage(user.UserName, action.Chat.GlobalMessage);
                         else
@@ -56,14 +51,11 @@ namespace Caroline.Connections
             }
         }
 
-        async Task<ApplicationUser> GetUserName(string userId)
+        async Task<User> GetUserName(long userId)
         {
-            var account = new AccountViewModel();
+            var db = await CarolineRedisDb.CreateAsync();
+            return await db.Users.Get(new User { Id = userId });
 
-            using (var work = new SqlUnitOfWork())
-            {
-                return await work.Users.Get(userId);
-            }
         }
 
         private void SendGlobalChatMessage(string sender, string text)
@@ -75,7 +67,7 @@ namespace Caroline.Connections
         {
             string[] developers = new string[] { "Developer", "Hunter" };
             string[] moderators = new string[] { "scrublord" };
-            string[] server = new string[] {"Server"};
+            string[] server = new string[] { "Server" };
             var maxMessageLength = 220;
 
             var state = new GameState();

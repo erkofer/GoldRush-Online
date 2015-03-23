@@ -4,11 +4,11 @@ using System.Reflection;
 
 namespace Caroline.Persistence.Redis
 {
-    public class ReadonlyTypeSafeDictionary<TValue> : IReadOnlyDictionary<string, TValue>
+    public class ReadOnlyTypeSafeDictionary<TValue> : IReadOnlyDictionary<string, TValue>
     {
         readonly IReadOnlyDictionary<string, TValue> _scripts;
 
-        public ReadonlyTypeSafeDictionary(IReadOnlyDictionary<string, TValue> scripts, char? keyDelimiter)
+        public ReadOnlyTypeSafeDictionary(IReadOnlyDictionary<string, TValue> scripts, char? keyDelimiter)
         {
             _scripts = scripts;
 

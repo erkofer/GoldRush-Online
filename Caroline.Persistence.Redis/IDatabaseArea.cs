@@ -2,10 +2,10 @@
 
 namespace Caroline.Persistence.Redis
 {
-    public interface IDatabaseArea
+    public interface IDatabaseArea : IDatabase
     {
         IDatabaseArea CreateSubArea(RedisKey area);
-        IDatabase Area { get; }
+        IDatabase Parent { get; }
         CarolineScriptsRepo Scripts { get; }
     }
 }
