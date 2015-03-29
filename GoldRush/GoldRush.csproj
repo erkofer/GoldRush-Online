@@ -71,6 +71,14 @@
       <Project>{920d7d6c-0101-4d19-9076-12aab52e516c}</Project>
       <Name>Caroline.App.Models</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Caroline.Persistence.Models\Caroline.Persistence.Models.csproj">
+      <Project>{7d8032ab-3c86-4894-b5fa-302ac5b474e5}</Project>
+      <Name>Caroline.Persistence.Models</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Caroline.Persistence.Redis\Caroline.Persistence.Redis.csproj">
+      <Project>{41A2679F-2075-4FAD-8306-CE7645A68EBA}</Project>
+      <Name>Caroline.Persistence.Redis</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

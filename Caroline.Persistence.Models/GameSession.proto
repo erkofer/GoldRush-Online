@@ -11,5 +11,5 @@ message GameSession
 	// Sessions are transient and expire after not being updated.
 	
 	// Sessions are uniquely identified by a layer 4 connection:
-	// SourceIp:SourcePort:DestinationIp:DestinationPort
+	// SourceIp:SourcePort:DestinationIp:DestinationPort:GameId
 }

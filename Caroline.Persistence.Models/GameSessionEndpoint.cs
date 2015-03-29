@@ -25,7 +25,7 @@ namespace Caroline.Persistence.Models
             var ipAddress = value.Substring(0, lastColonIndex);
             var gameId = value.Substring(lastColonIndex + 1, value.Length);
 
-            return new GameSessionEndpoint(IpEndpoint.Deserialize(ipAddress),long.Parse(gameId));
+            return new GameSessionEndpoint(IpEndpoint.Deserialize(ipAddress), long.Parse(gameId));
         }
     }
 }

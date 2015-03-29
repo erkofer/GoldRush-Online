@@ -33,23 +33,27 @@ namespace Caroline.App
 
                 var saveData = save.SaveData;
                 var saveObject = saveData != null ? ProtoBufHelpers.Deserialize<SaveState>(saveData) : null;
-                var session = db.GameSessions.Get(new GameSession { EndPoint = endpoint });
+                var session = await db.GameSessions.Get(new GameSession { EndPoint = endpoint });
 
                 // load game save into an game instance
                 var game = _sessionFactory.Create();
                 game.Load(new LoadArgs { SaveState = saveObject });
 
                 // update save with new input
-                updateDto = game.Update(new UpdateArgs { ClientActions = input });
+                updateDto = game.Update(new UpdateArgs { ClientActions = input, Session = session });
 
                 // save to the database
+                // session gets modified by update
+                await db.GameSessions.Set(session);
                 var saveDto = game.Save();
                 var saveState = saveDto.SaveState;
                 if (saveState != null)
                 {
+                    // TODO: dont serialize twice
                     save.SaveData = ProtoBufHelpers.SerializeToString(saveState);
                     await games.Set(save);
                 }
+
             }
 
             GameState dataToSend = null;
