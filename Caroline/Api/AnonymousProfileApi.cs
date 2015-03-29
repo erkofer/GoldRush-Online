@@ -2,16 +2,14 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Security;
 using Caroline.Domain;
 using Caroline.Models;
-using Caroline.Persistence;
 using Caroline.Persistence.Models;
+using JetBrains.Annotations;
 using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Identity.Owin;
 using Newtonsoft.Json;
 
@@ -21,12 +19,17 @@ namespace Caroline.Api
     {
         const string AnonymousProfileCookieName = "GoldRushAnonymousId";
 
-        public static bool GenerateAnonymousProfileIfNotAuthenticated(
+        public static Task GenerateAnonymousProfileIfNotAuthenticated(HttpContextBase context)
+        {
+            return RegisterAnonymouslyIfLoggedOff(context);
+        }
+
+        public static async Task<bool> GenerateAnonymousProfileIfNotAuthenticated(
             HttpContextBase context,
-            string[] usernamesWhiteList = null,
+            string[] usernamesWhiteList,
             string[] rolesWhiteList = null)
         {
-            RegisterAnonymouslyIfLoggedOff(context);
+            await GenerateAnonymousProfileIfNotAuthenticated(context);
 
             // assert that the user is whitelisted
             return (usernamesWhiteList == null || usernamesWhiteList.Length == 0 || usernamesWhiteList.Contains(context.User.Identity.Name))
@@ -42,7 +45,7 @@ namespace Caroline.Api
                 if (context.User.Identity.IsAuthenticated)
                 {
                     // migrate from an anonymous account
-                    var id = context.User.Identity.GetUserId();
+                    var id = context.User.Identity.GetUserId<long>();
                     var anonUser = await users.FindByIdAsync(id);
                     if (anonUser == null || !anonUser.IsAnonymous)
                         return new IdentityResult();
@@ -60,7 +63,7 @@ namespace Caroline.Api
                 }
 
                 // register a new account
-                var user = new ApplicationUser
+                var user = new User
                 {
                     Email = model.Email,
                     UserName = model.UserName
@@ -72,16 +75,16 @@ namespace Caroline.Api
             }
         }
 
-        static void RegisterAnonymouslyIfLoggedOff(HttpContextBase context)
+        static async Task RegisterAnonymouslyIfLoggedOff(HttpContextBase context)
         {
             if (IsSignedIn(context))
                 return;
 
             // Check if the user has an anonymous account and needs to sign in again
-            if (TrySignInAnonymous(context))
+            if (await TrySignInAnonymous(context))
                 return;
 
-            GenerateAnonymousProfile(context);
+            await GenerateAnonymousProfile(context);
         }
 
         static bool IsSignedIn(HttpContextBase context)
@@ -89,47 +92,42 @@ namespace Caroline.Api
             return context.User.Identity.IsAuthenticated;
         }
 
-        static bool TrySignInAnonymous(HttpContextBase context)
+        static async Task<bool> TrySignInAnonymous(HttpContextBase context)
         {
-            try
-            {
-                var cookie = context.Request[AnonymousProfileCookieName];
-                AnonymousUserCookie user = null;
-                if (cookie != null)
-                    user = JsonConvert.DeserializeObject<AnonymousUserCookie>(cookie);
+            var cookie = context.Request[AnonymousProfileCookieName];
+            AnonymousUserCookie user = null;
+            if (cookie != null)
+                user = JsonConvert.DeserializeObject<AnonymousUserCookie>(cookie);
 
-                if (user == null)
-                    return false;
-                var userManager = context.GetOwinContext().GetUserManager<ApplicationSignInManager>();
-                var username = Convert.ToBase64String(MachineKey.Unprotect(Convert.FromBase64String(user.UserName)) ?? new byte[] { });
-                var password = Convert.ToBase64String(MachineKey.Unprotect(Convert.FromBase64String(user.Password)) ?? new byte[] { });
-                var signInResult = userManager.PasswordSignInAsync(username, password, true, false);
-
-                return signInResult.Result == SignInStatus.Success;
-            }
-            catch (CryptographicException)
-            {
+            if (user == null)
                 return false;
-            }
+            var userManager = context.GetOwinContext().GetUserManager<ApplicationSignInManager>();
+            var username = Unprotect(user.UserName);
+            var password = Unprotect(user.Password);
+            if (username == null || password == null)
+                return false;
+
+            var signInResult = await userManager.PasswordSignInAsync(username, password, true, false);
+            return signInResult == SignInStatus.Success;
         }
 
-        static void GenerateAnonymousProfile(HttpContextBase context)
+        static async Task GenerateAnonymousProfile(HttpContextBase context)
         {
-            while (true) // run until a unique username is created
+            for (int i = 0; i < 10; i++) // run until a unique username is created
             {
                 var anonymousCookie = new AnonymousUserCookie
                 {
-                    UserName = Convert.ToBase64String(MachineKey.Protect(Convert.FromBase64String(GenerateBase64String(16)))),
-                    Password = Convert.ToBase64String(MachineKey.Protect(Convert.FromBase64String(GenerateBase64String(16))))
+                    UserName = Protect(GenerateBase64String(8)),
+                    Password = Protect(GenerateBase64String(8))
                 };
-                var user = new ApplicationUser { UserName = anonymousCookie.UserName, IsAnonymous = true };
+                var user = new User { UserName = anonymousCookie.UserName, IsAnonymous = true };
 
                 var userManager = context.GetOwinContext().GetUserManager<ApplicationUserManager>();
                 var result = userManager.Create(user, anonymousCookie.Password);
                 if (!result.Succeeded) continue;
 
                 var signInManager = context.GetOwinContext().GetUserManager<ApplicationSignInManager>();
-                signInManager.SignIn(user, isPersistent: true, rememberBrowser: true);
+                await signInManager.SignInAsync(user, isPersistent: true, rememberBrowser: true);
 
                 var cookie = new HttpCookie(AnonymousProfileCookieName)
                 {
@@ -139,6 +137,39 @@ namespace Caroline.Api
                 context.Response.AppendCookie(cookie);
 
                 return;
+            }
+        }
+
+        [CanBeNull]
+        static string Unprotect(string encryptedBase64String)
+        {
+            if(encryptedBase64String == null)
+                throw new ArgumentNullException();
+
+            try
+            {
+                var a = Convert.FromBase64String(encryptedBase64String);
+                var b = MachineKey.Unprotect(a) ?? new byte[0];
+                return Convert.ToBase64String(b);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        [CanBeNull]
+        static string Protect(string value)
+        {
+            try
+            {
+                var a = Convert.FromBase64String(value);
+                var b = MachineKey.Protect(a);
+                return Convert.ToBase64String(b);
+            }
+            catch
+            {
+                return null;
             }
         }
 

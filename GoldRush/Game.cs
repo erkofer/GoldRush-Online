@@ -1,10 +1,9 @@
 ﻿using Caroline.App.Models;
 using System;
-using System.Diagnostics;
 
 namespace GoldRush
 {
-    class Game : IGoldRushGame
+    class Game
     {
         public Game()
         {

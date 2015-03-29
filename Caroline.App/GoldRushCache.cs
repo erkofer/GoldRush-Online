@@ -19,7 +19,7 @@ namespace Caroline.App
             if (sessionGuid == null) throw new ArgumentNullException("sessionGuid");
             if (state == null) throw new ArgumentNullException("state");
             
-            HttpRuntime.Cache.Add("game_" + sessionGuid, state,
+            HttpRuntime.Cache.Insert("game_" + sessionGuid, state,
                 dependencies: null, 
                 absoluteExpiration: Cache.NoAbsoluteExpiration, 
                 slidingExpiration: TimeSpan.FromSeconds(30), 

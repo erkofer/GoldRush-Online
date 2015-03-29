@@ -89,6 +89,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\protobuf-net.2.0.0.668\lib\net40\protobuf-net.dll</HintPath>
     </Reference>
+    <Reference Include="StackExchange.Redis">
+      <HintPath>..\packages\StackExchange.Redis.1.0.394\lib\net45\StackExchange.Redis.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -194,8 +197,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Api\AnonymousProfileApi.cs" />
-    <Compile Include="Api\Mvc\AnonymousProfileAttribute.cs" />
-    <Compile Include="Api\SignalR\AnonymousProfileAttribute.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
@@ -396,6 +397,10 @@
     <ProjectReference Include="..\Caroline.Persistence.Models\Caroline.Persistence.Models.csproj">
       <Project>{7D8032AB-3C86-4894-B5FA-302AC5B474E5}</Project>
       <Name>Caroline.Persistence.Models</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Caroline.Persistence.Redis\Caroline.Persistence.Redis.csproj">
+      <Project>{41A2679F-2075-4FAD-8306-CE7645A68EBA}</Project>
+      <Name>Caroline.Persistence.Redis</Name>
     </ProjectReference>
     <ProjectReference Include="..\Caroline.Persistence\Caroline.Persistence.csproj">
       <Project>{A62BAB30-0EE1-4D60-A7CB-B06E277EB79E}</Project>

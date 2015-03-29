@@ -35,6 +35,9 @@
     <Reference Include="JetBrains.Annotations">
       <HintPath>..\packages\JetBrains.Annotations.8.0.3.0\lib\net20\JetBrains.Annotations.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.Core">
+      <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.0\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
+    </Reference>
     <Reference Include="protobuf-net, Version=2.0.0.668, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\protobuf-net.2.0.0.668\lib\net40\protobuf-net.dll</HintPath>
@@ -52,7 +55,6 @@
     <Compile Include="GameManager.cs" />
     <Compile Include="GoldRushCache.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ProtoBufHelpers.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Caroline.App.Models\Caroline.App.Models.csproj">
@@ -70,6 +72,10 @@
     <ProjectReference Include="..\Caroline.Persistence.Models\Caroline.Persistence.Models.csproj">
       <Project>{7D8032AB-3C86-4894-B5FA-302AC5B474E5}</Project>
       <Name>Caroline.Persistence.Models</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Caroline.Persistence.Redis\Caroline.Persistence.Redis.csproj">
+      <Project>{41A2679F-2075-4FAD-8306-CE7645A68EBA}</Project>
+      <Name>Caroline.Persistence.Redis</Name>
     </ProjectReference>
     <ProjectReference Include="..\Caroline.Persistence\Caroline.Persistence.csproj">
       <Project>{A62BAB30-0EE1-4D60-A7CB-B06E277EB79E}</Project>

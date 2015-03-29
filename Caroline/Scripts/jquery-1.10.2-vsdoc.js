@@ -2242,7 +2242,7 @@ jQuery.param = function( a, traditional ) {
 
 	// If an array was passed in, assume that it is an array of form elements.
 	if ( jQuery.isArray( a ) || ( a.jquery && !jQuery.isPlainObject( a ) ) ) {
-		// Serialize the form elements
+		// SerializeToString the form elements
 		jQuery.each( a, function() {
 			add( this.name, this.value );
 		});

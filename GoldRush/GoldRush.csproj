@@ -47,15 +47,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="APIs\IKomodoSession.cs" />
+    <Compile Include="APIs\KomodoDtos.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="GameObjects\Crafting.cs" />
     <Compile Include="GameObjects\GameConfig.cs" />
-    <Compile Include="APIs\GameFactory.cs" />
+    <Compile Include="APIs\KomodoSessionFactory.cs" />
     <Compile Include="GameObjects\GameObjects.cs" />
     <Compile Include="GameObjects\Gatherers.cs" />
-    <Compile Include="APIs\IGame.cs" />
     <Compile Include="GameObjects\Items.cs" />
     <Compile Include="GameObjects\Store.cs" />
+    <Compile Include="APIs\KomodoSession.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GameObjects\Upgrades.cs" />
   </ItemGroup>
@@ -68,6 +70,14 @@
     <ProjectReference Include="..\Caroline.App.Models\Caroline.App.Models.csproj">
       <Project>{920d7d6c-0101-4d19-9076-12aab52e516c}</Project>
       <Name>Caroline.App.Models</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Caroline.Persistence.Models\Caroline.Persistence.Models.csproj">
+      <Project>{7d8032ab-3c86-4894-b5fa-302ac5b474e5}</Project>
+      <Name>Caroline.Persistence.Models</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Caroline.Persistence.Redis\Caroline.Persistence.Redis.csproj">
+      <Project>{41A2679F-2075-4FAD-8306-CE7645A68EBA}</Project>
+      <Name>Caroline.Persistence.Redis</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

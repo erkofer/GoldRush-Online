@@ -61,6 +61,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{184280
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caroline.App.Models.Tests", "Caroline.App.Models.Tests\Caroline.App.Models.Tests.csproj", "{8AF97988-0D90-48AA-BB37-30ABF1E2F8FD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caroline.Persistence.Redis", "Caroline.Persistence.Redis\Caroline.Persistence.Redis.csproj", "{41A2679F-2075-4FAD-8306-CE7645A68EBA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caroline.Persistence.Redis.Tests", "Caroline.Persistence.Redis.Tests\Caroline.Persistence.Redis.Tests.csproj", "{8D3DAA43-511F-4245-9C34-F4BBCB70F9E2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caroline.Persistence.Models.Tests", "Caroline.Persistence.Models.Tests\Caroline.Persistence.Models.Tests.csproj", "{B67DB907-3271-4571-8F80-FC9BF7F92D0A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -107,6 +113,18 @@ Global
 		{8AF97988-0D90-48AA-BB37-30ABF1E2F8FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8AF97988-0D90-48AA-BB37-30ABF1E2F8FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8AF97988-0D90-48AA-BB37-30ABF1E2F8FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{41A2679F-2075-4FAD-8306-CE7645A68EBA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{41A2679F-2075-4FAD-8306-CE7645A68EBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{41A2679F-2075-4FAD-8306-CE7645A68EBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{41A2679F-2075-4FAD-8306-CE7645A68EBA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D3DAA43-511F-4245-9C34-F4BBCB70F9E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D3DAA43-511F-4245-9C34-F4BBCB70F9E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D3DAA43-511F-4245-9C34-F4BBCB70F9E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D3DAA43-511F-4245-9C34-F4BBCB70F9E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B67DB907-3271-4571-8F80-FC9BF7F92D0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B67DB907-3271-4571-8F80-FC9BF7F92D0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B67DB907-3271-4571-8F80-FC9BF7F92D0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B67DB907-3271-4571-8F80-FC9BF7F92D0A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -114,5 +132,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{5EB1BA73-FC45-41A3-9007-C7A0E8FD0A14} = {74EFAE0E-D7A9-418B-9116-3AEC28FF89A1}
 		{379C22DF-0AD2-4867-BDE8-EDB8E9E19F0B} = {0EE3EBCD-ADF8-4839-99F3-2A59D4CFDAD8}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		EnterpriseLibraryConfigurationToolBinariesPath = packages\TransientFaultHandling.Core.5.1.1209.1\lib\NET4
 	EndGlobalSection
 EndGlobal
