@@ -45,12 +45,12 @@ namespace GoldRush
                             var item = objs.Items.All[msg.Sell.Id];
                             item.Sell(msg.Sell.Quantity);
                         }
-                        if(msg.Config != null)
+                        if (msg.Config != null)
                         {
                             var item = objs.Items.All[msg.Config.Id];
-                            item.IncludeInSellAll = msg.Config.Enabled;;
+                            item.IncludeInSellAll = msg.Config.Enabled; ;
                         }
-                        if(msg.SellAll == true)
+                        if (msg.SellAll == true)
                         {
                             objs.Items.SellAll();
                         }
@@ -67,13 +67,27 @@ namespace GoldRush
                         }
                     }
                 }
+                if (message.CraftingActions.Count > 0)
+                {
+                    for (var i = 0; i < message.CraftingActions.Count; i++)
+                    {
+                        objs.Crafting.Craft(message.CraftingActions[i].Id, message.CraftingActions[i].Quantity);
+                    }
+                }
+                if (message.ProcessingActions.Count > 0)
+                {
+                    for (var i = 0; i < message.ProcessingActions.Count; i++)
+                    {
+                        objs.Crafting.Process(message.ProcessingActions[i].Id, message.ProcessingActions[i].RecipeIndex, message.ProcessingActions[i].Iterations);
+                    }
+                }
             }
 
             // SEND DATA TO CLIENT
             var state = new GameState();
 
-            
-          
+
+
 
             // SCHEMATIC
             if (sendSchema)
@@ -103,6 +117,62 @@ namespace GoldRush
 
                     schema.StoreItems.Add(schemaItem);
                 }
+                // Crafting
+                foreach (var item in objs.Crafting.All)
+                {
+                    var schemaItem = new GameState.Schematic.SchemaCraftingItem();
+                    schemaItem.Id = item.Value.Id;
+
+                    foreach (var ing in item.Value.Ingredients)
+                    {
+                        var ingredient = new GameState.Schematic.SchemaCraftingItem.Ingredient();
+                        ingredient.Id = ing.Item.Id;
+                        ingredient.Quantity = ing.Quantity;
+                        schemaItem.Ingredients.Add(ingredient);
+                    }
+
+                    foreach (var res in item.Value.Resultants)
+                    {
+                        var ingredient = new GameState.Schematic.SchemaCraftingItem.Ingredient();
+                        ingredient.Id = res.Item.Id;
+                        ingredient.Quantity = res.Quantity;
+                        schemaItem.Resultants.Add(ingredient);
+                    }
+
+                    schemaItem.IsItem = (item.Value.Resultants[0].Item is GoldRush.Items.Item);
+
+                    schema.CraftingItems.Add(schemaItem);
+                }
+                // Processing
+                foreach (var processor in objs.Crafting.Processors)
+                {
+                    var schemaItem = new GameState.Schematic.SchemaProcessor();
+                    schemaItem.Id = processor.Value.Id;
+                    schemaItem.Name = processor.Value.Name;
+
+                    foreach (var recipe in processor.Value.Recipes)
+                    {
+                        var schemaRecipe = new GameState.Schematic.SchemaProcessor.Recipe();
+                        foreach (var ingredient in recipe.Ingredients)
+                        {
+                            var schemaIngredient = new GameState.Schematic.SchemaProcessor.Recipe.Ingredient();
+                            schemaIngredient.Id = ingredient.Item.Id;
+                            schemaIngredient.Quantity = ingredient.Quantity;
+                            schemaRecipe.Ingredients.Add(schemaIngredient);
+                        }
+
+                        foreach (var resultant in recipe.Resultants)
+                        {
+                            var schemaIngredient = new GameState.Schematic.SchemaProcessor.Recipe.Ingredient();
+                            schemaIngredient.Id = resultant.Item.Id;
+                            schemaIngredient.Quantity = resultant.Quantity;
+                            schemaRecipe.Resultants.Add(schemaIngredient);
+                        }
+                        schemaRecipe.Duration = recipe.Duration;
+                        schemaItem.Recipes.Add(schemaRecipe);
+                    }
+                    schema.Processors.Add(schemaItem);
+                }
 
                 state.GameSchema = schema;
             }
@@ -131,8 +201,8 @@ namespace GoldRush
                     state.ConfigItems.Add(configItem);
                 }
             }
-            
-            
+
+
 
 
             // STORE DATA
@@ -140,7 +210,7 @@ namespace GoldRush
             {
                 var stateStoreItem = new GameState.StoreItem();
                 GameObjects.GameObject gameobject;
-                objs.All.TryGetValue(item.Key,out gameobject);
+                objs.All.TryGetValue(item.Key, out gameobject);
                 stateStoreItem.Id = gameobject.Id;
                 stateStoreItem.Quantity = gameobject.Quantity;
 
@@ -149,7 +219,22 @@ namespace GoldRush
 
                 state.StoreItemsUpdate.Add(stateStoreItem);
             }
-            
+
+            // PROCESSORS
+
+            foreach (var processor in objs.Crafting.Processors)
+            {
+                var stateProcessor = new GameState.Processor();
+                stateProcessor.Id = processor.Value.Id;
+                stateProcessor.SelectedRecipe = processor.Value.SelectedRecipeIndex;
+                stateProcessor.OperationDuration = (int)processor.Value.SelectedRecipeDuration;
+                //stateProcessor.OperationCompletion = currentTime + (long)processor.Value.RemainingOperationTime;
+                stateProcessor.CompletedOperations = processor.Value.RecipesCrafted;
+                stateProcessor.TotalOperations = processor.Value.RecipesToCraft;
+                stateProcessor.Capacity = processor.Value.Capacity;
+                state.Processors.Add(stateProcessor);
+            }
+
             return state;
         }
 

@@ -9,8 +9,8 @@ message GameState {
 	optional bool IsError = 1;
 	
 	message Item {
-		required int32 Id = 1;
-		required int32 Quantity = 2;
+		optional int32 Id = 1;
+		optional int32 Quantity = 2 [default = -100];
 	}
 	repeated Item Items = 2;
 
@@ -20,7 +20,7 @@ message GameState {
 		optional string Time = 3;
 		optional string Permissions = 4;
 	}
-	optional ChatMessage Message = 3;
+	repeated ChatMessage Messages = 3;
 
 	message Schematic {
 		message SchemaItem {
@@ -35,7 +35,7 @@ message GameState {
 
 			optional int32 Id = 1;
 			optional string Name = 2;
-			optional int32 Worth = 3;
+			optional int32 Worth = 3 [default = -100];
 			optional Section Category=4;
 		}
 		repeated SchemaItem Items = 1;
@@ -51,25 +51,55 @@ message GameState {
 			}
 			optional Section Category=1;
 			optional string Name=2;
-			optional int32 Price=3;
-			optional double Factor=4;
-			optional int32 Id=5;
-			optional int32 MaxQuantity=6;
+			optional int32 Price=3 [default = -100];
+			optional double Factor=4 [default = -100];
+			optional int32 Id=5 [default = -100];
+			optional int32 MaxQuantity=6 [default = -100];
 		}
 		repeated SchemaStoreItem StoreItems=2;
+
+		message SchemaCraftingItem {
+			message Ingredient {
+				optional int32 Id=1;
+				optional int32 Quantity=2 [default = -100];
+			}
+
+			optional int32 Id=1 [default = -100];
+			repeated Ingredient Ingredients=2;
+			repeated Ingredient Resultants=3;
+			optional bool IsItem=4;
+		}
+		repeated SchemaCraftingItem CraftingItems=3;
+
+		message SchemaProcessor {
+			message Recipe {
+				message Ingredient {
+					optional int32 Id=1 [default = -100];
+					optional int32 Quantity=2 [default = -100];
+				}
+				repeated Ingredient Ingredients=1;
+				repeated Ingredient Resultants =2;
+				optional int32 Duration=3 [default = -100];
+			}
+
+			optional int32 Id = 1 [default = -100];
+			repeated Recipe Recipes=2;
+			optional string Name=3;
+		}
+		repeated SchemaProcessor Processors = 4;
 	}
 	optional Schematic GameSchema = 4; 
 
 	message StoreItem {
 		optional int32 Id = 1;
-		optional sint32 Quantity = 2;
+		optional sint32 Quantity = 2 [default = -100];
 	}
 	repeated StoreItem StoreItemsUpdate=5;
 
 	message StatItem {
 		optional int32 Id = 1;
-		optional int32 PrestigeQuantity = 2;
-		optional int32 LifeTimeQuantity = 3;
+		optional int32 PrestigeQuantity = 2 [default = -100];
+		optional int32 LifeTimeQuantity = 3 [default = -100];
 	}
 	repeated StatItem StatItemsUpdate=6;
 
@@ -78,5 +108,15 @@ message GameState {
 		optional bool Enabled=2;
 	}
 	repeated ConfigItem ConfigItems=7;
+
+	message Processor {
+		optional int32 Id=1;
+		optional int32 SelectedRecipe=2 [default = -100];
+		optional int32 OperationDuration=3 [default = -100];
+		optional int32 CompletedOperations=4 [default = -100];
+		optional int32 TotalOperations=5 [default = -100];
+		optional int32 Capacity=6 [default = -100];
+	}
+	repeated Processor Processors=8;
 } 
 

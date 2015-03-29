@@ -73,8 +73,11 @@
     <Copy SourceFiles="$(SolutionDir)\Caroline.App.Models\csharp_options.proto" DestinationFolder="$(SolutionDir)\Caroline\Content" />
     <Copy SourceFiles="$(SolutionDir)\Caroline.App.Models\descriptor.proto" DestinationFolder="$(SolutionDir)\Caroline\Content" />
     <Copy SourceFiles="$(SolutionDir)\Caroline.App.Models\ClientActions.proto" DestinationFolder="$(SolutionDir)\Caroline\Content" />
+	<Exec Command="cmd &quot;$(SolutionDir)Build\ProtobufFixed.exe&quot; &quot;$(SolutionDir)Caroline.App.Models\obj\Debug\ProtoBuf.g.i.cs&quot;" />
+	<Exec Command="cmd &quot;$(SolutionDir)Build\ProtobufFixed.exe&quot; &quot;$(SolutionDir)Caroline.App.Models\obj\Release\ProtoBuf.g.i.cs&quot;" />
   </Target>
   <Target Name="AfterBuild">
+	
   </Target>
   <PropertyGroup>
     <ProtoGenFile>$(SolutionDir)\Build\ProtoGen\protogen</ProtoGenFile>

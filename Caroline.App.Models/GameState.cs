@@ -17,7 +17,8 @@
             CompressableHelpers.CompressList(Items, oldState.Items, newState.Items);
 
             // MESSAGE
-            if (_Message != null)
+            //TODO: Messages are a list now. Opps. Shouldn't ever need to be compressed anyways tho.
+            /*if (_Message != null)
             {
                 var oldMessage = oldState._Message;
                 if (oldMessage == null)
@@ -32,7 +33,7 @@
                         newState._Message = message;
                     }
                 }
-            }
+            }*/
 
             // GAMESCHEMA
             if (_GameSchema != null)
@@ -62,6 +63,9 @@
 
             //CONFIGITEMS
             CompressableHelpers.CompressList(_ConfigItems, oldState._ConfigItems, newState._ConfigItems);
+
+            // PROCESSORS
+            CompressableHelpers.CompressList(_Processors, oldState._Processors, newState._Processors);
 
             return newState;
         }
@@ -108,6 +112,45 @@
                     message.Permissions = Permissions;
                 }
                 return message;
+            }
+        }
+
+        public partial class Processor : ICompressable<Processor>, IIdentifiableObject
+        {
+            public Processor Compress(Processor oldObject)
+            {
+                Processor processor = null;
+                if (oldObject._SelectedRecipe != _SelectedRecipe)
+                {
+                    if (processor == null)
+                        processor = new Processor() { _Id = _Id };
+                    processor._SelectedRecipe = _SelectedRecipe;
+                }
+                if (oldObject._OperationDuration != _OperationDuration)
+                {
+                    if (processor == null)
+                        processor = new Processor() { _Id = _Id };
+                    processor._OperationDuration = _OperationDuration;
+                }
+                if (oldObject._CompletedOperations != _CompletedOperations)
+                {
+                    if (processor == null)
+                        processor = new Processor() { _Id = _Id };
+                    processor._CompletedOperations = _CompletedOperations;
+                }
+                if (oldObject._TotalOperations != _TotalOperations)
+                {
+                    if (processor == null)
+                        processor = new Processor() { _Id = _Id };
+                    processor._TotalOperations = _TotalOperations;
+                }
+                if (oldObject._Capacity != _Capacity)
+                {
+                    if (processor == null)
+                        processor = new Processor() { _Id = _Id };
+                    processor._Capacity = _Capacity;
+                }
+                return processor;
             }
         }
 

@@ -37,7 +37,7 @@
     <TypeScriptSourceMap>true</TypeScriptSourceMap>
     <OutputPath>bin\</OutputPath>
     <TypeScriptModuleKind>amd</TypeScriptModuleKind>
-    <TypeScriptSourceMap> Scripts/utils.ts Scripts/modal.ts Scripts/register.ts Scripts/tabs.ts Scripts/connection.ts Scripts/chat.ts Scripts/inventory.ts Scripts/store.ts Scripts/stats.ts Scripts/crafting.ts</TypeScriptSourceMap>
+    <TypeScriptSourceMap> Scripts/utils.ts Scripts/modal.ts Scripts\objects.ts Scripts/register.ts Scripts/tabs.ts Scripts/connection.ts Scripts/chat.ts Scripts/inventory.ts Scripts/store.ts Scripts/stats.ts Scripts/crafting.ts</TypeScriptSourceMap>
     <TypeScriptOutFile>game.js</TypeScriptOutFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -317,6 +317,7 @@
     <Content Include="Scripts\jquery.validate.min.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
+    <Content Include="Scripts\Long.js" />
     <Content Include="Scripts\modernizr-2.6.2.js" />
     <Content Include="Scripts\ProtoBuf.js" />
     <Content Include="Scripts\ProtoBuf.min.js" />
@@ -412,6 +413,7 @@
     <TypeScriptCompile Include="Scripts\crafting.ts" />
     <TypeScriptCompile Include="Scripts\inventory.ts" />
     <TypeScriptCompile Include="Scripts\modal.ts" />
+    <TypeScriptCompile Include="Scripts\objects.ts" />
     <TypeScriptCompile Include="Scripts\register.ts" />
     <TypeScriptCompile Include="Scripts\stats.ts" />
     <TypeScriptCompile Include="Scripts\store.ts" />

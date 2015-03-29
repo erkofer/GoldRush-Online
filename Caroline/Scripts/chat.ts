@@ -8,9 +8,11 @@ module Chat {
     export function initialize() {
         if (!chatWindow) {
             chatWindow = document.createElement('DIV');
+            chatWindow.style.transition = 'all 0.2s';
+            chatWindow.id = 'chatWindow';
             chatWindow.style.position = 'fixed';
-            chatWindow.style.bottom = '0';
-            chatWindow.style.left = '0';
+            chatWindow.style.bottom = '0px';
+            chatWindow.style.left = '0px';
             chatWindow.style.minWidth = '400px';
             chatWindow.style.width = '40%';
             chatWindow.style.backgroundColor = '#ebebeb';
@@ -19,9 +21,21 @@ module Chat {
             chatWindow.style.boxShadow = '1px -1px 2px rgb(200,200,200)';
 
             var chatHeader = document.createElement('DIV');
+            chatHeader.style.position = 'relative';
             chatHeader.style.height = '30px';
             chatHeader.style.backgroundColor = 'rgb(160, 160, 160)';
             chatWindow.appendChild(chatHeader);
+
+            var chatCloser = document.createElement('DIV');
+            chatCloser.textContent = 'Collapse';
+            chatCloser.style.position = 'absolute';
+            chatCloser.style.top = '0';
+            chatCloser.style.right = '0';
+            chatCloser.addEventListener('click', function () {
+                var window = document.getElementById('chatWindow');
+                window.style.bottom = (window.style.bottom == '0px') ? '-251px' : '0px';
+            });
+            chatHeader.appendChild(chatCloser);
 
             var chatRoomTab = document.createElement('DIV');
             chatRoomTab.style.color = 'white';

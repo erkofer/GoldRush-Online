@@ -85,8 +85,8 @@ namespace Caroline.Connections
             if (Array.IndexOf(developers, sender) != -1) message.Permissions = "developer";
             if (Array.IndexOf(moderators, sender) != -1) message.Permissions = "moderator";
             if (Array.IndexOf(server, sender) != -1) message.Permissions = "server";
-            state.Message = message;
-
+            state.Messages.Add(message);
+            // TODO: Consider changing to allow message batching.
             Connection.Broadcast(ProtoBufHelpers.Serialize(state));
         }
 
@@ -98,7 +98,7 @@ namespace Caroline.Connections
             message.Sender = "SERVER";
             message.Permissions = "server";
             message.Time = DateTime.UtcNow.ToShortTimeString();
-            state.Message = message;
+            state.Messages.Add(message);
 
             Connection.Send(connectionId, ProtoBufHelpers.Serialize(state));
         }

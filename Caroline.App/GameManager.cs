@@ -48,8 +48,10 @@ namespace Caroline.App
             // minify the GameState by only sending differences since the last state
             var previousState = _goldRushCache.GetGameData(sessionGuid);
             _goldRushCache.SetGameData(sessionGuid, dataToSend);
+
             if (previousState != null)
                 dataToSend = dataToSend.Compress(previousState);
+
             return dataToSend;
         }
     }

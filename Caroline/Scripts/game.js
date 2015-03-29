@@ -1,90 +1,103 @@
-var Utils;
+﻿var Utils;
 (function (Utils) {
     function addEvent(elem, type, eventHandle) {
         if (elem == null || typeof (elem) == 'undefined')
             return;
         if (elem.addEventListener) {
             elem.addEventListener(type, eventHandle, false);
-        }
-        else if (elem.attachEvent) {
+        } else if (elem.attachEvent) {
             elem.attachEvent("on" + type, eventHandle);
-        }
-        else {
+        } else {
             elem["on" + type] = eventHandle;
         }
     }
     Utils.addEvent = addEvent;
     ;
+
     function cssSwap(element, initialVal, finalVal) {
         if (element.classList.contains(initialVal))
             element.classList.remove(initialVal);
+
         element.classList.add(finalVal);
     }
     Utils.cssSwap = cssSwap;
+
     function cssifyName(name) {
         return name.split(' ').join('_');
     }
     Utils.cssifyName = cssifyName;
+
     function createButton(text, id) {
         var button;
         var textcontent;
+
         button = document.createElement("div");
         textcontent = document.createElement("div");
         textcontent.textContent = text;
+
         if (id) {
             textcontent.id = id;
         }
+
         button.classList.add("button");
         button.appendChild(textcontent);
+
         return button;
     }
     Utils.createButton = createButton;
+
     function isNumber(obj) {
         return !isNaN(parseFloat(obj));
     }
     Utils.isNumber = isNumber;
+
     function formatNumber(n) {
         if (!n)
             return '0';
+
         if (n > 999999999999999) {
             return (n / 1000000000000000).toFixed(3) + "Qa";
-        }
-        else if (n > 999999999999) {
+        } else if (n > 999999999999) {
             return (n / 1000000000000).toFixed(3) + "T";
-        }
-        else if (n > 999999999) {
+        } else if (n > 999999999) {
             return (n / 1000000000).toFixed(3) + "B";
-        }
-        else if (n > 999999) {
+        } else if (n > 999999) {
             return (n / 1000000).toFixed(3) + "M";
-        }
-        else {
+        } else {
             return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
     }
     Utils.formatNumber = formatNumber;
+
     function convertServerTimeToLocal(time) {
         var hours = +time.split(':')[0];
         var minutes = +(time.split(':')[1]).split(' ')[0];
         var amOrPm = (time.split(':')[1]).split(' ')[1];
+
         if (amOrPm == 'PM')
             hours += 12;
+
         var offset = new Date().getTimezoneOffset();
         hours -= ((offset / 60) - offset % 60);
         minutes -= offset % 60;
+
         if (hours < 0)
             hours = 24 - hours;
+
         if (minutes < 0) {
             minutes = 60 - minutes;
             hours--;
         }
+
         if (hours > 23) {
             hours = hours - 24;
         }
+
         if (minutes > 59) {
             minutes = minutes - 60;
             hours++;
         }
+
         return (hours < 10 ? '0' : '') + hours + ':' + (minutes < 10 ? '0' : '') + minutes;
     }
     Utils.convertServerTimeToLocal = convertServerTimeToLocal;
@@ -95,6 +108,7 @@ var modal;
     var modalPane;
     modal.activeWindow;
     modal.intervalIdentifier;
+
     function hide() {
         if (modal.activeWindow) {
             modal.activeWindow.hide();
@@ -102,6 +116,7 @@ var modal;
         modal.activeWindow = null;
     }
     modal.hide = hide;
+
     function close() {
         if (modal.activeWindow) {
             var a = modal.activeWindow;
@@ -110,6 +125,7 @@ var modal;
         }
     }
     modal.close = close;
+
     var Window = (function () {
         function Window() {
             this.container = document.createElement("div");
@@ -129,9 +145,11 @@ var modal;
                 document.body.appendChild(pane);
             }
             modalPane.appendChild(this.container);
+
             this.titleEl = document.createElement("div");
             this.titleEl.classList.add("modal-header");
             this.bodyEl = document.createElement("div");
+
             this.container.appendChild(this.titleEl);
             this.container.appendChild(this.bodyEl);
         }
@@ -146,9 +164,11 @@ var modal;
             enumerable: true,
             configurable: true
         });
+
         Window.prototype.addElement = function (el) {
             this.bodyEl.appendChild(el);
         };
+
         // intended for the bottom bar of controls.
         Window.prototype.addOption = function (opt) {
             if (!this.options) {
@@ -158,22 +178,27 @@ var modal;
             }
             var optionContainer = document.createElement("span");
             optionContainer.classList.add("modal-option");
+
             var option = document.createElement("span");
             option.textContent = opt;
+
             optionContainer.appendChild(option);
             this.options.appendChild(optionContainer);
             return optionContainer;
         };
+
         Window.prototype.addAffirmativeOption = function (opt) {
             var option = this.addOption(opt);
             option.classList.add("affirmative");
             return option;
         };
+
         Window.prototype.addNegativeOption = function (opt) {
             var option = this.addOption(opt);
             option.classList.add("negative");
             return option;
         };
+
         Window.prototype.show = function () {
             if (!this.container.classList.contains("opened"))
                 this.container.classList.add("opened");
@@ -184,6 +209,7 @@ var modal;
             modal.intervalIdentifier = setInterval(updatePosition, 100);
             timeOpened = Date.now();
         };
+
         Window.prototype.hide = function () {
             if (this.container.classList.contains("opened"))
                 this.container.classList.remove("opened");
@@ -193,17 +219,63 @@ var modal;
         return Window;
     })();
     modal.Window = Window;
+
     function updatePosition() {
         if (!modal.activeWindow) {
             clearInterval(modal.intervalIdentifier);
-        }
-        else {
+        } else {
             var containerDimensions = modal.activeWindow.container.getBoundingClientRect();
             modal.activeWindow.container.style.left = (window.innerWidth / 2) - ((containerDimensions.right - containerDimensions.left) / 2) + "px";
             modal.activeWindow.container.style.top = (window.innerHeight / 2) - ((containerDimensions.bottom - containerDimensions.top) / 2) + "px";
         }
     }
 })(modal || (modal = {}));
+var Objects;
+(function (Objects) {
+    var gameobjects = new Array();
+
+    var GameObject = (function () {
+        function GameObject() {
+            this.quantity = 0;
+        }
+        return GameObject;
+    })();
+
+    function register(id, name) {
+        if (!gameobjects[id]) {
+            var gameobject = new GameObject();
+            gameobject.name = name;
+
+            gameobjects[id] = gameobject;
+        }
+    }
+    Objects.register = register;
+
+    function lookupName(id) {
+        return gameobjects[id].name;
+    }
+    Objects.lookupName = lookupName;
+
+    function setQuantity(id, quantity) {
+        gameobjects[id].quantity = quantity;
+    }
+    Objects.setQuantity = setQuantity;
+
+    function getQuantity(id) {
+        return gameobjects[id].quantity;
+    }
+    Objects.getQuantity = getQuantity;
+
+    function setLifeTimeTotal(id, quantity) {
+        gameobjects[id].lifeTimeTotal = quantity;
+    }
+    Objects.setLifeTimeTotal = setLifeTimeTotal;
+
+    function getLifeTimeTotal(id) {
+        return gameobjects[id].lifeTimeTotal;
+    }
+    Objects.getLifeTimeTotal = getLifeTimeTotal;
+})(Objects || (Objects = {}));
 /// <reference path="typings/jquery/jquery.d.ts"/>
 var Account;
 (function (Account) {
@@ -211,17 +283,22 @@ var Account;
     var userButton;
     var userSpan;
     var contextMenu;
+
     var mouseTimeout;
+
     function draw() {
         container = document.createElement('DIV');
         container.classList.add('account-manager');
         container.classList.add('closed');
+
         container.onmouseenter = function () {
             clearTimeout(mouseTimeout);
         };
+
         container.onmouseleave = function () {
             mouseTimeout = setTimeout(hideMenu, 250);
         };
+
         // Anon stuff.
         var loginButton = document.createElement('DIV');
         loginButton.textContent = 'Sign in';
@@ -231,6 +308,7 @@ var Account;
             loginModal();
         });
         container.appendChild(loginButton);
+
         var registerButton = document.createElement('DIV');
         registerButton.textContent = 'Register';
         registerButton.classList.add('account-option');
@@ -239,12 +317,14 @@ var Account;
             registerModal();
         });
         container.appendChild(registerButton);
+
         // Registered stuff.
         var optionsButton = document.createElement('DIV');
         optionsButton.textContent = 'Options';
         optionsButton.classList.add('account-option');
         optionsButton.classList.add('registered-account-option');
         container.appendChild(optionsButton);
+
         var logoffButton = document.createElement('DIV');
         logoffButton.textContent = 'Sign out';
         logoffButton.classList.add('account-option');
@@ -253,15 +333,18 @@ var Account;
             logoff();
         });
         container.appendChild(logoffButton);
+
         userButton = document.createElement('DIV');
         userButton.classList.add('account-user');
         userSpan = document.createElement('SPAN');
         userButton.appendChild(userSpan);
         container.appendChild(userButton);
+
         document.body.appendChild(container);
         userButton.addEventListener('click', function () {
             toggleMenu();
         });
+
         info();
     }
     draw();
@@ -271,19 +354,24 @@ var Account;
         else
             container.classList.add('closed');
     }
+
     function hideMenu() {
         if (!container.classList.contains('closed'))
             container.classList.add('closed');
     }
+
     function updateUser(name, isAnon) {
         userSpan.textContent = isAnon ? 'Guest' : name;
+
         // styles the container depending on the status of the account.
         Utils.cssSwap(container, isAnon ? 'registered' : 'anonymous', isAnon ? 'anonymous' : 'registered');
     }
+
     function loginModal() {
         var loginModal = new modal.Window();
         var formControlsContainer = document.createElement('DIV');
         formControlsContainer.style.width = '400px';
+
         var usernameContainer = document.createElement('DIV');
         usernameContainer.style.marginBottom = '5px';
         var username = document.createElement("INPUT");
@@ -291,6 +379,7 @@ var Account;
         username.maxLength = 16;
         username.placeholder = 'Username';
         usernameContainer.appendChild(username);
+
         var passwordContainer = document.createElement('DIV');
         passwordContainer.style.marginBottom = '5px';
         var password = document.createElement("INPUT");
@@ -298,17 +387,21 @@ var Account;
         password.pattern = ".{6,}";
         password.placeholder = 'Password';
         passwordContainer.appendChild(password);
+
         var rememberMeContainer = document.createElement('DIV');
         rememberMeContainer.style.marginBottom = '5px';
         var rememberMe = document.createElement('INPUT');
         rememberMe.type = 'CHECKBOX';
         rememberMe.placeholder = 'Stay logged in on this computer?';
         rememberMeContainer.appendChild(rememberMe);
+
         formControlsContainer.appendChild(usernameContainer);
         formControlsContainer.appendChild(passwordContainer);
         formControlsContainer.appendChild(rememberMeContainer);
+
         loginModal.title = 'Log in';
         loginModal.addElement(formControlsContainer);
+
         var no = loginModal.addNegativeOption("Cancel");
         no.addEventListener("click", function () {
             modal.close();
@@ -320,10 +413,12 @@ var Account;
         }, false);
         loginModal.show();
     }
+
     function registerModal() {
         var registerModal = new modal.Window();
         var formControlsContainer = document.createElement('DIV');
         formControlsContainer.style.width = '400px';
+
         var usernameContainer = document.createElement('DIV');
         usernameContainer.style.marginBottom = '5px';
         var username = document.createElement("INPUT");
@@ -331,12 +426,14 @@ var Account;
         username.maxLength = 16;
         username.placeholder = 'Username';
         usernameContainer.appendChild(username);
+
         var emailContainer = document.createElement('DIV');
         emailContainer.style.marginBottom = '5px';
         var email = document.createElement("INPUT");
         email.type = 'EMAIL';
         email.placeholder = 'Email';
         emailContainer.appendChild(email);
+
         var passwordContainer = document.createElement('DIV');
         passwordContainer.style.marginBottom = '5px';
         var password = document.createElement("INPUT");
@@ -344,6 +441,7 @@ var Account;
         password.pattern = ".{6,}";
         password.placeholder = 'Password';
         passwordContainer.appendChild(password);
+
         var confpassContainer = document.createElement('DIV');
         confpassContainer.style.marginBottom = '5px';
         var confirmPassword = document.createElement("INPUT");
@@ -355,6 +453,7 @@ var Account;
             if (password.value != confirmPassword.value)
                 confirmPassword.setCustomValidity('Passwords are not the same.');
         };
+
         confirmPassword.onfocus = function () {
             confirmPassword.setCustomValidity('');
         };
@@ -362,8 +461,11 @@ var Account;
         formControlsContainer.appendChild(emailContainer);
         formControlsContainer.appendChild(passwordContainer);
         formControlsContainer.appendChild(confpassContainer);
+
         registerModal.addElement(formControlsContainer);
+
         registerModal.title = "Register";
+
         var no = registerModal.addNegativeOption("Cancel");
         no.addEventListener("click", function () {
             modal.close();
@@ -375,6 +477,7 @@ var Account;
         }, false);
         registerModal.show();
     }
+
     function create(email, username, password, passwordConfirmation) {
         var request = $.ajax({
             type: 'POST',
@@ -388,6 +491,7 @@ var Account;
             }
         });
     }
+
     function login(email, password, rememberMe) {
         var request = $.ajax({
             type: 'POST',
@@ -401,6 +505,7 @@ var Account;
             }
         });
     }
+
     function logoff() {
         var request = $.ajax({
             type: 'POST',
@@ -414,6 +519,7 @@ var Account;
             }
         });
     }
+
     function info() {
         var request = $.ajax({
             type: 'POST',
@@ -435,6 +541,7 @@ var Tabs;
     Tabs.bottomPadding = 200;
     var tabContainers = new Array();
     var selectedTab;
+
     var TabContainer = (function () {
         function TabContainer(container) {
             this.container = container;
@@ -450,40 +557,49 @@ var Tabs;
             button.classList.add('tab-button');
             this.container.appendChild(button);
             tab.button = button;
+
             if (this.lowestId == 0) {
                 tab.activate();
-            }
-            else {
+            } else {
                 tab.deactivate();
             }
+
             // IDs are incremented here. to get their initial value we must subtract.
             var id = this.lowestId++;
             var contId = this.id;
+
             button.addEventListener('click', function () {
                 Tabs.activateTab(contId, id);
             });
+
             this.tabs.push(tab);
             this.container.appendChild(button);
+
             return this.lowestId - 1;
         };
+
         TabContainer.prototype.activate = function (id) {
             for (var i = 0; i < this.tabs.length; i++) {
                 this.tabs[i].deactivate();
             }
             this.tabs[id].activate();
         };
+
         TabContainer.prototype.css = function (id, className) {
             this.tabs[id].button.classList.add(className);
         };
         return TabContainer;
     })();
+
     var gameTabs = new TabContainer(document.getElementById('tabContainer'));
+
     function registerGameTab(pane, css) {
         var id = gameTabs.newTab(pane);
         if (css)
             gameTabs.css(id, css);
     }
     Tabs.registerGameTab = registerGameTab;
+
     function updateGameTabs() {
         if (selectedTab) {
             var height = selectedTab.scrollHeight;
@@ -496,13 +612,16 @@ var Tabs;
         }
     }
     Tabs.updateGameTabs = updateGameTabs;
+
     Utils.addEvent(window, 'resize', Tabs.updateGameTabs);
     setInterval(updateGameTabs, 20);
+
     function activateTab(containerId, tabId) {
         tabContainers[containerId].activate(tabId);
         updateGameTabs();
     }
     Tabs.activateTab = activateTab;
+
     var Tab = (function () {
         function Tab() {
         }
@@ -511,6 +630,7 @@ var Tabs;
             this.pane.style.display = 'none';
             this.pane.style.overflow = 'hidden';
         };
+
         Tab.prototype.activate = function () {
             Utils.cssSwap(this.button, 'inactive', 'active');
             this.pane.style.display = 'block';
@@ -529,19 +649,35 @@ var Chat;
     function initialize() {
         if (!chatWindow) {
             chatWindow = document.createElement('DIV');
+            chatWindow.style.transition = 'all 0.2s';
+            chatWindow.id = 'chatWindow';
             chatWindow.style.position = 'fixed';
-            chatWindow.style.bottom = '0';
-            chatWindow.style.left = '0';
+            chatWindow.style.bottom = '0px';
+            chatWindow.style.left = '0px';
             chatWindow.style.minWidth = '400px';
             chatWindow.style.width = '40%';
             chatWindow.style.backgroundColor = '#ebebeb';
             chatWindow.style.border = '1px solid #adadad';
             chatWindow.style.height = '280px';
             chatWindow.style.boxShadow = '1px -1px 2px rgb(200,200,200)';
+
             var chatHeader = document.createElement('DIV');
+            chatHeader.style.position = 'relative';
             chatHeader.style.height = '30px';
             chatHeader.style.backgroundColor = 'rgb(160, 160, 160)';
             chatWindow.appendChild(chatHeader);
+
+            var chatCloser = document.createElement('DIV');
+            chatCloser.textContent = 'Collapse';
+            chatCloser.style.position = 'absolute';
+            chatCloser.style.top = '0';
+            chatCloser.style.right = '0';
+            chatCloser.addEventListener('click', function () {
+                var window = document.getElementById('chatWindow');
+                window.style.bottom = (window.style.bottom == '0px') ? '-251px' : '0px';
+            });
+            chatHeader.appendChild(chatCloser);
+
             var chatRoomTab = document.createElement('DIV');
             chatRoomTab.style.color = 'white';
             chatRoomTab.style.fontSize = '18px';
@@ -554,6 +690,7 @@ var Chat;
                 document.getElementById('chatpane').style.display = 'block';
             });
             chatHeader.appendChild(chatRoomTab);
+
             var debugTab = document.createElement('DIV');
             debugTab.style.color = 'white';
             debugTab.id = 'debugtab';
@@ -568,6 +705,7 @@ var Chat;
             });
             debugTab.style.display = 'none';
             chatHeader.appendChild(debugTab);
+
             debugLogContainer = document.createElement('DIV');
             debugLogContainer.id = 'debugpane';
             debugLogContainer.style.width = '100%';
@@ -575,12 +713,14 @@ var Chat;
             debugLogContainer.style.display = 'none';
             debugLogContainer.style.position = 'relative';
             chatWindow.appendChild(debugLogContainer);
+
             chatLogContainer = document.createElement('DIV');
             chatLogContainer.id = 'chatpane';
             chatLogContainer.style.width = '100%';
             chatLogContainer.style.height = '230px';
             chatLogContainer.style.position = 'relative';
             chatWindow.appendChild(chatLogContainer);
+
             var debugLog = document.createElement('DIV');
             debugLog.id = 'debuglog';
             debugLog.style.position = 'absolute';
@@ -589,6 +729,7 @@ var Chat;
             debugLog.style.width = '100%';
             debugLog.style.overflow = 'auto';
             debugLogContainer.appendChild(debugLog);
+
             var chatLog = document.createElement('DIV');
             chatLog.id = 'chatlog';
             chatLog.style.position = 'absolute';
@@ -597,6 +738,7 @@ var Chat;
             chatLog.style.width = '100%';
             chatLog.style.overflow = 'auto';
             chatLogContainer.appendChild(chatLog);
+
             var chatInput = document.createElement('INPUT');
             chatInput.setAttribute('TYPE', 'TEXT');
             chatInput.style.width = '100%';
@@ -609,11 +751,13 @@ var Chat;
             chatInput.addEventListener('keydown', function (e) {
                 if (e.keyCode == 13)
                     sendGlobalMessagePress();
+
                 if (e.keyCode == 68 && e.altKey)
                     document.getElementById('debugtab').style.display = 'inline-block';
             });
             chatInput.id = 'chattext';
             chatWindow.appendChild(chatInput);
+
             var chatSend = document.createElement('INPUT');
             chatSend.setAttribute('TYPE', 'BUTTON');
             chatSend.setAttribute('VALUE', 'SEND');
@@ -627,15 +771,18 @@ var Chat;
                 sendGlobalMessagePress();
             });
             chatWindow.appendChild(chatSend);
+
             document.body.appendChild(chatWindow);
         }
     }
     Chat.initialize = initialize;
     initialize();
+
     function sendGlobalMessagePress() {
         Connection.sendGlobalMessage(document.getElementById('chattext').value);
         document.getElementById('chattext').value = '';
     }
+
     function log(message) {
         var debugLog = document.getElementById('debuglog');
         var debugItem = document.createElement('DIV');
@@ -643,6 +790,7 @@ var Chat;
         debugLog.appendChild(debugItem);
     }
     Chat.log = log;
+
     function receiveGlobalMessage(sender, message, time, perms) {
         var chatLog = document.getElementById('chatlog');
         var chatItem = document.createElement('DIV');
@@ -663,6 +811,7 @@ var Chat;
         chatItem.appendChild(nameSpan);
         chatItem.appendChild(dividerSpan);
         chatItem.appendChild(messageSpan);
+
         chatLog.appendChild(chatItem);
     }
     Chat.receiveGlobalMessage = receiveGlobalMessage;
@@ -673,12 +822,15 @@ var tooltip;
     var tooltips = new Array();
     var activeTooltipId;
     var activeTooltip;
+
     var intervalId;
     var appearDelay = 0.25;
     var currentDelay = 0;
     var x;
     var y;
+
     var focusedElement;
+
     var Tooltip = (function () {
         function Tooltip() {
             this.html = document.createElement("div");
@@ -695,6 +847,8 @@ var tooltip;
             enumerable: true,
             configurable: true
         });
+
+
         Object.defineProperty(Tooltip.prototype, "content", {
             get: function () {
                 return this.html.getElementsByClassName('tooltip-content')[0];
@@ -706,8 +860,10 @@ var tooltip;
             enumerable: true,
             configurable: true
         });
+
         return Tooltip;
     })();
+
     function show(id, x, y) {
         var tooltip = tooltips[id];
         if (activeTooltipId !== id) {
@@ -718,6 +874,7 @@ var tooltip;
         document.body.appendChild(activeTooltip);
         move(x, y);
     }
+
     function move(x, y) {
         var rect = activeTooltip.getBoundingClientRect();
         var length = rect.right - rect.left;
@@ -726,12 +883,14 @@ var tooltip;
             activeTooltip.style.left = ((x - length) - 15) + "px";
         else
             activeTooltip.style.left = (x + 15) + "px";
+
         if ((y - height) > 0)
             activeTooltip.style.top = (y - height) + "px";
         else {
             activeTooltip.style.top = (y + 5) + "px";
         }
     }
+
     function hide() {
         if (activeTooltip) {
             activeTooltip.parentElement.removeChild(activeTooltip);
@@ -739,6 +898,7 @@ var tooltip;
         activeTooltip = null;
         activeTooltipId = null;
     }
+
     function complexModify(id, content, title) {
         var tt = tooltips[id];
         if (title) {
@@ -749,46 +909,54 @@ var tooltip;
         tt.content = content;
     }
     _tooltip.complexModify = complexModify;
+
     function modify(id, content, title) {
         var tt = tooltips[id];
         if (title)
             tt.header.textContent = title;
+
         tt.content.textContent = content;
     }
     _tooltip.modify = modify;
+
     function retrieveContent(id) {
         return tooltips[id].content;
     }
     _tooltip.retrieveContent = retrieveContent;
+
     function complexCreate(element, content, title) {
         var tt = new Tooltip();
         addListeners(element);
+
         if (title)
             tt.header = title;
+
         tt.content = content;
+
         tooltips.push(tt);
         if (element.dataset) {
             element.dataset['tooltip'] = registeredTooltips;
-        }
-        else {
+        } else {
             element.setAttribute('data-tooltip', registeredTooltips.toString());
         }
         registeredTooltips++;
     }
     _tooltip.complexCreate = complexCreate;
+
     function create(element, content, title) {
         var text = document.createElement('div');
         text.textContent = content;
+
         if (title) {
             var header = document.createElement('div');
             header.textContent = title;
             complexCreate(element, text, header);
-        }
-        else {
+        } else {
             complexCreate(element, text);
         }
     }
     _tooltip.create = create;
+
     function addListeners(element) {
         element.onmouseenter = function (e) {
             var id = +e.target.getAttribute('data-tooltip');
@@ -805,6 +973,7 @@ var tooltip;
             }
             focusedElement = e.target;
         };
+
         element.onmousemove = function (e) {
             var pos = mousePosition(e);
             if (!intervalId) {
@@ -813,6 +982,7 @@ var tooltip;
             x = pos.x;
             y = pos.y;
         };
+
         element.onmouseleave = function (e) {
             focusedElement = null;
             clearInterval(intervalId);
@@ -820,11 +990,11 @@ var tooltip;
             hide();
         };
     }
+
     function mousePosition(e) {
         if (e.pageX || e.pageY) {
             return { x: e.pageX, y: e.pageY };
-        }
-        else if (e.clientX || e.clientY) {
+        } else if (e.clientX || e.clientY) {
             return {
                 x: e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft,
                 y: e.clientY + document.body.scrollTop + document.documentElement.scrollTop
@@ -835,17 +1005,24 @@ var tooltip;
 ///<reference path="utils.ts"/>
 ///<reference path="tooltip.ts"/>
 ///<reference path="tabs.ts"/>
+///<reference path="objects.ts"/>
 var Inventory;
 (function (Inventory) {
     Inventory.items = new Array();
+    Inventory.configClickers = new Array();
     var inventoryPane;
     var inventory;
     var selectedItemPane;
     var selectedItemImage;
     var selectedItem;
+
     //var configDiv;
     var configTableBody;
     var configTableContainer;
+
+    var configNames = new Array();
+    var configImages = new Array();
+
     var Item = (function () {
         function Item(id, name, worth, category) {
             this.id = id;
@@ -856,6 +1033,7 @@ var Inventory;
         return Item;
     })();
     Inventory.Item = Item;
+
     (function (Category) {
         Category[Category["NFS"] = 0] = "NFS";
         Category[Category["ORE"] = 1] = "ORE";
@@ -866,10 +1044,12 @@ var Inventory;
     })(Inventory.Category || (Inventory.Category = {}));
     var Category = Inventory.Category;
     ;
+
     function getSelectedItemQuantity() {
         return selectedItem ? selectedItem.quantity : 0;
     }
     Inventory.getSelectedItemQuantity = getSelectedItemQuantity;
+
     function selectItem(id) {
         if (id) {
             if (selectedItem != null) {
@@ -878,22 +1058,25 @@ var Inventory;
             selectedItem = Inventory.items[id];
             selectedItemImage.classList.add(Utils.cssifyName(selectedItem.name));
             limitTextQuantity();
-        }
-        else {
+        } else {
             selectedItemImage.classList.remove(Utils.cssifyName(selectedItem.name));
             selectedItem = null;
         }
+
         selectedItemPane.style.display = selectedItem == null ? 'none' : 'block';
     }
     Inventory.selectItem = selectItem;
+
     function sellSelectedItem(quantity) {
         Connection.sellItem(selectedItem.id, quantity ? quantity : 1);
     }
     Inventory.sellSelectedItem = sellSelectedItem;
+
     function sellAllSelectedItem() {
         sellSelectedItem(selectedItem.quantity);
     }
     Inventory.sellAllSelectedItem = sellAllSelectedItem;
+
     function limitTextQuantity() {
         var textbox = document.getElementById('selecteditemquantity');
         var quantity = +textbox.value;
@@ -903,12 +1086,17 @@ var Inventory;
             }
         }
     }
+
     function add(item) {
         Inventory.items[item.id] = item;
+        Objects.register(item.id, item.name);
+
         if (!inventoryPane)
             draw();
+
         inventory.appendChild(drawItem(item));
     }
+
     function draw() {
         // SELECTED ITEM HEADER
         inventoryPane = document.createElement('DIV');
@@ -925,6 +1113,7 @@ var Inventory;
             Inventory.selectItem();
         });
         selectedItemPane.appendChild(selectedItemPaneCloser);
+
         selectedItemImage = document.createElement('DIV');
         selectedItemImage.classList.add('selected-item-image');
         var selectedItemQuantity = document.createElement('INPUT');
@@ -935,6 +1124,7 @@ var Inventory;
         selectedItemQuantity.addEventListener('input', function () {
             limitTextQuantity();
         });
+
         var sellItems = Utils.createButton('Sell', '');
         sellItems.classList.add('selected-item-quantity');
         sellItems.addEventListener('click', function () {
@@ -945,17 +1135,21 @@ var Inventory;
             }
             limitTextQuantity();
         });
+
         var sellAllItems = Utils.createButton('Sell all', '');
         sellAllItems.classList.add('selected-item-quantity');
         sellAllItems.addEventListener('click', function () {
             Inventory.sellAllSelectedItem();
             limitTextQuantity();
         });
+
         selectedItemPane.appendChild(selectedItemImage);
         selectedItemPane.appendChild(sellAllItems);
+
         selectedItemPane.appendChild(sellItems);
         selectedItemPane.appendChild(selectedItemQuantity);
         inventoryPane.appendChild(selectedItemPane);
+
         // CONFIG CONTROLS
         var configDiv = document.createElement('DIV');
         configDiv.style.textAlign = 'center';
@@ -973,6 +1167,7 @@ var Inventory;
         configPanel.appendChild(sellAllConfig);
         configDiv.appendChild(configPanel);
         inventoryPane.appendChild(configDiv);
+
         // CONFIG TABLE
         configTableContainer = document.createElement('DIV');
         configTableContainer.classList.add('config-container');
@@ -980,6 +1175,7 @@ var Inventory;
         var configTable = document.createElement('TABLE');
         configTable.classList.add('config-table');
         configTableContainer.appendChild(configTable);
+
         var header = configTable.createTHead();
         var titleRow = header.insertRow(0);
         var realTitleRow = header.insertRow(0);
@@ -988,12 +1184,14 @@ var Inventory;
         titleCell.textContent = 'Inventory Configuration';
         titleCell.setAttribute('colspan', '10');
         titleRow.classList.add('table-subheader');
+
         for (var enumMember in Category) {
             var isValueProperty = parseInt(enumMember, 10) >= 0;
             if (isValueProperty) {
                 if (Category[enumMember] != "NFS") {
                     var configCell = titleRow.insertCell(titleRow.cells.length);
                     configCell.classList.add('config-cell-check');
+
                     var titleCell = titleRow.insertCell(titleRow.cells.length);
                     titleCell.classList.add('config-cell-name');
                     titleCell.textContent = Category[enumMember];
@@ -1001,20 +1199,30 @@ var Inventory;
             }
         }
         configTableBody = configTable.createTBody();
+
         inventory = document.createElement('DIV');
         inventory.style.position = 'relative';
         inventory.appendChild(configTableContainer);
         inventoryPane.appendChild(inventory);
+
         Tabs.registerGameTab(inventoryPane, 'Inventory');
     }
+
+    function modifyConfig(id, enabled) {
+        if (!Inventory.configClickers[id])
+            console.log(id);
+        Inventory.configClickers[id].checked = enabled;
+    }
+    Inventory.modifyConfig = modifyConfig;
+
     function toggleConfig() {
         if (configTableContainer.classList.contains('closed')) {
             configTableContainer.classList.remove('closed');
-        }
-        else
+        } else
             configTableContainer.classList.add('closed');
     }
     Inventory.toggleConfig = toggleConfig;
+
     function drawItem(item) {
         var itemElement = document.createElement('DIV');
         item.container = itemElement;
@@ -1023,6 +1231,7 @@ var Inventory;
             Inventory.selectItem(item.id);
         });
         tooltip.create(itemElement, item.name);
+
         // VALUE
         var itemValueContainer = document.createElement('DIV');
         itemValueContainer.classList.add("item-text");
@@ -1037,6 +1246,7 @@ var Inventory;
         itemValueContainer.appendChild(itemCurrency);
         itemValueContainer.appendChild(itemValue);
         itemElement.appendChild(itemValueContainer);
+
         // IMAGE
         var itemImage = document.createElement('DIV');
         itemImage.style.width = '64px';
@@ -1047,12 +1257,14 @@ var Inventory;
         image.classList.add(item.name.replace(' ', '_'));
         itemImage.appendChild(image);
         itemElement.appendChild(itemImage);
-        // QUANTITY 
+
+        // QUANTITY
         var itemQuantity = document.createElement('DIV');
         item.quantityElm = itemQuantity;
         itemQuantity.classList.add("item-text");
         itemQuantity.textContent = Utils.formatNumber(0);
         itemElement.appendChild(itemQuantity);
+
         // CONFIG TABLE
         if (item.category != null) {
             var selectedItemCell;
@@ -1061,6 +1273,7 @@ var Inventory;
             var cellIndex = item.category;
             cellIndex *= 2;
             cellIndex--;
+
             for (var i = 0; i < rows; i++) {
                 // FIX THIS.
                 var testCell = configTableBody.rows[i].cells[cellIndex];
@@ -1079,6 +1292,7 @@ var Inventory;
                         if (Category[enumMember] != "NFS") {
                             var configCell = row.insertCell(row.cells.length);
                             configCell.classList.add('config-cell-check');
+
                             var titleCell = row.insertCell(row.cells.length);
                             titleCell.classList.add('config-cell-name');
                         }
@@ -1087,12 +1301,15 @@ var Inventory;
                 selectedItemCell = row.cells[cellIndex];
                 selectedConfigCell = row.cells[cellIndex - 1];
             }
+
+            /* For doing stuff with empty cells.
             for (var curRow = 0; curRow < rows; curRow++) {
-                var inspectedRow = configTableBody.rows[i];
-                var cells = inspectedRow.cells.length;
-                for (var curCell = 0; curCell < cells; curCell++) {
-                }
+            var inspectedRow = (<HTMLTableElement>configTableBody).rows[i];
+            var cells = (<HTMLTableElement>inspectedRow).cells.length;
+            for (var curCell = 0; curCell < cells; curCell++) {
+            
             }
+            }*/
             var nameAndImage = document.createElement('DIV');
             nameAndImage.classList.add('item-text');
             var nameSpan = document.createElement('SPAN');
@@ -1100,28 +1317,55 @@ var Inventory;
             var image = document.createElement('DIV');
             image.classList.add('Third-' + Utils.cssifyName(item.name));
             image.style.display = 'inline-block';
+            configImages[item.id] = image;
             nameSpan.textContent = item.name;
+            configNames[item.id] = nameSpan;
             nameAndImage.appendChild(image);
             nameAndImage.appendChild(nameSpan);
             selectedItemCell.appendChild(nameAndImage);
             var configChecker = document.createElement('INPUT');
             configChecker.type = 'CHECKBOX';
+            var id = item.id;
+            Inventory.configClickers[id] = configChecker;
+            configChecker.addEventListener('change', function (e) {
+                Connection.configureItem(id, Inventory.configClickers[id].checked);
+            });
             selectedConfigCell.appendChild(configChecker);
         }
+
         return itemElement;
     }
+
     function addItem(id, name, worth, category) {
         if (!Inventory.items[id])
             add(new Item(id, name, worth, category));
     }
     Inventory.addItem = addItem;
+
     function changeQuantity(id, quantity) {
+        Objects.setQuantity(id, quantity);
+        Crafting.update();
         Inventory.items[id].quantityElm.textContent = Utils.formatNumber(quantity);
         Inventory.items[id].quantity = quantity;
         Inventory.items[id].container.style.display = quantity == 0 ? 'none' : 'inline-block';
         limitTextQuantity();
     }
     Inventory.changeQuantity = changeQuantity;
+
+    function update() {
+        if (configNames.length <= 0)
+            return;
+
+        Inventory.items.forEach(function (item) {
+            var itemQuantity = Objects.getLifeTimeTotal(item.id);
+            if (configNames[item.id])
+                configNames[item.id].textContent = itemQuantity > 0 ? item.name : '???';
+
+            if (configImages[item.id])
+                configImages[item.id].style.display = itemQuantity > 0 ? 'inline-block' : 'none';
+        });
+    }
+    Inventory.update = update;
 })(Inventory || (Inventory = {}));
 ///<reference path="chat.ts"/>
 ///<reference path="inventory.ts"/>
@@ -1136,18 +1380,22 @@ var Connection;
         Chat.log(JSON.stringify(Komodo.decode(msg)));
         Chat.log(roughSizeOfObject(JSON.stringify(Komodo.decode(msg))) - roughSizeOfObject(msg) + " bytes saved.");
         msg = Komodo.decode(msg);
+
         // CHAT MESSAGES
-        if (msg.Message != null) {
-            Chat.receiveGlobalMessage(msg.Message.Sender, msg.Message.Text, msg.Message.Time, msg.Message.Permissions);
+        if (msg.Messages != null) {
+            receiveGlobalMessages(msg.Messages);
         }
+
         // GAME SCHEMA
         if (msg.GameSchema != null) {
             loadSchema(msg.GameSchema);
         }
+
         // INVENTORY UPDATES
         if (msg.Items != null) {
             updateInventory(msg.Items);
         }
+
         // STORE UPDATES
         if (msg.StoreItemsUpdate != null) {
             updateStore(msg.StoreItemsUpdate);
@@ -1155,12 +1403,23 @@ var Connection;
         if (msg.StatItemsUpdate != null) {
             updateStats(msg.StatItemsUpdate);
         }
+        if (msg.ConfigItems != null) {
+            updateInventoryConfigurations(msg.ConfigItems);
+        }
+
+        // PROCESSOR UPDATES
+        if (msg.Processors != null) {
+            updateProcessors(msg.Processors);
+        }
     });
+
     function restart() {
         Komodo.restart();
     }
     Connection.restart = restart;
+
     var actions = new Komodo.ClientActions();
+
     Komodo.connection.stateChanged(function (change) {
         if (change.newState === $.signalR.connectionState.connected) {
             connected();
@@ -1169,38 +1428,84 @@ var Connection;
             clearInterval(conInterval);
         }
     });
+
     function connected() {
         console.log('Connection opened');
+        var encoded = actions.encode64();
+        send(encoded);
+        actions = new Komodo.ClientActions();
+
         conInterval = setInterval(function () {
             var encoded = actions.encode64();
+
             // if (encoded!='') {
             send(encoded);
+
             //}
             actions = new Komodo.ClientActions();
         }, 1000);
     }
+
     function loadSchema(schema) {
         for (var i = 0; i < schema.Items.length; i++) {
             Inventory.addItem(schema.Items[i].Id, schema.Items[i].Name, schema.Items[i].Worth, schema.Items[i].Category);
             Statistics.addItem(schema.Items[i].Id, schema.Items[i].Name);
         }
+
         for (var i = 0; i < schema.StoreItems.length; i++) {
             var item = schema.StoreItems[i];
             Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.MaxQuantity);
         }
+
+        for (var i = 0; i < schema.Processors.length; i++) {
+            var processor = schema.Processors[i];
+            console.log(processor.Name);
+            Crafting.addProcessor(processor.Id, processor.Name);
+            for (var r = 0; r < processor.Recipes.length; r++) {
+                Crafting.addProcessorRecipe(processor.Id, processor.Recipes[r].Ingredients, processor.Recipes[r].Resultants);
+            }
+        }
+
+        for (var i = 0; i < schema.CraftingItems.length; i++) {
+            var item = schema.CraftingItems[i];
+            Crafting.addRecipe(item.Id, item.Ingredients, item.Resultants, item.IsItem);
+        }
     }
+
+    function receiveGlobalMessages(messages) {
+        for (var i = 0; i < messages.length; i++) {
+            var msg = messages[i];
+            Chat.receiveGlobalMessage(msg.Sender, msg.Text, msg.Time, msg.Permissions);
+        }
+    }
+
+    function updateProcessors(processors) {
+        for (var i = 0; i < processors.length; i++) {
+            var processor = processors[i];
+            Crafting.updateProcessor(processor.Id, processor.SelectedRecipe, processor.OperationDuration, processor.CompletedOperations, processor.TotalOperations, processor.Capacity);
+        }
+    }
+
     function updateStats(items) {
         for (var i = 0; i < items.length; i++)
             Statistics.changeStats(items[i].Id, items[i].PrestigeQuantity, items[i].LifeTimeQuantity);
     }
+
     function updateInventory(items) {
         for (var i = 0; i < items.length; i++)
             Inventory.changeQuantity(items[i].Id, items[i].Quantity);
     }
+
+    function updateInventoryConfigurations(items) {
+        for (var i = 0; i < items.length; i++)
+            Inventory.modifyConfig(items[i].Id, items[i].Enabled);
+    }
+
     function updateStore(items) {
         for (var i = 0; i < items.length; i++)
             Store.changeQuantity(items[i].Id, items[i].Quantity);
     }
+
     function sellItem(id, quantity) {
         var inventoryAction = new Komodo.ClientActions.InventoryAction();
         var sellAction = new Komodo.ClientActions.InventoryAction.SellAction();
@@ -1210,6 +1515,18 @@ var Connection;
         actions.InventoryActions.push(inventoryAction);
     }
     Connection.sellItem = sellItem;
+
+    function configureItem(id, enabled) {
+        var inventoryAction = new Komodo.ClientActions.InventoryAction();
+        var configAction = new Komodo.ClientActions.InventoryAction.ConfigAction();
+        configAction.Id = id;
+        configAction.Enabled = enabled;
+        inventoryAction.Config = configAction;
+        actions.InventoryActions.push(inventoryAction);
+        //ConfigAction
+    }
+    Connection.configureItem = configureItem;
+
     function purchaseItem(id, quantity) {
         var storeAction = new Komodo.ClientActions.StoreAction();
         var purchaseAction = new Komodo.ClientActions.StoreAction.PurchaseAction();
@@ -1219,12 +1536,31 @@ var Connection;
         actions.StoreActions.push(storeAction);
     }
     Connection.purchaseItem = purchaseItem;
+
     function sellAllItems() {
         var inventoryAction = new Komodo.ClientActions.InventoryAction();
         inventoryAction.SellAll = true;
         actions.InventoryActions.push(inventoryAction);
     }
     Connection.sellAllItems = sellAllItems;
+
+    function craftRecipe(id, quantity) {
+        var craftingAction = new Komodo.ClientActions.CraftingAction();
+        craftingAction.Id = id;
+        craftingAction.Quantity = quantity;
+        actions.CraftingActions.push(craftingAction);
+    }
+    Connection.craftRecipe = craftRecipe;
+
+    function processRecipe(id, recipeIndex, iterations) {
+        var processingAction = new Komodo.ClientActions.ProcessingAction();
+        processingAction.Id = id;
+        processingAction.RecipeIndex = recipeIndex;
+        processingAction.Iterations = iterations;
+        actions.ProcessingActions.push(processingAction);
+    }
+    Connection.processRecipe = processRecipe;
+
     function sendGlobalMessage(message) {
         /*var clientActions = new Komodo.ClientActions();
         var socialAction = new Komodo.ClientActions.SocialAction();
@@ -1232,7 +1568,7 @@ var Connection;
         chatAction.GlobalMessage = message;
         socialAction.Chat = chatAction;
         clientActions.SocialActions.push(socialAction);
-
+        
         Connection.send(clientActions);*/
         var socialAction = new Komodo.ClientActions.SocialAction();
         var chatAction = new Komodo.ClientActions.SocialAction.ChatAction();
@@ -1241,6 +1577,7 @@ var Connection;
         actions.SocialActions.push(socialAction);
     }
     Connection.sendGlobalMessage = sendGlobalMessage;
+
     function send(message) {
         if (message.encode64) {
             var encoded = message.encode64();
@@ -1250,30 +1587,30 @@ var Connection;
             Chat.log("Encoded: ");
             Chat.log(message.encode64());
             Komodo.send(message.encode64());
-        }
-        else {
+        } else {
             Chat.log("Sent " + roughSizeOfObject(message) + " bytes to komodo.");
             Komodo.send(message);
         }
     }
     Connection.send = send;
+
     function roughSizeOfObject(object) {
         var objectList = [];
         var stack = [object];
         var bytes = 0;
+
         while (stack.length) {
             var value = stack.pop();
+
             if (typeof value === 'boolean') {
                 bytes += 4;
-            }
-            else if (typeof value === 'string') {
+            } else if (typeof value === 'string') {
                 bytes += value.length * 2;
-            }
-            else if (typeof value === 'number') {
+            } else if (typeof value === 'number') {
                 bytes += 8;
-            }
-            else if (typeof value === 'object' && objectList.indexOf(value) === -1) {
+            } else if (typeof value === 'object' && objectList.indexOf(value) === -1) {
                 objectList.push(value);
+
                 for (var i in value) {
                     stack.push(value[i]);
                 }
@@ -1297,15 +1634,18 @@ var Store;
     })(Store.Category || (Store.Category = {}));
     var Category = Store.Category;
     ;
+
     var StoreItem = (function () {
         function StoreItem() {
         }
         return StoreItem;
     })();
+
     function draw() {
         storePane = document.createElement('div');
         document.getElementById('paneContainer').appendChild(storePane);
         Tabs.registerGameTab(storePane, 'Store');
+
         for (var enumMember in Category) {
             var isValueProperty = parseInt(enumMember, 10) >= 0;
             if (isValueProperty) {
@@ -1316,23 +1656,28 @@ var Store;
             }
         }
     }
+
     function drawCategory(name) {
         var categoryContainer = document.createElement('div');
         categoryContainer.classList.add('store-category');
         categories[name] = categoryContainer;
+
         var categoryHeader = document.createElement('div');
         categoryHeader.textContent = name;
         categoryHeader.classList.add('store-category-header');
         categoryContainer.appendChild(categoryHeader);
         storePane.appendChild(categoryContainer);
     }
+
     function tempFix() {
         draw();
     }
     Store.tempFix = tempFix;
+
     function addItem(id, category, price, factor, name, maxQuantity) {
         if (!storePane)
             draw();
+
         if (!items[id]) {
             var item = new StoreItem();
             item.id = id;
@@ -1341,25 +1686,40 @@ var Store;
             item.factor = factor;
             item.name = name;
             item.maxQuantity = maxQuantity ? maxQuantity : 0;
+
+            Objects.register(item.id, item.name);
+
             var categoryContainer = categories[Category[category]];
             if (categoryContainer == null) {
                 categoryContainer = categories["MINING"];
             }
-            categoryContainer.appendChild(drawItem(item));
+            if (item.category != 6 /* CRAFTING */)
+                categoryContainer.appendChild(drawItem(item));
+
             items[id] = item;
         }
     }
     Store.addItem = addItem;
+
     function changeQuantity(id, quantity) {
         var item = items[id];
+
+        Objects.setQuantity(id, quantity);
         item.quantity = quantity;
-        item.container.style.display = (item.quantity == -1 || item.quantity >= item.maxQuantity && item.maxQuantity > 0) ? 'none' : 'inline-block';
+        Crafting.update();
+
+        if (item.category == 6 /* CRAFTING */)
+            return;
+
+        item.container.style.display = (item.quantity <= -1 || item.quantity >= item.maxQuantity && item.maxQuantity > 0) ? 'none' : 'inline-block';
         if (item.maxQuantity && item.maxQuantity > 1)
             item.nameElm.textContent = item.name + ' (' + ((item.quantity) ? item.quantity : 0) + '/' + item.maxQuantity + ')';
     }
     Store.changeQuantity = changeQuantity;
+
     function add() {
     }
+
     function drawItem(item) {
         var itemContainer = document.createElement('div');
         itemContainer.classList.add('store-item');
@@ -1368,12 +1728,12 @@ var Store;
         header.classList.add('store-item-header');
         if (item.maxQuantity <= 1) {
             header.textContent = item.name;
-        }
-        else {
+        } else {
             header.textContent = item.name + ' (' + item.quantity + '/' + item.maxQuantity + ')';
         }
         item.nameElm = header;
         itemContainer.appendChild(header);
+
         // IMAGE
         var itemImage = document.createElement('DIV');
         itemImage.style.width = '64px';
@@ -1384,8 +1744,10 @@ var Store;
         image.classList.add(Utils.cssifyName(item.name));
         itemImage.appendChild(image);
         itemContainer.appendChild(itemImage);
+
         var footer = document.createElement('div');
         footer.classList.add('store-item-footer');
+
         var priceContainer = document.createElement('div');
         priceContainer.classList.add('item-text');
         var price = document.createElement('div');
@@ -1398,6 +1760,7 @@ var Store;
         coins.style.display = 'inline-block';
         priceContainer.appendChild(coins);
         priceContainer.appendChild(price);
+
         var buttonContainer = document.createElement('div');
         var button = Utils.createButton('Buy', '');
         var id = item.id;
@@ -1405,8 +1768,7 @@ var Store;
             button.addEventListener('click', function () {
                 Connection.purchaseItem(id);
             });
-        }
-        else {
+        } else {
             var quantityInput = document.createElement('INPUT');
             quantityInput.type = 'TEXT';
             quantityInput.style.width = '40px';
@@ -1417,10 +1779,14 @@ var Store;
                     Connection.purchaseItem(id, +quantityInput.value);
             });
         }
+
         buttonContainer.appendChild(button);
+
         footer.appendChild(buttonContainer);
         footer.appendChild(priceContainer);
+
         itemContainer.appendChild(footer);
+
         return itemContainer;
     }
 })(Store || (Store = {}));
@@ -1434,18 +1800,28 @@ var Statistics;
         }
         return Item;
     })();
+
     function changeStats(id, prestige, lifetime) {
         var item = items[id];
+        item.prestigeQuantity = prestige ? prestige : item.prestigeQuantity;
+        item.lifetimeQuantity = lifetime ? lifetime : item.lifetimeQuantity;
+
+        if (lifetime)
+            Objects.setLifeTimeTotal(id, lifetime);
+
         item.prestigeRow.textContent = prestige ? Utils.formatNumber(prestige) : '0';
         item.alltimeRow.textContent = lifetime ? Utils.formatNumber(lifetime) : '0';
     }
     Statistics.changeStats = changeStats;
+
     function addItem(id, name) {
         if (!statsPane)
             draw();
+
         if (!items[id]) {
             var item = new Item();
             items[id] = item;
+
             var row = itemsBody.insertRow(itemsBody.rows.length);
             row.classList.add('table-row');
             item.alltimeRow = row.insertCell(0);
@@ -1461,20 +1837,25 @@ var Statistics;
         }
     }
     Statistics.addItem = addItem;
+
     function draw() {
         statsPane = document.createElement('DIV');
         document.getElementById('paneContainer').appendChild(statsPane);
         Tabs.registerGameTab(statsPane, 'Statistics');
+
         statsPane.appendChild(drawItemsTable());
     }
+
     function drawItemsTable() {
         var itemsTable = document.createElement('TABLE');
+
         var header = itemsTable.createTHead();
         var titleRow = header.insertRow(0);
         titleRow.classList.add('table-header');
         var titleCell = titleRow.insertCell(0);
         titleCell.textContent = 'Item Statistics';
         titleCell.setAttribute('colspan', '3');
+
         var descriptionsRow = header.insertRow(1);
         descriptionsRow.classList.add('table-subheader');
         var lifetime = descriptionsRow.insertCell(0);
@@ -1486,7 +1867,486 @@ var Statistics;
         var item = descriptionsRow.insertCell(0);
         item.textContent = 'Item';
         item.style.width = '20%';
+
         itemsBody = itemsTable.createTBody();
+
         return itemsTable;
     }
 })(Statistics || (Statistics = {}));
+var Crafting;
+(function (Crafting) {
+    var storePane;
+    var processorSection;
+    var craftingSection;
+    var craftingTable;
+    var cellDescriptions = ['Action', 'Description', 'Input', 'Output', 'Name'];
+    var cellWidths = ['10%', '50%', '15%', '15%', '10%'];
+    var cellMinWidths = ['170px', '0', '0', '0', '0'];
+
+    var processorCellDescriptions = ['Action', 'Output', 'Input', 'Capacity', 'Image'];
+    var processorCellWidths = ['10%', '30%', '20%', '20%', '20%'];
+    var processorCellMinWidths = ['170px', '0', '0', '0', '0'];
+
+    var itemsTableOffset = 3;
+    var recipes = new Array();
+    Crafting.processors = new Array();
+
+    var Processor = (function () {
+        function Processor() {
+            this._recipes = new Array();
+        }
+        Processor.prototype.addRecipe = function (recipe) {
+            this._recipes.push(recipe);
+            if (!this.selectedRecipe)
+                this.selectedRecipe = recipe.resultants[0].id;
+        };
+        return Processor;
+    })();
+    Crafting.Processor = Processor;
+
+    var Recipe = (function () {
+        function Recipe() {
+            this.ingredients = new Array();
+            this.resultants = new Array();
+        }
+        Recipe.prototype.addIngredient = function (ingredient) {
+            this.ingredients.push(ingredient);
+        };
+
+        Recipe.prototype.addResultant = function (ingredient) {
+            this.resultants.push(ingredient);
+        };
+        return Recipe;
+    })();
+    Crafting.Recipe = Recipe;
+
+    var Ingredient = (function () {
+        function Ingredient(id, quantity) {
+            this.id = id;
+            this.quantity = quantity;
+        }
+        return Ingredient;
+    })();
+    Crafting.Ingredient = Ingredient;
+
+    function draw() {
+        storePane = document.createElement('DIV');
+        document.getElementById('paneContainer').appendChild(storePane);
+        Tabs.registerGameTab(storePane, 'Crafting');
+
+        processorSection = document.createElement('DIV');
+        storePane.appendChild(processorSection);
+
+        craftingSection = document.createElement('DIV');
+        storePane.appendChild(craftingSection);
+        drawCraftingTable();
+    }
+
+    function drawCraftingTable() {
+        craftingTable = document.createElement('TABLE');
+        craftingTable.classList.add('block-table');
+
+        var header = craftingTable.createTHead();
+        var titleRow = header.insertRow(0);
+        titleRow.classList.add('table-subheader');
+        var realTitleRow = header.insertRow(0);
+        realTitleRow.classList.add('table-header');
+
+        var titleCell = realTitleRow.insertCell(0);
+        titleCell.colSpan = cellDescriptions.length;
+        titleCell.textContent = 'Crafting Table';
+
+        for (var i = 0; i < cellDescriptions.length; i++) {
+            var cell = titleRow.insertCell(0);
+            cell.style.width = cellWidths[i];
+            cell.textContent = cellDescriptions[i];
+
+            if (cellMinWidths[i] != '0')
+                cell.style.minWidth = cellMinWidths[i];
+        }
+
+        var itemsSubHeader = craftingTable.insertRow(2);
+        itemsSubHeader.classList.add('table-subheader');
+        var itemsSubHeaderCell = itemsSubHeader.insertCell(0);
+        itemsSubHeaderCell.colSpan = cellDescriptions.length;
+        itemsSubHeaderCell.textContent = 'Items';
+
+        var upgradesSubHeader = craftingTable.insertRow(3);
+        upgradesSubHeader.classList.add('table-subheader');
+        var upgradesSubHeaderCell = upgradesSubHeader.insertCell(0);
+        upgradesSubHeaderCell.colSpan = cellDescriptions.length;
+        upgradesSubHeaderCell.textContent = 'Upgrades';
+
+        craftingSection.appendChild(craftingTable);
+    }
+
+    function addRecipe(id, ingredients, resultants, isItem) {
+        if (!storePane)
+            draw();
+
+        if (!recipes[id]) {
+            var recipe = new Recipe();
+            recipe.id = id;
+            recipe.isItem = isItem;
+            recipes[id] = recipe;
+
+            for (var i = 0; i < ingredients.length; i++)
+                recipe.addIngredient(new Ingredient(ingredients[i].Id, ingredients[i].Quantity));
+
+            for (var i = 0; i < resultants.length; i++)
+                recipe.addResultant(new Ingredient(resultants[i].Id, resultants[i].Quantity));
+
+            drawRecipe(recipe, isItem);
+        }
+    }
+    Crafting.addRecipe = addRecipe;
+
+    function addProcessor(id, name) {
+        if (!storePane)
+            draw();
+
+        if (!Crafting.processors[id]) {
+            var processor = new Processor();
+            processor.id = id;
+            processor.name = name;
+            Crafting.processors[id] = processor;
+
+            drawProcessor(processor);
+        }
+    }
+    Crafting.addProcessor = addProcessor;
+
+    function addProcessorRecipe(id, ingredients, resultants) {
+        if (!Crafting.processors[id])
+            return;
+
+        var processor = Crafting.processors[id];
+        var recipe = new Recipe();
+
+        for (var i = 0; i < ingredients.length; i++)
+            recipe.addIngredient(new Ingredient(ingredients[i].Id, ingredients[i].Quantity));
+
+        for (var i = 0; i < resultants.length; i++)
+            recipe.addResultant(new Ingredient(resultants[i].Id, resultants[i].Quantity));
+
+        processor.addRecipe(recipe);
+
+        var opt = document.createElement('OPTION');
+        opt.textContent = Objects.lookupName(resultants[0].Id);
+        processor.recipeSelector.appendChild(opt);
+
+        if (processor._recipes.length == 1) {
+            switchProcessorRecipe(id, 0);
+        }
+    }
+    Crafting.addProcessorRecipe = addProcessorRecipe;
+
+    function switchProcessorRecipe(id, recipeIndex) {
+        var processor = Crafting.processors[id];
+        if (!processor)
+            return;
+
+        var recipe = processor._recipes[recipeIndex];
+        processor.selectedRecipe = recipe.resultants[0].id;
+
+        while (processor.recipeList.lastChild) {
+            processor.recipeList.removeChild(processor.recipeList.lastChild);
+        }
+
+        for (var x = 0; x < recipe.ingredients.length; x++) {
+            var ingredientBox = document.createElement('DIV');
+            ingredientBox.classList.add('item-text');
+            ingredientBox.style.height = '30px';
+            var ingredientImage = document.createElement('DIV');
+            ingredientImage.style.display = 'inline-block';
+            var ingredientQuantity = document.createElement('DIV');
+            recipe.ingredients[x].quantityDiv = ingredientQuantity;
+            ingredientQuantity.style.display = 'inline-block';
+            ingredientQuantity.style.verticalAlign = 'super';
+            ingredientQuantity.style.color = (recipe.ingredients[x].quantity <= Objects.getQuantity(recipe.ingredients[x].id)) ? 'darkgreen' : 'darkred';
+            ingredientQuantity.textContent = Utils.formatNumber(recipe.ingredients[x].quantity);
+            ingredientImage.classList.add("Half-" + Utils.cssifyName(Objects.lookupName(recipe.ingredients[x].id)));
+
+            ingredientBox.appendChild(ingredientImage);
+            ingredientBox.appendChild(ingredientQuantity);
+            processor.recipeList.appendChild(ingredientBox);
+        }
+    }
+
+    function drawProcessor(processor) {
+        var processorTable = document.createElement('TABLE');
+        processorTable.classList.add('block-table');
+
+        var header = processorTable.createTHead();
+        var titleRow = header.insertRow(0);
+        titleRow.classList.add('table-subheader');
+        var realTitleRow = header.insertRow(0);
+        realTitleRow.classList.add('table-header');
+
+        var titleCell = realTitleRow.insertCell(0);
+        titleCell.colSpan = cellDescriptions.length;
+        titleCell.textContent = processor.name;
+
+        for (var i = 0; i < cellDescriptions.length; i++) {
+            var cell = titleRow.insertCell(0);
+            cell.style.width = processorCellWidths[i];
+            cell.textContent = processorCellDescriptions[i];
+
+            if (processorCellWidths[i] != '0')
+                cell.style.minWidth = processorCellMinWidths[i];
+        }
+
+        // progress
+        var progressRow = processorTable.insertRow(2);
+        progressRow.classList.add('table-row');
+        var progressCell = progressRow.insertCell(0);
+        progressCell.colSpan = processorCellDescriptions.length;
+        var progressContainer = document.createElement('DIV');
+        progressContainer.classList.add('progress-bar-container');
+        var progressBar = document.createElement('DIV');
+        progressBar.classList.add('progress-bar');
+        var progressTextContainer = document.createElement('DIV');
+        progressTextContainer.classList.add('progress-bar-text-container');
+        var progressText = document.createElement('DIV');
+        progressText.classList.add('progress-bar-text');
+        progressTextContainer.appendChild(progressText);
+        progressContainer.appendChild(progressTextContainer);
+
+        processor.progressBar = progressBar;
+        processor.progressText = progressText;
+        progressContainer.appendChild(progressBar);
+        progressCell.appendChild(progressContainer);
+
+        var contentRow = processorTable.insertRow(3);
+        contentRow.classList.add('table-row');
+
+        for (var i = 0; i < processorCellDescriptions.length; i++) {
+            var cell = contentRow.insertCell(0);
+            cell.style.width = cellWidths[i];
+            cell.style.height = '75px';
+
+            if (processorCellMinWidths[i] != '0')
+                cell.style.minWidth = processorCellMinWidths[i];
+
+            if (processorCellDescriptions[i] == "Image") {
+                var image = document.createElement('DIV');
+                image.classList.add(Utils.cssifyName(processor.name));
+                image.style.margin = '0 auto';
+                cell.appendChild(image);
+            }
+
+            if (processorCellDescriptions[i] == "Capacity") {
+                cell.textContent = '0';
+                processor.capacityElm = cell;
+                /*
+                for (var x = 0; x < recipe.ingredients.length; x++) {
+                var ingredientBox = document.createElement('DIV');
+                ingredientBox.classList.add('item-text');
+                ingredientBox.style.height = '22px';
+                var ingredientImage = document.createElement('DIV');
+                ingredientImage.style.display = 'inline-block';
+                var ingredientQuantity = document.createElement('DIV');
+                recipe.ingredients[x].quantityDiv = ingredientQuantity;
+                ingredientQuantity.style.display = 'inline-block';
+                ingredientQuantity.style.verticalAlign = 'super';
+                ingredientQuantity.textContent = Utils.formatNumber(recipe.ingredients[x].quantity);
+                ingredientImage.classList.add("Third-" + Utils.cssifyName(Objects.lookupName(recipe.ingredients[x].id)));
+                
+                ingredientBox.appendChild(ingredientImage);
+                ingredientBox.appendChild(ingredientQuantity);
+                cell.appendChild(ingredientBox);
+                }*/
+            }
+
+            if (processorCellDescriptions[i] == "Input") {
+                processor.recipeList = cell;
+            }
+
+            if (processorCellDescriptions[i] == "Output") {
+                var maxButton = Utils.createButton('Max', '');
+                cell.appendChild(maxButton);
+
+                var quantitySelector = document.createElement('INPUT');
+                quantitySelector.type = 'TEXT';
+                quantitySelector.style.width = '35px';
+                cell.appendChild(quantitySelector);
+                var id = processor.id;
+                var selector = document.createElement('SELECT');
+                selector.addEventListener('change', function (e) {
+                    switchProcessorRecipe(id, selector.selectedIndex);
+                });
+                processor.recipeSelector = selector;
+                cell.appendChild(selector);
+            }
+
+            if (processorCellDescriptions[i] == "Action") {
+                var activateBtn = Utils.createButton('Activate', '');
+                activateBtn.addEventListener('click', function () {
+                    Connection.processRecipe(processor.id, processor.recipeSelector.selectedIndex, 1);
+                }, false);
+                cell.appendChild(activateBtn);
+            }
+        }
+
+        processorSection.appendChild(processorTable);
+    }
+
+    function updateProcessor(id, selectedRecipe, operationDuration, completedOperations, totalOperations, capacity) {
+        var processor = Crafting.processors[id];
+        if (!processor)
+            return;
+        console.log('updating ' + processor.name);
+
+        processor.selectedRecipe = selectedRecipe ? selectedRecipe : processor.selectedRecipe;
+
+        if (totalOperations)
+            processor.totalOperations = totalOperations;
+
+        if (operationDuration)
+            processor.operationDuration = operationDuration;
+
+        if (capacity)
+            processor.capacityElm.textContent = capacity.toString();
+
+        if (processor.completedOperations != completedOperations) {
+            console.log('New ' + processor.name + ' operation');
+            processor.completedOperations = completedOperations;
+            processor.operationStartTime = Date.now();
+            processor.operationCompletionTime = processor.operationStartTime + (processor.operationDuration * 1000);
+        }
+
+        if (processor.operationDuration > -1) {
+            processor.progressText.textContent = Objects.lookupName(processor._recipes[processor.selectedRecipe].resultants[0].id);
+        }
+        /* if (processor.operationCompletionTime != operationCompletionTime) {
+        processor.operationStartTime = Date.now() / 1000;
+        processor.operationCompletionTime = operationCompletionTime;
+        }*/
+    }
+    Crafting.updateProcessor = updateProcessor;
+
+    function processorBars() {
+        Crafting.processors.forEach(function (processor) {
+            if (processor.operationDuration < 0)
+                processor.progressBar.style.width = '0%';
+            else if (processor.completedOperations != processor.totalOperations && processor.totalOperations > 0) {
+                /*console.log(processor.operationCompletionTime);
+                console.log(processor.operationStartTime);
+                console.log(((((processor.operationCompletionTime - processor.operationStartTime) / processor.operationDuration))/10) + '%');*/
+                processor.progressBar.style.width = ((((processor.operationCompletionTime - processor.operationStartTime) / processor.operationDuration)) / 10) + '%';
+            }
+        });
+    }
+    setInterval(processorBars, 10);
+
+    function update() {
+        if (!storePane)
+            return;
+
+        recipes.forEach(function (recipe) {
+            var quantity = Objects.getQuantity(recipe.id);
+            recipe.row.style.display = (quantity == -1 || !recipe.isItem && quantity > 0) ? 'none' : '';
+            recipe.ingredients.forEach(function (ingredient) {
+                var ingQuantity = Objects.getQuantity(ingredient.id);
+                ingredient.quantityDiv.style.color = (ingQuantity >= ingredient.quantity) ? 'darkgreen' : 'darkred';
+            });
+        });
+
+        Crafting.processors.forEach(function (processor) {
+            switchProcessorRecipe(processor.id, processor.recipeSelector.selectedIndex);
+        });
+        /*
+        for (var i = 0; i < recipes.length; i++) {
+        var recipe = recipes[i];
+        var quantity = Objects.getQuantity(recipe.id);
+        recipe.row.style.display = (quantity == -1) ? 'none' : 'inline-block';
+        }*/
+    }
+    Crafting.update = update;
+
+    function drawRecipe(recipe, isItem) {
+        var pointOfInsertion = craftingTable.rows.length;
+
+        if (isItem) {
+            pointOfInsertion = itemsTableOffset;
+            itemsTableOffset++;
+        }
+
+        var recipeRow = craftingTable.insertRow(pointOfInsertion);
+        recipeRow.classList.add('table-row');
+        recipe.row = recipeRow;
+        for (var i = 0; i < cellDescriptions.length; i++) {
+            var cell = recipeRow.insertCell(0);
+            cell.style.width = cellWidths[i];
+
+            if (cellMinWidths[i] != '0')
+                cell.style.minWidth = cellMinWidths[i];
+
+            if (cellDescriptions[i] == "Name")
+                cell.textContent = Objects.lookupName(recipe.id);
+
+            if (cellDescriptions[i] == "Input") {
+                for (var x = 0; x < recipe.ingredients.length; x++) {
+                    var ingredientBox = document.createElement('DIV');
+                    ingredientBox.classList.add('item-text');
+                    ingredientBox.style.height = '22px';
+                    var ingredientImage = document.createElement('DIV');
+                    ingredientImage.style.display = 'inline-block';
+                    var ingredientQuantity = document.createElement('DIV');
+                    recipe.ingredients[x].quantityDiv = ingredientQuantity;
+                    ingredientQuantity.style.display = 'inline-block';
+                    ingredientQuantity.style.verticalAlign = 'super';
+                    ingredientQuantity.textContent = Utils.formatNumber(recipe.ingredients[x].quantity);
+                    ingredientImage.classList.add("Third-" + Utils.cssifyName(Objects.lookupName(recipe.ingredients[x].id)));
+
+                    ingredientBox.appendChild(ingredientImage);
+                    ingredientBox.appendChild(ingredientQuantity);
+                    cell.appendChild(ingredientBox);
+                }
+            }
+
+            if (cellDescriptions[i] == "Output") {
+                for (var x = 0; x < recipe.resultants.length; x++) {
+                    var ingredientBox = document.createElement('DIV');
+                    ingredientBox.classList.add('item-text');
+                    ingredientBox.style.height = '22px';
+                    var ingredientImage = document.createElement('DIV');
+                    ingredientImage.style.display = 'inline-block';
+                    var ingredientQuantity = document.createElement('DIV');
+                    ingredientQuantity.style.display = 'inline-block';
+                    ingredientQuantity.style.verticalAlign = 'super';
+                    ingredientQuantity.textContent = Utils.formatNumber(recipe.resultants[x].quantity);
+                    ingredientImage.classList.add("Third-" + Utils.cssifyName(Objects.lookupName(recipe.resultants[x].id)));
+
+                    ingredientBox.appendChild(ingredientImage);
+
+                    if (recipe.isItem)
+                        ingredientBox.appendChild(ingredientQuantity);
+
+                    cell.appendChild(ingredientBox);
+                }
+            }
+
+            if (cellDescriptions[i] == "Action") {
+                var craftBtn = Utils.createButton('Craft', '');
+                craftBtn.addEventListener('click', function () {
+                    Connection.craftRecipe(recipe.id, 1);
+                }, false);
+                cell.appendChild(craftBtn);
+
+                if (recipe.isItem) {
+                    var quantity = document.createElement('INPUT');
+                    quantity.type = 'TEXT';
+                    quantity.style.width = '30px';
+
+                    var craftXBtn = Utils.createButton('Craft-x', '');
+                    craftXBtn.addEventListener('click', function () {
+                        Connection.craftRecipe(recipe.id, +quantity.value);
+                    }, false);
+                    cell.appendChild(craftXBtn);
+                    cell.appendChild(quantity);
+                }
+            }
+        }
+    }
+})(Crafting || (Crafting = {}));

@@ -57,11 +57,18 @@ namespace GoldRush
             ClickUpgradeT3 = new Upgrade(new BaseEfficiencyUpgradeEffect(game, new[] { game.Gatherers.Player }, 10), GameConfig.Upgrades.ClickUpgradeT3);
             ClickUpgradeT3.Requires = ClickUpgradeT2;
             All.Add(ClickUpgradeT3.Id, ClickUpgradeT3);
-            /*
+            
+            // Craftable
             ChainsawsT1 = new Upgrade(new EfficiencyUpgradeEffect(game,
                 new []{game.Gatherers.Lumberjack},
                 0.25),GameConfig.Upgrades.ChainsawsT1);
-            All.Add(ChainsawsT1.Id, ChainsawsT1);*/
+            All.Add(ChainsawsT1.Id, ChainsawsT1);
+
+            ChainsawsT2 = new Upgrade(new EfficiencyUpgradeEffect(game,
+                new[] { game.Gatherers.Lumberjack },
+                0.5), GameConfig.Upgrades.ChainsawsT2);
+            ChainsawsT2.Requires = ChainsawsT1;
+            All.Add(ChainsawsT2.Id, ChainsawsT2);
             #endregion
 
             #region Buffs
@@ -97,6 +104,9 @@ namespace GoldRush
         public Upgrade Researcher;
         public Upgrade Foreman;
         public Upgrade ChainsawsT1;
+        public Upgrade ChainsawsT2;
+        public Upgrade ChainsawsT3;
+        public Upgrade ChainsawsT4;
 
         public Upgrade ClickUpgradeT1;
         public Upgrade ClickUpgradeT2;

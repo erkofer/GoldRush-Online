@@ -6,9 +6,11 @@
     function initialize() {
         if (!chatWindow) {
             chatWindow = document.createElement('DIV');
+            chatWindow.style.transition = 'all 0.2s';
+            chatWindow.id = 'chatWindow';
             chatWindow.style.position = 'fixed';
-            chatWindow.style.bottom = '0';
-            chatWindow.style.left = '0';
+            chatWindow.style.bottom = '0px';
+            chatWindow.style.left = '0px';
             chatWindow.style.minWidth = '400px';
             chatWindow.style.width = '40%';
             chatWindow.style.backgroundColor = '#ebebeb';
@@ -17,9 +19,21 @@
             chatWindow.style.boxShadow = '1px -1px 2px rgb(200,200,200)';
 
             var chatHeader = document.createElement('DIV');
+            chatHeader.style.position = 'relative';
             chatHeader.style.height = '30px';
             chatHeader.style.backgroundColor = 'rgb(160, 160, 160)';
             chatWindow.appendChild(chatHeader);
+
+            var chatCloser = document.createElement('DIV');
+            chatCloser.textContent = 'Collapse';
+            chatCloser.style.position = 'absolute';
+            chatCloser.style.top = '0';
+            chatCloser.style.right = '0';
+            chatCloser.addEventListener('click', function () {
+                var window = document.getElementById('chatWindow');
+                window.style.bottom = (window.style.bottom == '0px') ? '-251px' : '0px';
+            });
+            chatHeader.appendChild(chatCloser);
 
             var chatRoomTab = document.createElement('DIV');
             chatRoomTab.style.color = 'white';
@@ -554,6 +568,52 @@ var Tabs;
         return Tab;
     })();
 })(Tabs || (Tabs = {}));
+var Objects;
+(function (Objects) {
+    var gameobjects = new Array();
+
+    var GameObject = (function () {
+        function GameObject() {
+            this.quantity = 0;
+        }
+        return GameObject;
+    })();
+
+    function register(id, name) {
+        if (!gameobjects[id]) {
+            var gameobject = new GameObject();
+            gameobject.name = name;
+
+            gameobjects[id] = gameobject;
+        }
+    }
+    Objects.register = register;
+
+    function lookupName(id) {
+        return gameobjects[id].name;
+    }
+    Objects.lookupName = lookupName;
+
+    function setQuantity(id, quantity) {
+        gameobjects[id].quantity = quantity;
+    }
+    Objects.setQuantity = setQuantity;
+
+    function getQuantity(id) {
+        return gameobjects[id].quantity;
+    }
+    Objects.getQuantity = getQuantity;
+
+    function setLifeTimeTotal(id, quantity) {
+        gameobjects[id].lifeTimeTotal = quantity;
+    }
+    Objects.setLifeTimeTotal = setLifeTimeTotal;
+
+    function getLifeTimeTotal(id) {
+        return gameobjects[id].lifeTimeTotal;
+    }
+    Objects.getLifeTimeTotal = getLifeTimeTotal;
+})(Objects || (Objects = {}));
 var Inventory;
 (function (Inventory) {
     Inventory.items = new Array();
@@ -566,6 +626,10 @@ var Inventory;
 
     var configTableBody;
     var configTableContainer;
+
+    var configNames = new Array();
+    var configImages = new Array();
+
     var Item = (function () {
         function Item(id, name, worth, category) {
             this.id = id;
@@ -632,6 +696,7 @@ var Inventory;
 
     function add(item) {
         Inventory.items[item.id] = item;
+        Objects.register(item.id, item.name);
 
         if (!inventoryPane)
             draw();
@@ -843,7 +908,9 @@ var Inventory;
             var image = document.createElement('DIV');
             image.classList.add('Third-' + Utils.cssifyName(item.name));
             image.style.display = 'inline-block';
+            configImages[item.id] = image;
             nameSpan.textContent = item.name;
+            configNames[item.id] = nameSpan;
             nameAndImage.appendChild(image);
             nameAndImage.appendChild(nameSpan);
             selectedItemCell.appendChild(nameAndImage);
@@ -867,12 +934,29 @@ var Inventory;
     Inventory.addItem = addItem;
 
     function changeQuantity(id, quantity) {
+        Objects.setQuantity(id, quantity);
+        Crafting.update();
         Inventory.items[id].quantityElm.textContent = Utils.formatNumber(quantity);
         Inventory.items[id].quantity = quantity;
         Inventory.items[id].container.style.display = quantity == 0 ? 'none' : 'inline-block';
         limitTextQuantity();
     }
     Inventory.changeQuantity = changeQuantity;
+
+    function update() {
+        if (configNames.length <= 0)
+            return;
+
+        Inventory.items.forEach(function (item) {
+            var itemQuantity = Objects.getLifeTimeTotal(item.id);
+            if (configNames[item.id])
+                configNames[item.id].textContent = itemQuantity > 0 ? item.name : '???';
+
+            if (configImages[item.id])
+                configImages[item.id].style.display = itemQuantity > 0 ? 'inline-block' : 'none';
+        });
+    }
+    Inventory.update = update;
 })(Inventory || (Inventory = {}));
 var Connection;
 (function (Connection) {
@@ -886,8 +970,8 @@ var Connection;
         Chat.log(roughSizeOfObject(JSON.stringify(Komodo.decode(msg))) - roughSizeOfObject(msg) + " bytes saved.");
         msg = Komodo.decode(msg);
 
-        if (msg.Message != null) {
-            Chat.receiveGlobalMessage(msg.Message.Sender, msg.Message.Text, msg.Message.Time, msg.Message.Permissions);
+        if (msg.Messages != null) {
+            receiveGlobalMessages(msg.Messages);
         }
 
         if (msg.GameSchema != null) {
@@ -908,7 +992,9 @@ var Connection;
             updateInventoryConfigurations(msg.ConfigItems);
         }
 
-        Crafting.addCraftingItem();
+        if (msg.Processors != null) {
+            updateProcessors(msg.Processors);
+        }
     });
 
     function restart() {
@@ -951,6 +1037,34 @@ var Connection;
         for (var i = 0; i < schema.StoreItems.length; i++) {
             var item = schema.StoreItems[i];
             Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.MaxQuantity);
+        }
+
+        for (var i = 0; i < schema.Processors.length; i++) {
+            var processor = schema.Processors[i];
+            console.log(processor.Name);
+            Crafting.addProcessor(processor.Id, processor.Name);
+            for (var r = 0; r < processor.Recipes.length; r++) {
+                Crafting.addProcessorRecipe(processor.Id, processor.Recipes[r].Ingredients, processor.Recipes[r].Resultants);
+            }
+        }
+
+        for (var i = 0; i < schema.CraftingItems.length; i++) {
+            var item = schema.CraftingItems[i];
+            Crafting.addRecipe(item.Id, item.Ingredients, item.Resultants, item.IsItem);
+        }
+    }
+
+    function receiveGlobalMessages(messages) {
+        for (var i = 0; i < messages.length; i++) {
+            var msg = messages[i];
+            Chat.receiveGlobalMessage(msg.Sender, msg.Text, msg.Time, msg.Permissions);
+        }
+    }
+
+    function updateProcessors(processors) {
+        for (var i = 0; i < processors.length; i++) {
+            var processor = processors[i];
+            Crafting.updateProcessor(processor.Id, processor.SelectedRecipe, processor.OperationDuration, processor.CompletedOperations, processor.TotalOperations, processor.Capacity);
         }
     }
 
@@ -1011,6 +1125,23 @@ var Connection;
     }
     Connection.sellAllItems = sellAllItems;
 
+    function craftRecipe(id, quantity) {
+        var craftingAction = new Komodo.ClientActions.CraftingAction();
+        craftingAction.Id = id;
+        craftingAction.Quantity = quantity;
+        actions.CraftingActions.push(craftingAction);
+    }
+    Connection.craftRecipe = craftRecipe;
+
+    function processRecipe(id, recipeIndex, iterations) {
+        var processingAction = new Komodo.ClientActions.ProcessingAction();
+        processingAction.Id = id;
+        processingAction.RecipeIndex = recipeIndex;
+        processingAction.Iterations = iterations;
+        actions.ProcessingActions.push(processingAction);
+    }
+    Connection.processRecipe = processRecipe;
+
     function sendGlobalMessage(message) {
         var socialAction = new Komodo.ClientActions.SocialAction();
         var chatAction = new Komodo.ClientActions.SocialAction.ChatAction();
@@ -1066,8 +1197,56 @@ var Crafting;
     var storePane;
     var processorSection;
     var craftingSection;
+    var craftingTable;
     var cellDescriptions = ['Action', 'Description', 'Input', 'Output', 'Name'];
-    var cellWidths = ['10%', '30%', '15%', '15%', '10%'];
+    var cellWidths = ['10%', '50%', '15%', '15%', '10%'];
+    var cellMinWidths = ['170px', '0', '0', '0', '0'];
+
+    var processorCellDescriptions = ['Action', 'Output', 'Input', 'Capacity', 'Image'];
+    var processorCellWidths = ['10%', '30%', '20%', '20%', '20%'];
+    var processorCellMinWidths = ['170px', '0', '0', '0', '0'];
+
+    var itemsTableOffset = 3;
+    var recipes = new Array();
+    Crafting.processors = new Array();
+
+    var Processor = (function () {
+        function Processor() {
+            this._recipes = new Array();
+        }
+        Processor.prototype.addRecipe = function (recipe) {
+            this._recipes.push(recipe);
+            if (!this.selectedRecipe)
+                this.selectedRecipe = recipe.resultants[0].id;
+        };
+        return Processor;
+    })();
+    Crafting.Processor = Processor;
+
+    var Recipe = (function () {
+        function Recipe() {
+            this.ingredients = new Array();
+            this.resultants = new Array();
+        }
+        Recipe.prototype.addIngredient = function (ingredient) {
+            this.ingredients.push(ingredient);
+        };
+
+        Recipe.prototype.addResultant = function (ingredient) {
+            this.resultants.push(ingredient);
+        };
+        return Recipe;
+    })();
+    Crafting.Recipe = Recipe;
+
+    var Ingredient = (function () {
+        function Ingredient(id, quantity) {
+            this.id = id;
+            this.quantity = quantity;
+        }
+        return Ingredient;
+    })();
+    Crafting.Ingredient = Ingredient;
 
     function draw() {
         storePane = document.createElement('DIV');
@@ -1083,7 +1262,7 @@ var Crafting;
     }
 
     function drawCraftingTable() {
-        var craftingTable = document.createElement('TABLE');
+        craftingTable = document.createElement('TABLE');
         craftingTable.classList.add('block-table');
 
         var header = craftingTable.createTHead();
@@ -1100,22 +1279,363 @@ var Crafting;
             var cell = titleRow.insertCell(0);
             cell.style.width = cellWidths[i];
             cell.textContent = cellDescriptions[i];
+
+            if (cellMinWidths[i] != '0')
+                cell.style.minWidth = cellMinWidths[i];
         }
+
+        var itemsSubHeader = craftingTable.insertRow(2);
+        itemsSubHeader.classList.add('table-subheader');
+        var itemsSubHeaderCell = itemsSubHeader.insertCell(0);
+        itemsSubHeaderCell.colSpan = cellDescriptions.length;
+        itemsSubHeaderCell.textContent = 'Items';
+
+        var upgradesSubHeader = craftingTable.insertRow(3);
+        upgradesSubHeader.classList.add('table-subheader');
+        var upgradesSubHeaderCell = upgradesSubHeader.insertCell(0);
+        upgradesSubHeaderCell.colSpan = cellDescriptions.length;
+        upgradesSubHeaderCell.textContent = 'Upgrades';
 
         craftingSection.appendChild(craftingTable);
     }
 
-    function addCraftingItem() {
+    function addRecipe(id, ingredients, resultants, isItem) {
         if (!storePane)
             draw();
-    }
-    Crafting.addCraftingItem = addCraftingItem;
 
-    function addCraftingUpgrade() {
+        if (!recipes[id]) {
+            var recipe = new Recipe();
+            recipe.id = id;
+            recipe.isItem = isItem;
+            recipes[id] = recipe;
+
+            for (var i = 0; i < ingredients.length; i++)
+                recipe.addIngredient(new Ingredient(ingredients[i].Id, ingredients[i].Quantity));
+
+            for (var i = 0; i < resultants.length; i++)
+                recipe.addResultant(new Ingredient(resultants[i].Id, resultants[i].Quantity));
+
+            drawRecipe(recipe, isItem);
+        }
+    }
+    Crafting.addRecipe = addRecipe;
+
+    function addProcessor(id, name) {
         if (!storePane)
             draw();
+
+        if (!Crafting.processors[id]) {
+            var processor = new Processor();
+            processor.id = id;
+            processor.name = name;
+            Crafting.processors[id] = processor;
+
+            drawProcessor(processor);
+        }
     }
-    Crafting.addCraftingUpgrade = addCraftingUpgrade;
+    Crafting.addProcessor = addProcessor;
+
+    function addProcessorRecipe(id, ingredients, resultants) {
+        if (!Crafting.processors[id])
+            return;
+
+        var processor = Crafting.processors[id];
+        var recipe = new Recipe();
+
+        for (var i = 0; i < ingredients.length; i++)
+            recipe.addIngredient(new Ingredient(ingredients[i].Id, ingredients[i].Quantity));
+
+        for (var i = 0; i < resultants.length; i++)
+            recipe.addResultant(new Ingredient(resultants[i].Id, resultants[i].Quantity));
+
+        processor.addRecipe(recipe);
+
+        var opt = document.createElement('OPTION');
+        opt.textContent = Objects.lookupName(resultants[0].Id);
+        processor.recipeSelector.appendChild(opt);
+
+        if (processor._recipes.length == 1) {
+            switchProcessorRecipe(id, 0);
+        }
+    }
+    Crafting.addProcessorRecipe = addProcessorRecipe;
+
+    function switchProcessorRecipe(id, recipeIndex) {
+        var processor = Crafting.processors[id];
+        if (!processor)
+            return;
+
+        var recipe = processor._recipes[recipeIndex];
+        processor.selectedRecipe = recipe.resultants[0].id;
+
+        while (processor.recipeList.lastChild) {
+            processor.recipeList.removeChild(processor.recipeList.lastChild);
+        }
+
+        for (var x = 0; x < recipe.ingredients.length; x++) {
+            var ingredientBox = document.createElement('DIV');
+            ingredientBox.classList.add('item-text');
+            ingredientBox.style.height = '30px';
+            var ingredientImage = document.createElement('DIV');
+            ingredientImage.style.display = 'inline-block';
+            var ingredientQuantity = document.createElement('DIV');
+            recipe.ingredients[x].quantityDiv = ingredientQuantity;
+            ingredientQuantity.style.display = 'inline-block';
+            ingredientQuantity.style.verticalAlign = 'super';
+            ingredientQuantity.style.color = (recipe.ingredients[x].quantity <= Objects.getQuantity(recipe.ingredients[x].id)) ? 'darkgreen' : 'darkred';
+            ingredientQuantity.textContent = Utils.formatNumber(recipe.ingredients[x].quantity);
+            ingredientImage.classList.add("Half-" + Utils.cssifyName(Objects.lookupName(recipe.ingredients[x].id)));
+
+            ingredientBox.appendChild(ingredientImage);
+            ingredientBox.appendChild(ingredientQuantity);
+            processor.recipeList.appendChild(ingredientBox);
+        }
+    }
+
+    function drawProcessor(processor) {
+        var processorTable = document.createElement('TABLE');
+        processorTable.classList.add('block-table');
+
+        var header = processorTable.createTHead();
+        var titleRow = header.insertRow(0);
+        titleRow.classList.add('table-subheader');
+        var realTitleRow = header.insertRow(0);
+        realTitleRow.classList.add('table-header');
+
+        var titleCell = realTitleRow.insertCell(0);
+        titleCell.colSpan = cellDescriptions.length;
+        titleCell.textContent = processor.name;
+
+        for (var i = 0; i < cellDescriptions.length; i++) {
+            var cell = titleRow.insertCell(0);
+            cell.style.width = processorCellWidths[i];
+            cell.textContent = processorCellDescriptions[i];
+
+            if (processorCellWidths[i] != '0')
+                cell.style.minWidth = processorCellMinWidths[i];
+        }
+
+        var progressRow = processorTable.insertRow(2);
+        progressRow.classList.add('table-row');
+        var progressCell = progressRow.insertCell(0);
+        progressCell.colSpan = processorCellDescriptions.length;
+        var progressContainer = document.createElement('DIV');
+        progressContainer.classList.add('progress-bar-container');
+        var progressBar = document.createElement('DIV');
+        progressBar.classList.add('progress-bar');
+        var progressTextContainer = document.createElement('DIV');
+        progressTextContainer.classList.add('progress-bar-text-container');
+        var progressText = document.createElement('DIV');
+        progressText.classList.add('progress-bar-text');
+        progressTextContainer.appendChild(progressText);
+        progressContainer.appendChild(progressTextContainer);
+
+        processor.progressBar = progressBar;
+        processor.progressText = progressText;
+        progressContainer.appendChild(progressBar);
+        progressCell.appendChild(progressContainer);
+
+        var contentRow = processorTable.insertRow(3);
+        contentRow.classList.add('table-row');
+
+        for (var i = 0; i < processorCellDescriptions.length; i++) {
+            var cell = contentRow.insertCell(0);
+            cell.style.width = cellWidths[i];
+            cell.style.height = '75px';
+
+            if (processorCellMinWidths[i] != '0')
+                cell.style.minWidth = processorCellMinWidths[i];
+
+            if (processorCellDescriptions[i] == "Image") {
+                var image = document.createElement('DIV');
+                image.classList.add(Utils.cssifyName(processor.name));
+                image.style.margin = '0 auto';
+                cell.appendChild(image);
+            }
+
+            if (processorCellDescriptions[i] == "Capacity") {
+                cell.textContent = '0';
+                processor.capacityElm = cell;
+            }
+
+            if (processorCellDescriptions[i] == "Input") {
+                processor.recipeList = cell;
+            }
+
+            if (processorCellDescriptions[i] == "Output") {
+                var maxButton = Utils.createButton('Max', '');
+                cell.appendChild(maxButton);
+
+                var quantitySelector = document.createElement('INPUT');
+                quantitySelector.type = 'TEXT';
+                quantitySelector.style.width = '35px';
+                cell.appendChild(quantitySelector);
+                var id = processor.id;
+                var selector = document.createElement('SELECT');
+                selector.addEventListener('change', function (e) {
+                    switchProcessorRecipe(id, selector.selectedIndex);
+                });
+                processor.recipeSelector = selector;
+                cell.appendChild(selector);
+            }
+
+            if (processorCellDescriptions[i] == "Action") {
+                var activateBtn = Utils.createButton('Activate', '');
+                activateBtn.addEventListener('click', function () {
+                    Connection.processRecipe(processor.id, processor.recipeSelector.selectedIndex, 1);
+                }, false);
+                cell.appendChild(activateBtn);
+            }
+        }
+
+        processorSection.appendChild(processorTable);
+    }
+
+    function updateProcessor(id, selectedRecipe, operationDuration, completedOperations, totalOperations, capacity) {
+        var processor = Crafting.processors[id];
+        if (!processor)
+            return;
+        console.log('updating ' + processor.name);
+
+        processor.selectedRecipe = selectedRecipe ? selectedRecipe : processor.selectedRecipe;
+
+        if (totalOperations)
+            processor.totalOperations = totalOperations;
+
+        if (operationDuration)
+            processor.operationDuration = operationDuration;
+
+        if (capacity)
+            processor.capacityElm.textContent = capacity.toString();
+
+        if (processor.completedOperations != completedOperations) {
+            console.log('New ' + processor.name + ' operation');
+            processor.completedOperations = completedOperations;
+            processor.operationStartTime = Date.now();
+            processor.operationCompletionTime = processor.operationStartTime + (processor.operationDuration * 1000);
+        }
+
+        if (processor.operationDuration > -1) {
+            processor.progressText.textContent = Objects.lookupName(processor._recipes[processor.selectedRecipe].resultants[0].id);
+        }
+    }
+    Crafting.updateProcessor = updateProcessor;
+
+    function processorBars() {
+        Crafting.processors.forEach(function (processor) {
+            if (processor.operationDuration < 0)
+                processor.progressBar.style.width = '0%';
+            else if (processor.completedOperations != processor.totalOperations && processor.totalOperations > 0) {
+                processor.progressBar.style.width = ((((processor.operationCompletionTime - processor.operationStartTime) / processor.operationDuration)) / 10) + '%';
+            }
+        });
+    }
+    setInterval(processorBars, 10);
+
+    function update() {
+        if (!storePane)
+            return;
+
+        recipes.forEach(function (recipe) {
+            var quantity = Objects.getQuantity(recipe.id);
+            recipe.row.style.display = (quantity == -1 || !recipe.isItem && quantity > 0) ? 'none' : '';
+            recipe.ingredients.forEach(function (ingredient) {
+                var ingQuantity = Objects.getQuantity(ingredient.id);
+                ingredient.quantityDiv.style.color = (ingQuantity >= ingredient.quantity) ? 'darkgreen' : 'darkred';
+            });
+        });
+
+        Crafting.processors.forEach(function (processor) {
+            switchProcessorRecipe(processor.id, processor.recipeSelector.selectedIndex);
+        });
+    }
+    Crafting.update = update;
+
+    function drawRecipe(recipe, isItem) {
+        var pointOfInsertion = craftingTable.rows.length;
+
+        if (isItem) {
+            pointOfInsertion = itemsTableOffset;
+            itemsTableOffset++;
+        }
+
+        var recipeRow = craftingTable.insertRow(pointOfInsertion);
+        recipeRow.classList.add('table-row');
+        recipe.row = recipeRow;
+        for (var i = 0; i < cellDescriptions.length; i++) {
+            var cell = recipeRow.insertCell(0);
+            cell.style.width = cellWidths[i];
+
+            if (cellMinWidths[i] != '0')
+                cell.style.minWidth = cellMinWidths[i];
+
+            if (cellDescriptions[i] == "Name")
+                cell.textContent = Objects.lookupName(recipe.id);
+
+            if (cellDescriptions[i] == "Input") {
+                for (var x = 0; x < recipe.ingredients.length; x++) {
+                    var ingredientBox = document.createElement('DIV');
+                    ingredientBox.classList.add('item-text');
+                    ingredientBox.style.height = '22px';
+                    var ingredientImage = document.createElement('DIV');
+                    ingredientImage.style.display = 'inline-block';
+                    var ingredientQuantity = document.createElement('DIV');
+                    recipe.ingredients[x].quantityDiv = ingredientQuantity;
+                    ingredientQuantity.style.display = 'inline-block';
+                    ingredientQuantity.style.verticalAlign = 'super';
+                    ingredientQuantity.textContent = Utils.formatNumber(recipe.ingredients[x].quantity);
+                    ingredientImage.classList.add("Third-" + Utils.cssifyName(Objects.lookupName(recipe.ingredients[x].id)));
+
+                    ingredientBox.appendChild(ingredientImage);
+                    ingredientBox.appendChild(ingredientQuantity);
+                    cell.appendChild(ingredientBox);
+                }
+            }
+
+            if (cellDescriptions[i] == "Output") {
+                for (var x = 0; x < recipe.resultants.length; x++) {
+                    var ingredientBox = document.createElement('DIV');
+                    ingredientBox.classList.add('item-text');
+                    ingredientBox.style.height = '22px';
+                    var ingredientImage = document.createElement('DIV');
+                    ingredientImage.style.display = 'inline-block';
+                    var ingredientQuantity = document.createElement('DIV');
+                    ingredientQuantity.style.display = 'inline-block';
+                    ingredientQuantity.style.verticalAlign = 'super';
+                    ingredientQuantity.textContent = Utils.formatNumber(recipe.resultants[x].quantity);
+                    ingredientImage.classList.add("Third-" + Utils.cssifyName(Objects.lookupName(recipe.resultants[x].id)));
+
+                    ingredientBox.appendChild(ingredientImage);
+
+                    if (recipe.isItem)
+                        ingredientBox.appendChild(ingredientQuantity);
+
+                    cell.appendChild(ingredientBox);
+                }
+            }
+
+            if (cellDescriptions[i] == "Action") {
+                var craftBtn = Utils.createButton('Craft', '');
+                craftBtn.addEventListener('click', function () {
+                    Connection.craftRecipe(recipe.id, 1);
+                }, false);
+                cell.appendChild(craftBtn);
+
+                if (recipe.isItem) {
+                    var quantity = document.createElement('INPUT');
+                    quantity.type = 'TEXT';
+                    quantity.style.width = '30px';
+
+                    var craftXBtn = Utils.createButton('Craft-x', '');
+                    craftXBtn.addEventListener('click', function () {
+                        Connection.craftRecipe(recipe.id, +quantity.value);
+                    }, false);
+                    cell.appendChild(craftXBtn);
+                    cell.appendChild(quantity);
+                }
+            }
+        }
+    }
 })(Crafting || (Crafting = {}));
 var modal;
 (function (modal) {
@@ -1511,6 +2031,11 @@ var Statistics;
 
     function changeStats(id, prestige, lifetime) {
         var item = items[id];
+        item.prestigeQuantity = prestige ? prestige : item.prestigeQuantity;
+        item.lifetimeQuantity = lifetime ? lifetime : item.lifetimeQuantity;
+
+        if (lifetime)
+            Objects.setLifeTimeTotal(id, lifetime);
 
         item.prestigeRow.textContent = prestige ? Utils.formatNumber(prestige) : '0';
         item.alltimeRow.textContent = lifetime ? Utils.formatNumber(lifetime) : '0';
@@ -1644,11 +2169,15 @@ var Store;
             item.name = name;
             item.maxQuantity = maxQuantity ? maxQuantity : 0;
 
+            Objects.register(item.id, item.name);
+
             var categoryContainer = categories[Category[category]];
             if (categoryContainer == null) {
                 categoryContainer = categories["MINING"];
             }
-            categoryContainer.appendChild(drawItem(item));
+            if (item.category != 6 /* CRAFTING */)
+                categoryContainer.appendChild(drawItem(item));
+
             items[id] = item;
         }
     }
@@ -1656,8 +2185,15 @@ var Store;
 
     function changeQuantity(id, quantity) {
         var item = items[id];
+
+        Objects.setQuantity(id, quantity);
         item.quantity = quantity;
-        item.container.style.display = (item.quantity == -1 || item.quantity >= item.maxQuantity && item.maxQuantity > 0) ? 'none' : 'inline-block';
+        Crafting.update();
+
+        if (item.category == 6 /* CRAFTING */)
+            return;
+
+        item.container.style.display = (item.quantity <= -1 || item.quantity >= item.maxQuantity && item.maxQuantity > 0) ? 'none' : 'inline-block';
         if (item.maxQuantity && item.maxQuantity > 1)
             item.nameElm.textContent = item.name + ' (' + ((item.quantity) ? item.quantity : 0) + '/' + item.maxQuantity + ')';
     }

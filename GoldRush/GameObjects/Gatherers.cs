@@ -268,7 +268,7 @@ namespace GoldRush
                     for (var i = 0; i < PossibleResources.Count; i++)
                     {
                         double ticks = (ms /1000);
-                        double r = (PossibleResources[-i].Probability / totaledProbability) * resourcesGained;
+                        double r = (PossibleResources[i].Probability / totaledProbability) * resourcesGained;
                         double luck = (_game.Random.Next(0, 11) / 10);
                         double probability = 1 / Math.Pow(2.71828, r);
                         int resourcesToGain = 0;

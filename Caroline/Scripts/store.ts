@@ -73,22 +73,32 @@
             item.name = name;
             item.maxQuantity = maxQuantity ? maxQuantity : 0;
 
+            Objects.register(item.id, item.name);
+
             var categoryContainer = categories[Category[category]];
             if (categoryContainer == null) {
                 categoryContainer = categories["MINING"];
             }
-            categoryContainer.appendChild(drawItem(item));
+            if(item.category != Category.CRAFTING)
+                categoryContainer.appendChild(drawItem(item));
+
             items[id] = item;
         }
     }
 
     export function changeQuantity(id: number, quantity: number) {
         var item = items[id];
+
+        Objects.setQuantity(id, quantity);
         item.quantity = quantity;
-        item.container.style.display = (item.quantity == -1 || item.quantity >= item.maxQuantity && item.maxQuantity > 0) ? 'none' : 'inline-block';
+        Crafting.update();
+
+        if (item.category == Category.CRAFTING) return;
+
+        item.container.style.display = (item.quantity <= -1 || item.quantity >= item.maxQuantity && item.maxQuantity > 0) ? 'none' : 'inline-block';
         if (item.maxQuantity && item.maxQuantity > 1)
             item.nameElm.textContent = item.name + ' (' + ((item.quantity) ? item.quantity : 0) + '/' + item.maxQuantity + ')';
-        
+
     }
 
     function add() {

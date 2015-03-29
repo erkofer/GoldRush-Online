@@ -1,6 +1,7 @@
 ﻿///<reference path="utils.ts"/>
 ///<reference path="tooltip.ts"/>
 ///<reference path="tabs.ts"/>
+///<reference path="objects.ts"/>
 module Inventory {
     export var items = new Array<Item>();
     export var configClickers = new Array<HTMLElement>();
@@ -11,7 +12,11 @@ module Inventory {
     var selectedItem: Item;
     //var configDiv;
     var configTableBody: HTMLElement;
-    var configTableContainer:HTMLElement;
+    var configTableContainer: HTMLElement;
+
+    var configNames = new Array<HTMLElement>();
+    var configImages = new Array<HTMLElement>();
+
     export class Item {
         id: number;
         name: string;
@@ -81,6 +86,7 @@ module Inventory {
 
     function add(item: Item) {
         items[item.id] = item;
+        Objects.register(item.id, item.name);
 
         if (!inventoryPane)
             draw();
@@ -286,7 +292,8 @@ module Inventory {
                     }
                 }
                 selectedItemCell = (<HTMLTableElement>row).cells[cellIndex];
-                selectedConfigCell = (<HTMLTableElement>row).cells[cellIndex-1];
+                selectedConfigCell = (<HTMLTableElement>row).cells[cellIndex - 1];
+
             }
             /* For doing stuff with empty cells.
             for (var curRow = 0; curRow < rows; curRow++) {
@@ -304,7 +311,9 @@ module Inventory {
             var image = document.createElement('DIV');
             image.classList.add('Third-' + Utils.cssifyName(item.name));
             image.style.display = 'inline-block';
+            configImages[item.id] = image;
             nameSpan.textContent = item.name;
+            configNames[item.id] = nameSpan;
             nameAndImage.appendChild(image);
             nameAndImage.appendChild(nameSpan);
             (<HTMLElement>selectedItemCell).appendChild(nameAndImage);
@@ -328,9 +337,24 @@ module Inventory {
     }
 
     export function changeQuantity(id: number, quantity: number) {
+        Objects.setQuantity(id, quantity);
+        Crafting.update();
         items[id].quantityElm.textContent = Utils.formatNumber(quantity);
         items[id].quantity = quantity;
         items[id].container.style.display = quantity == 0 ? 'none' : 'inline-block';
         limitTextQuantity();
+    }
+
+    export function update() {
+        if (configNames.length <= 0) return;
+
+        items.forEach(item => {
+            var itemQuantity = Objects.getLifeTimeTotal(item.id);
+            if (configNames[item.id])
+                configNames[item.id].textContent = itemQuantity > 0 ? item.name : '???';
+
+            if (configImages[item.id])
+                configImages[item.id].style.display = itemQuantity > 0 ? 'inline-block' : 'none';
+        });
     }
 }

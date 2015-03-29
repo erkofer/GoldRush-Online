@@ -13,7 +13,7 @@ namespace GoldRush
         public class Config
         {
             public string Name;
-            public readonly int Id;
+            public int Id;
 
             public Config()
             {
@@ -27,9 +27,13 @@ namespace GoldRush
             {
                 public ItemConfig()
                 {
-                    if (LowestId > 300) LowestId = 0;
-                }
+                    if (LowestId > 300)
+                    {
+                        LowestId = 0;
 
+                        Id = 1;
+                    }
+                }
                 public int Worth;
                 public GoldRush.Items.Category Category;
             }
@@ -40,7 +44,7 @@ namespace GoldRush
                 public int Probability;
             }
 
-            public static ResourceConfig Stone = new ResourceConfig {Name = "Stone", Worth = 1, Probability = 3500000, Category = GoldRush.Items.Category.ORE};
+            public static ResourceConfig Stone = new ResourceConfig { Name = "Stone", Worth = 1, Probability = 3500000, Category = GoldRush.Items.Category.ORE };
             public static ResourceConfig Copper = new ResourceConfig { Name = "Copper", Worth = 5, Probability = 2000000, Category = GoldRush.Items.Category.ORE };
             public static ResourceConfig Iron = new ResourceConfig { Name = "Iron", Worth = 20, Probability = 1500000, Category = GoldRush.Items.Category.ORE };
             public static ResourceConfig Silver = new ResourceConfig { Name = "Silver", Worth = 100, Probability = 1000000, Category = GoldRush.Items.Category.ORE };
@@ -68,7 +72,7 @@ namespace GoldRush
             public static ResourceConfig TongtwistaFlower = new ResourceConfig { Name = "Tongtwista flower", Worth = 1000000, Probability = 100, Category = GoldRush.Items.Category.INGREDIENT };
             public static ResourceConfig Thornberries = new ResourceConfig { Name = "Thornberries", Worth = 1000, Probability = 2000, Category = GoldRush.Items.Category.INGREDIENT };
             public static ResourceConfig Transfruit = new ResourceConfig { Name = "Transfruit", Worth = 5000, Probability = 1000, Category = GoldRush.Items.Category.INGREDIENT };
-            public static ResourceConfig MeltingNuts = new ResourceConfig { Name = "Melting nuts", Worth = 10000, Probability = 500, Category = GoldRush.Items.Category.INGREDIENT};
+            public static ResourceConfig MeltingNuts = new ResourceConfig { Name = "Melting nuts", Worth = 10000, Probability = 500, Category = GoldRush.Items.Category.INGREDIENT };
             public static ItemConfig EmptyVial = new ItemConfig { Name = "Empty vial", Worth = 500, Category = GoldRush.Items.Category.CRAFTING };
             public static ItemConfig Gunpowder = new ItemConfig { Name = "Gunpowder", Worth = 1250, Category = GoldRush.Items.Category.CRAFTING };
             public static ResourceConfig Logs = new ResourceConfig { Name = "Logs", Worth = 250, Probability = 0, Category = GoldRush.Items.Category.CRAFTING };
@@ -81,7 +85,7 @@ namespace GoldRush
             public static ItemConfig CopperWire = new ItemConfig { Name = "Copper wire", Worth = 250, Category = GoldRush.Items.Category.CRAFTING };
             public static ItemConfig Tnt = new ItemConfig { Name = "TNT", Worth = 100000, Category = GoldRush.Items.Category.CRAFTING };
 
-            
+
         }
         // 600-900
         public static class Gatherers
@@ -90,29 +94,53 @@ namespace GoldRush
             {
                 public GathererConfig()
                 {
-                    if (LowestId < 600 || LowestId > 900) LowestId = 600;
+                    if (LowestId < 600 || LowestId > 900)
+                    {
+                        LowestId = 600;
+                        Id = 601;
+                    }
                 }
                 public double BaseResourcesPerSecond;
             }
 
             public static GathererConfig Player = new GathererConfig() { Name = "Player", BaseResourcesPerSecond = 1 };
-            public static GathererConfig Miner = new GathererConfig() {Name = "Miner", BaseResourcesPerSecond = 0.5};
-            public static GathererConfig Lumberjack = new GathererConfig() { Name = "Lumberjack", BaseResourcesPerSecond = 0.5};
-            public static GathererConfig Drill = new GathererConfig() { Name = "Drill", BaseResourcesPerSecond = 2.5};
-            public static GathererConfig Crusher = new GathererConfig() { Name = "Crusher", BaseResourcesPerSecond = 5};
-            public static GathererConfig Excavator = new GathererConfig() { Name = "Excavator", BaseResourcesPerSecond = 10};
-            public static GathererConfig MegaDrill = new GathererConfig() { Name = "Mega Drill", BaseResourcesPerSecond = 20};
-            public static GathererConfig Pumpjack = new GathererConfig() { Name = "Pumpjack", BaseResourcesPerSecond = 0.2};
-            public static GathererConfig BigTexan = new GathererConfig() { Name = "Big Texan", BaseResourcesPerSecond = 0.5};
+            public static GathererConfig Miner = new GathererConfig() { Name = "Miner", BaseResourcesPerSecond = 0.5 };
+            public static GathererConfig Lumberjack = new GathererConfig() { Name = "Lumberjack", BaseResourcesPerSecond = 0.5 };
+            public static GathererConfig Drill = new GathererConfig() { Name = "Drill", BaseResourcesPerSecond = 2.5 };
+            public static GathererConfig Crusher = new GathererConfig() { Name = "Crusher", BaseResourcesPerSecond = 5 };
+            public static GathererConfig Excavator = new GathererConfig() { Name = "Excavator", BaseResourcesPerSecond = 10 };
+            public static GathererConfig MegaDrill = new GathererConfig() { Name = "Mega Drill", BaseResourcesPerSecond = 20 };
+            public static GathererConfig Pumpjack = new GathererConfig() { Name = "Pumpjack", BaseResourcesPerSecond = 0.2 };
+            public static GathererConfig BigTexan = new GathererConfig() { Name = "Big Texan", BaseResourcesPerSecond = 0.5 };
         }
         // 900-1200
+        public static class Processors
+        {
+            public class ProcessorConfig : Config
+            {
+                public ProcessorConfig()
+                {
+                    if (LowestId < 900 || LowestId > 1200)
+                    {
+                        LowestId = 900;
+                        Id = 901;
+                    }
+                }
+                public int BaseCapacity;
+            }
+
+            public static ProcessorConfig Furnace = new ProcessorConfig() { Name = "Furnace", BaseCapacity=100 };
+            public static ProcessorConfig Cauldron = new ProcessorConfig() { Name = "Cauldron", BaseCapacity=1 };
+        }
+
+        // no ids
         public static class StoreItems
         {
             public class StoreItemConfig
             {
                 public StoreItemConfig()
                 {
-                    if (LowestId < 900 || LowestId > 1200) LowestId = 900;
+
                 }
 
                 public int BasePrice;
@@ -123,10 +151,10 @@ namespace GoldRush
                 public double Factor = 1;
             }
 
-            public static StoreItemConfig EmptyVial = new StoreItemConfig() { BasePrice = 1000, Category = Store.Category.ITEMS, MaxQuantity=0 };
-            public static StoreItemConfig Gunpowder = new StoreItemConfig() { BasePrice = 2500, Category = Store.Category.ITEMS, MaxQuantity=0 };
-            public static StoreItemConfig Researcher = new StoreItemConfig() { BasePrice = 1000000, Category = Store.Category.GATHERING};
-            public static StoreItemConfig Foreman = new StoreItemConfig(){BasePrice = 250000,Category = Store.Category.GATHERING};
+            public static StoreItemConfig EmptyVial = new StoreItemConfig() { BasePrice = 1000, Category = Store.Category.ITEMS, MaxQuantity = 0 };
+            public static StoreItemConfig Gunpowder = new StoreItemConfig() { BasePrice = 2500, Category = Store.Category.ITEMS, MaxQuantity = 0 };
+            public static StoreItemConfig Researcher = new StoreItemConfig() { BasePrice = 1000000, Category = Store.Category.GATHERING };
+            public static StoreItemConfig Foreman = new StoreItemConfig() { BasePrice = 250000, Category = Store.Category.GATHERING };
             public static StoreItemConfig Botanist = new StoreItemConfig() { BasePrice = 100000000, Category = Store.Category.GATHERING };
 
             public static StoreItemConfig Miner = new StoreItemConfig() { BasePrice = 1000, Category = Store.Category.MACHINES, MaxQuantity = 10, Factor = 1.15 };
@@ -137,33 +165,44 @@ namespace GoldRush
             public static StoreItemConfig Pumpjack = new StoreItemConfig() { BasePrice = 100000, Category = Store.Category.MACHINES, MaxQuantity = 100, Factor = 1.15 };
             public static StoreItemConfig BigTexan = new StoreItemConfig() { BasePrice = 2500000, Category = Store.Category.MACHINES, MaxQuantity = 100, Factor = 1.15 };
 
+            public static StoreItemConfig ChainsawsT1 = new StoreItemConfig() { BasePrice = 0, Category = Store.Category.CRAFTING };
+            public static StoreItemConfig ChainsawsT2 = new StoreItemConfig() { BasePrice = 0, Category = Store.Category.CRAFTING };
+            public static StoreItemConfig ChainsawsT3 = new StoreItemConfig() { BasePrice = 0, Category = Store.Category.CRAFTING };
+
             public static StoreItemConfig ClickUpgradeT1 = new StoreItemConfig() { BasePrice = 1000, Category = Store.Category.MINING };
             public static StoreItemConfig ClickUpgradeT2 = new StoreItemConfig() { BasePrice = 100000, Category = Store.Category.MINING };
             public static StoreItemConfig ClickUpgradeT3 = new StoreItemConfig() { BasePrice = 1000000, Category = Store.Category.MINING };
+
         }
         // 300-600
         public static class Upgrades
         {
 
-            public class UpgradeConfig:Config{
-                
+            public class UpgradeConfig : Config
+            {
+
             }
 
             public class BuffConfig : UpgradeConfig
             {
                 public BuffConfig()
                 {
-                    if (LowestId < 300 || LowestId > 600) LowestId = 300;
+                    if (LowestId < 300 || LowestId > 600)
+                    {
+                        LowestId = 300;
+                        Id = 301;
+                    }
                 }
                 public int Duration;
             }
 
-            public static BuffConfig SpeechBuff = new BuffConfig() { Name = "SpeechBuff", Duration=45 }; 
+            public static BuffConfig SpeechBuff = new BuffConfig() { Name = "SpeechBuff", Duration = 45 };
             public static UpgradeConfig Backpack = new UpgradeConfig() { Name = "Backpack" };
             public static UpgradeConfig Researcher = new UpgradeConfig() { Name = "Researcher" };
             public static UpgradeConfig Botanist = new UpgradeConfig() { Name = "Botanist" };
             public static UpgradeConfig Foreman = new UpgradeConfig() { Name = "Foreman" };
             public static UpgradeConfig ChainsawsT1 = new UpgradeConfig() { Name = "Chainsaws" };
+            public static UpgradeConfig ChainsawsT2 = new UpgradeConfig() { Name = "Steel Chainsaws" };
 
             public static UpgradeConfig ClickUpgradeT1 = new UpgradeConfig() { Name = "Stone Cursor" };
             public static UpgradeConfig ClickUpgradeT2 = new UpgradeConfig() { Name = "Copper Cursor" };

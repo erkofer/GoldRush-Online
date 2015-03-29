@@ -13,8 +13,9 @@ module Connection {
         Chat.log(roughSizeOfObject(JSON.stringify(Komodo.decode(msg))) - roughSizeOfObject(msg) + " bytes saved.");
         msg = Komodo.decode(msg);
         // CHAT MESSAGES
-        if (msg.Message != null) {
-            Chat.receiveGlobalMessage(msg.Message.Sender, msg.Message.Text, msg.Message.Time, msg.Message.Permissions);
+        if (msg.Messages != null) {
+            receiveGlobalMessages(msg.Messages);
+
         }
         // GAME SCHEMA
         if (msg.GameSchema != null) {
@@ -34,9 +35,10 @@ module Connection {
         if (msg.ConfigItems != null) {
             updateInventoryConfigurations(msg.ConfigItems);
         }
-        // Crafting
-        //temp
-        Crafting.addCraftingItem();
+        // PROCESSOR UPDATES
+        if (msg.Processors != null) {
+            updateProcessors(msg.Processors);
+        }
     });
 
     export function restart() {
@@ -82,6 +84,34 @@ module Connection {
         for (var i = 0; i < schema.StoreItems.length; i++) {
             var item = schema.StoreItems[i];
             Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.MaxQuantity);
+        }
+
+        for (var i = 0; i < schema.Processors.length; i++) {
+            var processor = schema.Processors[i];
+            console.log(processor.Name);
+            Crafting.addProcessor(processor.Id, processor.Name);
+            for (var r = 0; r < processor.Recipes.length; r++) {
+                Crafting.addProcessorRecipe(processor.Id, processor.Recipes[r].Ingredients, processor.Recipes[r].Resultants);
+            }
+        }
+
+        for (var i = 0; i < schema.CraftingItems.length; i++) {
+            var item = schema.CraftingItems[i];
+            Crafting.addRecipe(item.Id, item.Ingredients, item.Resultants, item.IsItem);
+        }
+    }
+
+    function receiveGlobalMessages(messages: any) {
+        for (var i = 0; i < messages.length; i++) {
+            var msg = messages[i];
+            Chat.receiveGlobalMessage(msg.Sender, msg.Text, msg.Time, msg.Permissions);
+        }
+    }
+
+    function updateProcessors(processors: any) {
+        for (var i = 0; i < processors.length; i++) {
+            var processor = processors[i];
+            Crafting.updateProcessor(processor.Id, processor.SelectedRecipe, processor.OperationDuration, processor.CompletedOperations, processor.TotalOperations,processor.Capacity);
         }
     }
 
@@ -137,6 +167,21 @@ module Connection {
         var inventoryAction = new Komodo.ClientActions.InventoryAction();
         inventoryAction.SellAll = true;
         actions.InventoryActions.push(inventoryAction);
+    }
+
+    export function craftRecipe(id: number, quantity: number) {
+        var craftingAction = new Komodo.ClientActions.CraftingAction();
+        craftingAction.Id = id;
+        craftingAction.Quantity = quantity;
+        actions.CraftingActions.push(craftingAction);
+    }
+
+    export function processRecipe(id: number, recipeIndex: number, iterations: number) {
+        var processingAction = new Komodo.ClientActions.ProcessingAction();
+        processingAction.Id = id;
+        processingAction.RecipeIndex = recipeIndex;
+        processingAction.Iterations = iterations;
+        actions.ProcessingActions.push(processingAction);
     }
 
     export function sendGlobalMessage(message: string) {

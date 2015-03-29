@@ -459,7 +459,10 @@ body{
 table{
    box-shadow:2px 2px 5px black;
    border-collapse:collapse;
+   color:white;
 }
+
+
 
 td {
     text-align:center;
@@ -614,4 +617,53 @@ td {
 /*Crafting*/
 .block-table{
     width:100%;
+    margin-bottom:5px;
+}
+
+.progress-bar-container{
+    margin:5px;
+    padding:2px;
+    height:25px;
+    border-radius:13px;
+
+    position:relative;
+
+    background: rgb(255,255,255); /* Old browsers */
+    background: -moz-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(216,216,216,1) 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,1)), color-stop(100%,rgba(216,216,216,1))); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(216,216,216,1) 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(216,216,216,1) 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(216,216,216,1) 100%); /* IE10+ */
+    background: linear-gradient(to bottom, rgba(255,255,255,1) 0%,rgba(216,216,216,1) 100%); /* W3C */
+    
+    overflow:hidden;
+}
+
+.progress-bar {
+    height:25px;
+    background: #9dd53a; /* Old browsers */
+    background: -moz-linear-gradient(top, #9dd53a 0%, #a1d54f 29%, #80c217 71%, #80c217 71%, #7cbc0a 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#9dd53a), color-stop(29%,#a1d54f), color-stop(71%,#80c217), color-stop(71%,#80c217), color-stop(100%,#7cbc0a)); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, #9dd53a 0%,#a1d54f 29%,#80c217 71%,#80c217 71%,#7cbc0a 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top, #9dd53a 0%,#a1d54f 29%,#80c217 71%,#80c217 71%,#7cbc0a 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top, #9dd53a 0%,#a1d54f 29%,#80c217 71%,#80c217 71%,#7cbc0a 100%); /* IE10+ */
+    background: linear-gradient(to bottom, #9dd53a 0%,#a1d54f 29%,#80c217 71%,#80c217 71%,#7cbc0a 100%); /* W3C */
+    
+    border-radius:13px;
+}
+
+.progress-bar-text-container {
+    width:100%;
+    z-index:1;
+    position:absolute;
+    top:0;
+    left:0;
+}
+
+.progress-bar-text{
+    width:100%;
+    text-align:center;
+    font-size:25px;
+    color:black;
+    text-shadow:1px 1px 1px white;
 }

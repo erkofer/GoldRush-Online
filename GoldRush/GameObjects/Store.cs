@@ -34,6 +34,12 @@ namespace GoldRush
             Foreman = new StoreItem(game.Upgrades.Foreman, GameConfig.StoreItems.Foreman);
             All.Add(Foreman.Item.Id, Foreman);
 
+            ChainsawsT1 = new StoreItem(game.Upgrades.ChainsawsT1, GameConfig.StoreItems.ChainsawsT1);
+            All.Add(ChainsawsT1.Item.Id, ChainsawsT1);
+
+            ChainsawsT2 = new StoreItem(game.Upgrades.ChainsawsT2, GameConfig.StoreItems.ChainsawsT2);
+            All.Add(ChainsawsT2.Item.Id, ChainsawsT2);
+
             ClickUpgradeT1 = new StoreItem(game.Upgrades.ClickUpgradeT1, GameConfig.StoreItems.ClickUpgradeT1);
             All.Add(ClickUpgradeT1.Item.Id, ClickUpgradeT1);
 
@@ -43,6 +49,7 @@ namespace GoldRush
             ClickUpgradeT3 = new StoreItem(game.Upgrades.ClickUpgradeT3, GameConfig.StoreItems.ClickUpgradeT3);
             All.Add(ClickUpgradeT3.Item.Id, ClickUpgradeT3);
 
+            
             // Gatherers
 
             Miner = new StoreItem(game.Gatherers.Miner, GameConfig.StoreItems.Miner);
@@ -96,6 +103,9 @@ namespace GoldRush
         StoreItem ClickUpgradeT2;
         StoreItem ClickUpgradeT3;
 
+        StoreItem ChainsawsT1;
+        StoreItem ChainsawsT2;
+
         internal class StoreItem
         {
             public GameObjects.GameObject Item;
@@ -125,6 +135,8 @@ namespace GoldRush
 
             public void Purchase(int quantity)
             {
+                if (Category == Category.CRAFTING) return;
+
                 if ((Item.Quantity+quantity) > MaxQuantity && MaxQuantity > 0) return;
 
                 int price = GetPrice();

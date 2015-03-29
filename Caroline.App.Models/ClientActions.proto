@@ -40,4 +40,17 @@ message ClientActions
 		optional PurchaseAction Purchase=1;
 	}
 	repeated StoreAction StoreActions = 3;
+
+	message CraftingAction{
+		optional int32 Id=1;
+		optional int32 Quantity=2;
+	}
+	repeated CraftingAction CraftingActions =4;
+
+	message ProcessingAction {
+		optional int32 Id=1;
+		optional int32 RecipeIndex=2;
+		optional int32 Iterations=3;
+	}
+	repeated ProcessingAction ProcessingActions=5;
 }
