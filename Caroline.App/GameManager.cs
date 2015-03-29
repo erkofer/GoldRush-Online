@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Diagnostics;
+using System.Threading.Tasks;
 using Caroline.App.Models;
 using Caroline.Persistence;
 using Caroline.Persistence.Models;
@@ -15,46 +16,47 @@ namespace Caroline.App
         public async Task<GameState> Update(GameSessionEndpoint endpoint, ClientActions input = null)
         {
             var userId = endpoint.GameId;
-            UpdateDto updateDto;
             var db = await CarolineRedisDb.CreateAsync();
 
             var games = db.Games;
-            var userLocks = db.UserLocks;
 
             // lock the user and its games
             var user = new User { Id = userId };
-            using (userLocks.Lock(user))
-            {
-                // get game save, create it if it doesn't exist
-                Game save;
-                save = await games.Get(new Game { Id = userId });
-                if (save == null)
-                    await games.Set(save = new Game { Id = userId });
+            var userLock = await db.UserLocks.Lock(user);
 
-                var saveData = save.SaveData;
-                var saveObject = saveData != null ? ProtoBufHelpers.Deserialize<SaveState>(saveData) : null;
-                var session = await db.GameSessions.Get(new GameSession { EndPoint = endpoint });
+            // get game save, if it doesn't exist then use a new game
+            Game save;
+            save = await games.Get(save = new Game { Id = userId }) ?? save;
+            
+            var saveData = save.SaveData;
+            var saveObject = saveData != null ? ProtoBufHelpers.Deserialize<SaveState>(saveData) : null;
+            var sessionId = new GameSession { EndPoint = endpoint };
+            var session = await db.GameSessions.Get(sessionId);
 
-                // load game save into an game instance
-                var game = _sessionFactory.Create();
-                game.Load(new LoadArgs { SaveState = saveObject });
+            // load game save into an game instance
+            var game = _sessionFactory.Create();
+            game.Load(new LoadArgs { SaveState = saveObject });
 
-                // update save with new input
-                updateDto = game.Update(new UpdateArgs { ClientActions = input, Session = session });
+            // update save with new input
+            var updateDto = game.Update(new UpdateArgs { ClientActions = input, Session = session });
 
-                // save to the database
-                // session gets modified by update
+            // save to the database
+            // session gets modified by update
+            if (session != null)
                 await db.GameSessions.Set(session);
-                var saveDto = game.Save();
-                var saveState = saveDto.SaveState;
-                if (saveState != null)
-                {
-                    // TODO: dont serialize twice
-                    save.SaveData = ProtoBufHelpers.SerializeToString(saveState);
-                    await games.Set(save);
-                }
-
+            else await db.GameSessions.Delete(sessionId);
+            var saveDto = game.Save();
+            var saveState = saveDto.SaveState;
+            if (saveState != null)
+            {
+                // TODO: dont serialize twice
+                save.SaveData = ProtoBufHelpers.SerializeToString(saveState);
+                if(!await games.Set(save))
+                    Debug.Assert(false);
             }
+
+            // dispose lock on user, no more reading/saving
+            await userLock.DisposeAsync();
 
             GameState dataToSend = null;
             if (updateDto != null)

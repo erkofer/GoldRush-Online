@@ -20,17 +20,18 @@ namespace Caroline.Persistence.Redis
             _scripts = db.Scripts;
         }
 
-        public async Task<IDisposable> Lock(TEntity id)
+        public async Task<IAsyncDisposable> Lock(TEntity id)
         {
             RedisKey tid = Identifier.GetId(id);
             for (int i = 0; i < 15; i++) // run 1.5x times the length of _defaultExpiry
             {
                 var lockSucess = await _db.TryLock(_scripts, tid, _defaultExpiry);
                 if (lockSucess.IsLockAquired)
-                    return new DisposableCallback(async () => await _db.KeyDeleteAsync(tid));
+                    return new DisposableCallback(() => _db.KeyDeleteAsync(tid));
 
                 // locking failed, wait a random backoff
-                var delay = TimeSpan.FromSeconds(_defaultExpiry.Ticks * RandomSingleton.NextDouble() * .05 + _defaultExpiry.Ticks * .125);
+                var randDouble = RandomSingleton.NextDouble();
+                var delay = TimeSpan.FromSeconds(i * ( _defaultExpiry.TotalMilliseconds * randDouble * .05 + _defaultExpiry.TotalMilliseconds * .125) / 5);
                 await Task.Delay(delay);
             }
 
@@ -38,21 +39,21 @@ namespace Caroline.Persistence.Redis
             throw new TimeoutException();
         }
 
-        class DisposableCallback : IDisposable
+        class DisposableCallback : IAsyncDisposable
         {
-            Action _callback;
+            Func<Task> _callback;
 
-            public DisposableCallback([NotNull] Action callback)
+            public DisposableCallback([NotNull] Func<Task> callback)
             {
                 if (callback == null) throw new ArgumentNullException("callback");
                 _callback = callback;
             }
 
-            public void Dispose()
+            public async Task DisposeAsync()
             {
                 // nullify _callback so that it is only called once during dispose.
                 if (_callback == null) return;
-                _callback();
+                await _callback();
                 _callback = null;
             }
         }
@@ -60,6 +61,6 @@ namespace Caroline.Persistence.Redis
 
     public interface IPessimisticLockTable<in TEntity>
     {
-        Task<IDisposable> Lock(TEntity id);
+        Task<IAsyncDisposable> Lock(TEntity id);
     }
 }

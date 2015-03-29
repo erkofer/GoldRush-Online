@@ -2,20 +2,19 @@
 -- Set a lock
 --
 
-local key     = KEYS[0] -- key
-local ttl     = ARGS[0] -- ttl in ms
-
+local key     = KEYS[1] -- key
+local ttl     = tonumber(ARGV[1]) -- ttl in ms
 -- Returns {bool isLockAquired, int pttl}
 
-local lockSet = redis.call('SETNX', key, "")
-local oldTtl;
+local lockSet = redis.call('SETNX', key, '')
 
 if lockSet == 1 then -- if we aquired the lock
     redis.call('PEXPIRE', key, ttl)
-    return {lockSet, ttl}
+    return {true, ttl}
 else -- lock was already taken
-	oldTtl = redis.call('PTTL');
-	if(oldTtl == -1 || oldTtl == -2)
-		oldTtl = 0;
-    return {lockSet, oldTtl}
+	local oldTtl = redis.call('PTTL', key)
+	if oldTtl == -1 or oldTtl == -2 then
+		oldTtl = 0
+	end
+    return {false, oldTtl}
 end

@@ -63,6 +63,7 @@
     <Compile Include="Extensions\DatabaseAreaEx.cs" />
     <Compile Include="Extensions\IntEx.cs" />
     <Compile Include="Extensions\LongEx.cs" />
+    <Compile Include="IAsyncDisposable.cs" />
     <Compile Include="IDatabaseArea.cs" />
     <Compile Include="IAutoKeyEntityTable.cs" />
     <Compile Include="IEntityTable.cs" />
@@ -94,7 +95,7 @@
     <EmbeddedResource Include="RedisScripts\RateLimit.lua" />
     <EmbeddedResource Include="RedisScripts\StringGetSetExpiry.lua" />
     <EmbeddedResource Include="RedisScripts\IncrementExpiry.lua" />
-    <None Include="RedisScripts\TryLock.lua" />
+    <EmbeddedResource Include="RedisScripts\TryLock.lua" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
