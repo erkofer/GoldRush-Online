@@ -47,15 +47,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="APIs\IKomodoSession.cs" />
+    <Compile Include="APIs\KomodoDtos.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="GameObjects\Crafting.cs" />
     <Compile Include="GameObjects\GameConfig.cs" />
-    <Compile Include="APIs\GameFactory.cs" />
+    <Compile Include="APIs\KomodoSessionFactory.cs" />
     <Compile Include="GameObjects\GameObjects.cs" />
     <Compile Include="GameObjects\Gatherers.cs" />
-    <Compile Include="APIs\IGame.cs" />
     <Compile Include="GameObjects\Items.cs" />
     <Compile Include="GameObjects\Store.cs" />
+    <Compile Include="APIs\KomodoSession.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GameObjects\Upgrades.cs" />
   </ItemGroup>

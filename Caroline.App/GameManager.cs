@@ -3,51 +3,58 @@ using Caroline.App.Models;
 using Caroline.Persistence;
 using Caroline.Persistence.Models;
 using Caroline.Persistence.Redis;
-using GoldRush;
+using GoldRush.APIs;
 
 namespace Caroline.App
 {
     public class GameManager : IGameManager
     {
-        readonly GameFactory _gameFactory = new GameFactory();
+        readonly KomodoSessionFactory _sessionFactory = new KomodoSessionFactory();
         readonly GoldRushCache _goldRushCache = new GoldRushCache();
 
         public async Task<GameState> Update(GameSessionEndpoint endpoint, ClientActions input = null)
         {
             var userId = endpoint.GameId;
-            GameState dataToSend;
+            UpdateDto updateDto;
             var db = await CarolineRedisDb.CreateAsync();
 
             var games = db.Games;
             var userLocks = db.UserLocks;
 
             // lock the user and its games
-            var user = new User {Id = userId};
+            var user = new User { Id = userId };
             using (userLocks.Lock(user))
             {
                 // get game save, create it if it doesn't exist
                 Game save;
-                save = await games.Get(new Game {Id = userId});
+                save = await games.Get(new Game { Id = userId });
                 if (save == null)
-                    await games.Set(save = new Game {Id = userId});
+                    await games.Set(save = new Game { Id = userId });
 
                 var saveData = save.SaveData;
                 var saveObject = saveData != null ? ProtoBufHelpers.Deserialize<SaveState>(saveData) : null;
-                var session = db.GameSessions.Get(new GameSession {EndPoint = endpoint});
+                var session = db.GameSessions.Get(new GameSession { EndPoint = endpoint });
 
                 // load game save into an game instance
-                var game = _gameFactory.Create();
-                game.Load(saveObject);
+                var game = _sessionFactory.Create();
+                game.Load(new LoadArgs { SaveState = saveObject });
 
                 // update save with new input
-                dataToSend = game.Update(input);
+                updateDto = game.Update(new UpdateArgs { ClientActions = input });
 
                 // save to the database
                 var saveDto = game.Save();
-                save.SaveData = ProtoBufHelpers.SerializeToString(saveDto);
-                await games.Set(save);
+                var saveState = saveDto.SaveState;
+                if (saveState != null)
+                {
+                    save.SaveData = ProtoBufHelpers.SerializeToString(saveState);
+                    await games.Set(save);
+                }
             }
 
+            GameState dataToSend = null;
+            if (updateDto != null)
+                dataToSend = updateDto.GameState;
             if (dataToSend == null)
                 dataToSend = new GameState();
 
