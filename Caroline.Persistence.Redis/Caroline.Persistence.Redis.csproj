@@ -74,9 +74,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProtoBufHelpers.cs" />
     <Compile Include="ProtoBufSerializer.cs" />
+    <Compile Include="RandomSingleton.cs" />
     <Compile Include="ReadOnlyTypeSafeDictionary.cs" />
     <Compile Include="RedisEntityTable.cs" />
-    <Compile Include="RedisTable.cs" />
+    <Compile Include="RedisPessimisticLockTable.cs" />
+    <Compile Include="RedisScripts\TryLockResult.cs" />
+    <Compile Include="RedisStringTable.cs" />
     <Compile Include="RootDatabaseArea.cs" />
     <Compile Include="RedisDbMultiplexer.cs" />
     <Compile Include="AutoKeyRedisEntityTable.cs" />
@@ -85,7 +88,9 @@
     <Compile Include="SetMode.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
     <EmbeddedResource Include="RedisScripts\RateLimit.lua" />
     <EmbeddedResource Include="RedisScripts\StringGetSetExpiry.lua" />
     <EmbeddedResource Include="RedisScripts\IncrementExpiry.lua" />

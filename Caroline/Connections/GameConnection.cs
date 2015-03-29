@@ -19,8 +19,14 @@ namespace Caroline.Connections
         protected override async Task OnConnected(IRequest request, string connectionId)
         {
             await AnonymousProfileApi.GenerateAnonymousProfileIfNotAuthenticated(request.GetHttpContext());
+            
+            var userId = HttpContext.Current.User.Identity.GetUserId<long>();
+            IpEndpoint endpoint;
+            if(!IpEndpoint.TryParse(request.Environment, out endpoint))
+                throw new Exception("Can not get IP addresses from owin environment.");
+            var gameEndpoint = new GameSessionEndpoint(endpoint, HttpContext.Current.User.Identity.GetUserId<long>());
 
-            var state = await _gameManager.Update(HttpContext.Current.User.Identity.GetUserId<long>(), connectionId);
+            var state = await _gameManager.Update(gameEndpoint);
             await Connection.Send(connectionId, ProtoBufHelpers.SerializeToString(state));
         }
 
@@ -30,7 +36,12 @@ namespace Caroline.Connections
 
             if (actions.SocialActions != null) await Socialize(request, connectionId, actions);
 
-            var state = await _gameManager.Update(HttpContext.Current.User.Identity.GetUserId<long>(), connectionId, actions);
+            IpEndpoint endpoint;
+            if (!IpEndpoint.TryParse(request.Environment, out endpoint))
+                throw new Exception("Cant get IP address of environment");
+            var gameEndpoint = new GameSessionEndpoint(endpoint, HttpContext.Current.User.Identity.GetUserId<long>());
+
+            var state = await _gameManager.Update(gameEndpoint, actions);
             await Connection.Send(connectionId, ProtoBufHelpers.SerializeToString(state));
         }
 

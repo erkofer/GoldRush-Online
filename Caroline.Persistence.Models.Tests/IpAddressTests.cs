@@ -10,8 +10,8 @@ namespace Caroline.Persistence.Models.Tests
         {
             var expected = "251:1312:3145414:13";
 
-            var val = new IpAddress(251, 1312, 3145414, 13);
-            var actual = IpAddress.Serialize(val);
+            var val = new IpEndpoint("251", "1312", "3145414", "13");
+            var actual = IpEndpoint.Serialize(val);
 
             Assert.AreEqual(expected, actual);
         }
@@ -19,11 +19,11 @@ namespace Caroline.Persistence.Models.Tests
         [TestMethod]
         public void DeserializeTest()
         {
-            var expected = new IpAddress(983274, 3131, 131311222, 313);
+            var expected = new IpEndpoint("983274", "3131", "131311222", "313");
 
             const string serial = "983274:3131:131311222:313";
 
-            var result = IpAddress.Deserialize(serial);
+            var result = IpEndpoint.Deserialize(serial);
 
             Assert.AreEqual(expected,result);
         }

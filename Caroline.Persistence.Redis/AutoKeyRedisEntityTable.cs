@@ -15,7 +15,7 @@ namespace Caroline.Persistence.Redis
         readonly TimeSpan? _defaultExpiry;
 
         public AutoKeyRedisEntityTable(IDatabaseArea db, ILongTable idIncrementDb, RedisKey idIncrementKey, ISerializer<TEntity> serializer, IIdentifier<TEntity, long> identifier, TimeSpan? defaultExpiry = null)
-            : base(serializer, identifier)
+            : base(serializer, new LongIdentifier<TEntity>(identifier))
         {
             _db = db;
             _scripts = db.Scripts;
@@ -27,7 +27,7 @@ namespace Caroline.Persistence.Redis
         public async Task<TEntity> Get(TEntity id)
         {
             var longId = Identifier.GetId(id);
-            var entity = await _db.StringGetAsync(longId.ToStringInvariant());
+            var entity = await _db.StringGetAsync(longId);
             return Deserialize(entity, longId);
         }
 
@@ -40,12 +40,12 @@ namespace Caroline.Persistence.Redis
                 case SetMode.Add:
                     when = When.NotExists;
                     var longKey = await _idIncrementDb.IncrementAsync(_idIncrementKey);
-                    Identifier.SetId(entity, longKey);
                     key = longKey.ToStringInvariant();
+                    Identifier.SetId(entity, key);
                     break;
                 case SetMode.Overwrite:
                     when = When.Exists;
-                    key = Identifier.GetId(entity).ToStringInvariant();
+                    key = Identifier.GetId(entity);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException("mode");
@@ -61,8 +61,7 @@ namespace Caroline.Persistence.Redis
 
         public async Task<TEntity> GetSet(TEntity entity, TimeSpan? expiry = null)
         {
-            var id = Identifier.GetId(entity);
-            var key = id.ToStringInvariant();
+            var key = Identifier.GetId(entity);
             var value = Serializer.Serialize(entity);
             expiry = expiry ?? _defaultExpiry;
             RedisValue previous;
@@ -70,12 +69,12 @@ namespace Caroline.Persistence.Redis
                 previous = await _db.StringGetSetAsync(key, value);
             else
                 previous = await _db.StringGetSetExpiryAsync(_scripts, key, value, expiry.Value);
-            return Deserialize(previous, id);
+            return Deserialize(previous, key);
         }
 
         public Task<bool> Delete(TEntity id)
         {
-            return _db.KeyDeleteAsync(Identifier.GetId(id).ToStringInvariant());
+            return _db.KeyDeleteAsync(Identifier.GetId(id));
         }
     }
 }

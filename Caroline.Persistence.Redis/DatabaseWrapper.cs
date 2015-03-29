@@ -18,7 +18,9 @@ namespace Caroline.Persistence.Redis
         {
             if (impl == null) throw new ArgumentNullException("impl");
             _impl = impl;
+#pragma warning disable 612 // suppressed. RedisKey.Prepend() is prefered, but that mutates the RedisKey. + is pure but creates object allocations
             _prefix = prefix + ":";
+#pragma warning restore 612
             _scripts = scripts;
         }
 

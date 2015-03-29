@@ -11,7 +11,7 @@ namespace Caroline.Persistence.Redis
         readonly CarolineScriptsRepo _scripts;
         readonly TimeSpan? _defaultExpiry;
 
-        public RedisEntityTable(IDatabaseArea db, ISerializer<TEntity> serializer, IIdentifier<TEntity, string> identifier, TimeSpan? defaultExpiry = null)
+        public RedisEntityTable(IDatabaseArea db, ISerializer<TEntity> serializer, IIdentifier<TEntity, RedisKey> identifier, TimeSpan? defaultExpiry = null)
             : base(serializer, identifier)
         {
             _db = db;
@@ -57,15 +57,15 @@ namespace Caroline.Persistence.Redis
     public abstract class RedisEntityTableBase<TEntity, TId>
     {
         public ISerializer<TEntity> Serializer { get; private set; }
-        public IIdentifier<TEntity, TId> Identifier { get; private set; }
+        public IIdentifier<TEntity, RedisKey> Identifier { get; private set; }
 
-        public RedisEntityTableBase(ISerializer<TEntity> serializer, IIdentifier<TEntity, TId> identifier)
+        public RedisEntityTableBase(ISerializer<TEntity> serializer, IIdentifier<TEntity, RedisKey> identifier)
         {
             Serializer = serializer;
             Identifier = identifier;
         }
 
-        protected TEntity Deserialize(RedisValue value, TId id)
+        protected TEntity Deserialize(RedisValue value, RedisKey id)
         {
             if (value.IsNull) return default(TEntity);
 

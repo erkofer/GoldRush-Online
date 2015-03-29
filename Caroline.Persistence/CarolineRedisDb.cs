@@ -62,12 +62,15 @@ namespace Caroline.Persistence
                 Ids = ids = db.SetLong("idincr"),
                 Games = db.Set<Game>("g"),
                 Users = db.Set<User>("u", ids),
-                GameSessions = db.Set<GameSession>("c", TimeSpan.FromSeconds(60)),
+                UserLocks = db.SetLockLong<User>("u-l", TimeSpan.FromSeconds(10)),
+                GameSessions = db.Set<GameSession>("c", TimeSpan.FromMinutes(2)),
                 UserNames = db.SetString("uu"),
                 Logins = db.SetString("ul"),
                 Emails = db.SetString("ue")
             };
         }
+
+        public IPessimisticLockTable<User> UserLocks { get; set; }
 
         public ILongTable Ids { get; set; }
 

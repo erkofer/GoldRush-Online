@@ -1,15 +1,23 @@
 ﻿using Caroline.Persistence.Redis;
+using StackExchange.Redis;
 
 namespace Caroline.Persistence.Models
 {
-    public partial class GameSession : IIdentifiableEntity<string>
+    public partial class GameSession : IIdentifiableEntity<RedisKey>
     {
-        IpAddress EndPoint { get; set; }
-
-        string IIdentifiableEntity<string>.Id
+        public GameSession(GameSessionEndpoint endpoint)
         {
-            get { return IpAddress.Serialize(EndPoint); }
-            set { EndPoint = IpAddress.Deserialize(value); }
+            EndPoint = endpoint;
+        }
+
+        public GameSessionEndpoint EndPoint { get; set; }
+        
+        public long GameId { get; set; }
+
+        public RedisKey Id
+        {
+            get { return GameSessionEndpoint.Serialize(EndPoint); }
+            set { EndPoint = GameSessionEndpoint.Deserialize(value); }
         }
     }
 }
