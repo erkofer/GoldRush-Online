@@ -1,5 +1,4 @@
 ﻿using Caroline.Connections;
-using Microsoft.AspNet.SignalR;
 using Microsoft.Owin;
 using Owin;
 

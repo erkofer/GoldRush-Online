@@ -1,0 +1,32 @@
+package Caroline.Persistence.Models;
+
+import "csharp_options.proto";
+option (google.protobuf.csharp_file_options).namespace = "Caroline.Persistence.Models";
+
+option optimize_for = SPEED;
+
+message User
+{
+	optional string Email = 2;
+	optional string UserName = 3;
+	optional string PasswordHash = 4;
+    optional string SecurityStamp = 5;
+	optional bool IsAnonymous = 6;
+	repeated UserLogin Logins = 7;
+	optional bool EmailConfirmed = 8;
+	repeated UserClaim Claims = 9;
+	
+	// repeated long RetiredGameIds
+}
+
+message UserLogin
+{
+	optional string LoginProvider = 1;
+	optional string ProviderKey = 2;
+}
+
+message UserClaim
+{
+	optional string ClaimType = 1;
+	optional string ClaimValue = 2;
+}

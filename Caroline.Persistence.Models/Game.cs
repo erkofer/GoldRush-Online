@@ -1,8 +1,18 @@
-﻿namespace Caroline.Persistence.Models
+﻿using System.Globalization;
+using Caroline.Persistence.Redis;
+using Caroline.Persistence.Redis.Extensions;
+using StackExchange.Redis;
+
+namespace Caroline.Persistence.Models
 {
-    public class Game
+    public partial class Game : IIdentifiableEntity<RedisKey>
     {
-        public int Id { get; set; }
-        public string SaveData { get; set; }
+        public long Id { get; set; }
+
+        RedisKey IIdentifiableEntity<RedisKey>.Id
+        {
+            get { return Id.ToStringInvariant(); }
+            set { Id = long.Parse(value, CultureInfo.InvariantCulture); }
+        }
     }
 }

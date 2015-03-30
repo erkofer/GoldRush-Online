@@ -3,9 +3,9 @@ using System.Web;
 using Caroline.Api;
 using Caroline.App;
 using Caroline.App.Models;
-using Caroline.Areas.Api.Models;
 using Caroline.Persistence;
 using Caroline.Persistence.Models;
+using Caroline.Persistence.Redis;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.SignalR;
 using System;
@@ -18,8 +18,16 @@ namespace Caroline.Connections
 
         protected override async Task OnConnected(IRequest request, string connectionId)
         {
-            var state = await _gameManager.Update(HttpContext.Current.User.Identity.GetUserId(), connectionId);
-            await Connection.Send(connectionId, ProtoBufHelpers.Serialize(state));
+            await AnonymousProfileApi.GenerateAnonymousProfileIfNotAuthenticated(request.GetHttpContext());
+            
+            var userId = HttpContext.Current.User.Identity.GetUserId<long>();
+            IpEndpoint endpoint;
+            if(!IpEndpoint.TryParse(request.Environment, out endpoint))
+                throw new Exception("Can not get IP addresses from owin environment.");
+            var gameEndpoint = new GameSessionEndpoint(endpoint, HttpContext.Current.User.Identity.GetUserId<long>());
+
+            var state = await _gameManager.Update(gameEndpoint);
+            await Connection.Send(connectionId, ProtoBufHelpers.SerializeToString(state));
         }
 
         protected override async Task OnReceived(IRequest request, string connectionId, string data)
@@ -28,24 +36,23 @@ namespace Caroline.Connections
 
             if (actions.SocialActions != null) await Socialize(request, connectionId, actions);
 
-            var state = await _gameManager.Update(HttpContext.Current.User.Identity.GetUserId(), connectionId, actions);
-            await Connection.Send(connectionId, ProtoBufHelpers.Serialize(state));
+            IpEndpoint endpoint;
+            if (!IpEndpoint.TryParse(request.Environment, out endpoint))
+                throw new Exception("Cant get IP address of environment");
+            var gameEndpoint = new GameSessionEndpoint(endpoint, HttpContext.Current.User.Identity.GetUserId<long>());
+
+            var state = await _gameManager.Update(gameEndpoint, actions);
+            await Connection.Send(connectionId, ProtoBufHelpers.SerializeToString(state));
         }
 
-        protected override bool AuthorizeRequest(IRequest request)
-        {
-            // possibly extremely laggy
-            return AnonymousProfileApi.GenerateAnonymousProfileIfNotAuthenticated(request.GetHttpContext());
-        }
-
-        private async Task Socialize(IRequest request,string connectionId, ClientActions actions)
+        private async Task Socialize(IRequest request, string connectionId, ClientActions actions)
         {
             foreach (var action in actions.SocialActions)
             {
                 if (action.Chat != null)
                     if (action.Chat.GlobalMessage != null)
                     {
-                        var user = await GetUserName(request.GetHttpContext().User.Identity.GetUserId());
+                        var user = await GetUserName(request.GetHttpContext().User.Identity.GetUserId<long>());
                         if (!user.IsAnonymous)
                             SendGlobalChatMessage(user.UserName, action.Chat.GlobalMessage);
                         else
@@ -55,14 +62,11 @@ namespace Caroline.Connections
             }
         }
 
-        async Task<ApplicationUser> GetUserName(string userId)
+        async Task<User> GetUserName(long userId)
         {
-            var account = new AccountViewModel();
+            var db = await CarolineRedisDb.CreateAsync();
+            return await db.Users.Get(new User { Id = userId });
 
-            using (var work = new UnitOfWork())
-            {
-                return await work.Users.Get(userId);
-            }
         }
 
         private void SendGlobalChatMessage(string sender, string text)
@@ -74,7 +78,7 @@ namespace Caroline.Connections
         {
             string[] developers = new string[] { "Developer", "Hunter" };
             string[] moderators = new string[] { "scrublord" };
-            string[] server = new string[] {"Server"};
+            string[] server = new string[] { "Server" };
             var maxMessageLength = 220;
 
             var state = new GameState();
@@ -87,7 +91,7 @@ namespace Caroline.Connections
             if (Array.IndexOf(server, sender) != -1) message.Permissions = "server";
             state.Messages.Add(message);
             // TODO: Consider changing to allow message batching.
-            Connection.Broadcast(ProtoBufHelpers.Serialize(state));
+            Connection.Broadcast(ProtoBufHelpers.SerializeToString(state));
         }
 
         private void SendServerMessage(string connectionId, string text)
@@ -100,7 +104,7 @@ namespace Caroline.Connections
             message.Time = DateTime.UtcNow.ToShortTimeString();
             state.Messages.Add(message);
 
-            Connection.Send(connectionId, ProtoBufHelpers.Serialize(state));
+            Connection.Send(connectionId, ProtoBufHelpers.SerializeToString(state));
         }
     }
 }
