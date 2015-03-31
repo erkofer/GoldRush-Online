@@ -21,6 +21,10 @@
         return name.split(' ').join('_');
     }
 
+    export function ifNotDefault(value, callback) {
+        if (value != -100) callback();
+    }
+
     export function createButton(text, id): HTMLElement {
         var button;
         var textcontent;

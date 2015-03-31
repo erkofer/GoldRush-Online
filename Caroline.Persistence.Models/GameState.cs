@@ -1,4 +1,4 @@
-﻿namespace Caroline.App.Models
+﻿namespace Caroline.Persistence.Models
 {
     public partial class GameState : ICompressable<GameState>
     {

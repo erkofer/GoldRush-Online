@@ -1,5 +1,5 @@
-﻿using Caroline.App.Models;
-using Caroline.Persistence.Models;
+﻿using Caroline.Persistence.Models;
+using Caroline.App.Models;
 
 namespace GoldRush.APIs
 {

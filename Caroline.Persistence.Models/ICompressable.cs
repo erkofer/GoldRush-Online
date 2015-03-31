@@ -1,6 +1,6 @@
 ﻿using JetBrains.Annotations;
 
-namespace Caroline.App.Models
+namespace Caroline.Persistence.Models
 {
     public interface ICompressable<T>
     {

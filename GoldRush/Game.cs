@@ -1,5 +1,6 @@
-﻿using Caroline.App.Models;
-using System;
+﻿using System;
+using Caroline.Persistence.Models;
+using Caroline.App.Models;
 
 namespace GoldRush
 {
@@ -8,7 +9,6 @@ namespace GoldRush
         public Game()
         {
             objs = new GameObjects();
-            lastUpdate = UnixTimeNow();
             sendSchema = true;
         }
 
@@ -27,8 +27,16 @@ namespace GoldRush
             // TODO
             //return new GameState();
             var currentTime = UnixTimeNow();
-            objs.Update((int)((currentTime - lastUpdate) * 1000));
-            lastUpdate = currentTime;
+            if (lastUpdate == 0) 
+                lastUpdate = currentTime;
+
+            long timeSinceLastUpdate = currentTime - lastUpdate;
+            if (timeSinceLastUpdate > 0)
+            {
+                lastUpdate = currentTime;
+                objs.Update((int) timeSinceLastUpdate*1000);
+            }
+
 
 
             // CLIENT ACTIONS
@@ -241,6 +249,10 @@ namespace GoldRush
         public SaveState Save()
         {
             var saveState = new SaveState();
+
+            // Save last update time
+            saveState.LastUpdate = lastUpdate;
+
             foreach (var item in objs.Items.All)
             {
                 var stateItem = new SaveState.Item();
@@ -256,6 +268,19 @@ namespace GoldRush
                 configStateItem.Enabled = toSaveItem.IncludeInSellAll;
                 saveState.ItemConfigs.Add(configStateItem);
             }
+
+            foreach (var gatherer in objs.Gatherers.All)
+            {
+                var toSaveGatherer = gatherer.Value;
+                var saveStateGatherer = new SaveState.Gatherer();
+
+                saveStateGatherer.Id = toSaveGatherer.Id;
+                saveStateGatherer.Quantity = toSaveGatherer.Quantity;
+                saveStateGatherer.ResourceBuffer = toSaveGatherer.ResourceBuffer;
+
+                saveState.Gatherers.Add(saveStateGatherer);
+            }
+
             return saveState;
         }
 
@@ -272,11 +297,27 @@ namespace GoldRush
                         toLoadItem.PrestigeTimeTotal = item.PrestigeQuantity;
                         toLoadItem.LifeTimeTotal = item.AlltimeQuantity;
                     }
+                }
+                if (save.ItemConfigs != null)
+                {
                     foreach (var item in save.ItemConfigs)
                     {
                         var toLoadItem = objs.Items.All[item.Id];
                         toLoadItem.IncludeInSellAll = item.Enabled;
                     }
+                }
+                if (save.Gatherers != null)
+                {
+                    foreach (var gatherer in save.Gatherers)
+                    {
+                        var toLoadGatherer = objs.Gatherers.All[gatherer.Id];
+                        toLoadGatherer.Quantity = gatherer.Quantity;
+                        toLoadGatherer.ResourceBuffer = gatherer.ResourceBuffer;
+                    }
+                }
+                if (save.LastUpdate != null)
+                {
+                    lastUpdate = save.LastUpdate;
                 }
             }
         }

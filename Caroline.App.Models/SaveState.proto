@@ -20,4 +20,13 @@ message SaveState
 		optional bool Enabled=2;
 	}
 	repeated ItemConfig ItemConfigs=2;
+
+	message Gatherer {
+		optional int32 Id=1;
+		optional int32 Quantity=2;
+		optional double ResourceBuffer=3;
+	}
+	repeated Gatherer Gatherers=3;
+
+	optional int64 LastUpdate=4;
 }

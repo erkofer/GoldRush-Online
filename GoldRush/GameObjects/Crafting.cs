@@ -161,7 +161,7 @@ namespace GoldRush
 
             public int SelectedRecipeIndex { get { return selectedRecipe != null ? Recipes.IndexOf(selectedRecipe) : -1; } }
 
-            public double SelectedRecipeDuration { get { return selectedRecipe != null ? selectedRecipe.Duration : -1; } }
+            public double SelectedRecipeDuration { get { return selectedRecipe != null ? selectedRecipe.Duration : 0; } }
             /// <summary>
             /// The number of iterations the recipe should be crafted for.
             /// </summary>

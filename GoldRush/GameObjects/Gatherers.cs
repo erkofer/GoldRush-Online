@@ -146,6 +146,8 @@ namespace GoldRush
             /// </summary>
             private double resourceBuffer;
 
+            public double ResourceBuffer { get { return resourceBuffer; } set { resourceBuffer = value; } }
+
             /// <summary>
             /// The resources the Gatherer will collect.
             /// </summary>

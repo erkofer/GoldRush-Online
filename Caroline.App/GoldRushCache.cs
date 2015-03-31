@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Web;
 using System.Web.Caching;
-using Caroline.App.Models;
+using Caroline.Persistence.Models;
 using JetBrains.Annotations;
 
 namespace Caroline.App

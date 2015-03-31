@@ -202,6 +202,12 @@ var Utils;
     }
     Utils.cssifyName = cssifyName;
 
+    function ifNotDefault(value, callback) {
+        if (value != -100)
+            callback();
+    }
+    Utils.ifNotDefault = ifNotDefault;
+
     function createButton(text, id) {
         var button;
         var textcontent;
@@ -934,12 +940,14 @@ var Inventory;
     Inventory.addItem = addItem;
 
     function changeQuantity(id, quantity) {
-        Objects.setQuantity(id, quantity);
-        Crafting.update();
-        Inventory.items[id].quantityElm.textContent = Utils.formatNumber(quantity);
-        Inventory.items[id].quantity = quantity;
-        Inventory.items[id].container.style.display = quantity == 0 ? 'none' : 'inline-block';
-        limitTextQuantity();
+        Utils.ifNotDefault(quantity, function () {
+            Objects.setQuantity(id, quantity);
+            Crafting.update();
+            Inventory.items[id].quantityElm.textContent = Utils.formatNumber(quantity);
+            Inventory.items[id].quantity = quantity;
+            Inventory.items[id].container.style.display = quantity == 0 ? 'none' : 'inline-block';
+            limitTextQuantity();
+        });
     }
     Inventory.changeQuantity = changeQuantity;
 
@@ -2031,14 +2039,17 @@ var Statistics;
 
     function changeStats(id, prestige, lifetime) {
         var item = items[id];
-        item.prestigeQuantity = prestige ? prestige : item.prestigeQuantity;
-        item.lifetimeQuantity = lifetime ? lifetime : item.lifetimeQuantity;
 
-        if (lifetime)
+        Utils.ifNotDefault(prestige, function () {
+            item.prestigeQuantity = prestige;
+            item.prestigeRow.textContent = Utils.formatNumber(prestige);
+        });
+
+        Utils.ifNotDefault(lifetime, function () {
+            item.lifetimeQuantity = lifetime;
             Objects.setLifeTimeTotal(id, lifetime);
-
-        item.prestigeRow.textContent = prestige ? Utils.formatNumber(prestige) : '0';
-        item.alltimeRow.textContent = lifetime ? Utils.formatNumber(lifetime) : '0';
+            item.alltimeRow.textContent = Utils.formatNumber(lifetime);
+        });
     }
     Statistics.changeStats = changeStats;
 

@@ -1,10 +1,10 @@
 ﻿using System.Diagnostics;
 using System.Threading.Tasks;
-using Caroline.App.Models;
 using Caroline.Persistence;
 using Caroline.Persistence.Models;
 using Caroline.Persistence.Redis;
 using GoldRush.APIs;
+using Caroline.App.Models;
 
 namespace Caroline.App
 {
@@ -27,31 +27,29 @@ namespace Caroline.App
             // get game save, if it doesn't exist then use a new game
             Game save;
             save = await games.Get(save = new Game { Id = userId }) ?? save;
-            
-                var saveData = save.SaveData;
-                var saveObject = saveData != null ? ProtoBufHelpers.Deserialize<SaveState>(saveData) : null;
-            var sessionId = new GameSession { EndPoint = endpoint };
-            var session = await db.GameSessions.Get(sessionId);
 
-                // load game save into an game instance
+            var saveData = save.SaveData;
+            var saveObject = saveData != null ? ProtoBufHelpers.Deserialize<SaveState>(saveData) : null;
+            var sessionId = new GameSession(endpoint);
+            var session = await db.GameSessions.Get(sessionId) ?? sessionId;
+            // load game save into an game instance
             var game = _sessionFactory.Create();
             game.Load(new LoadArgs { SaveState = saveObject });
 
-                // update save with new input
+            // update save with new input
             var updateDto = game.Update(new UpdateArgs { ClientActions = input, Session = session });
 
-                // save to the database
+            // save to the database
             // session gets modified by update
-            if (session != null)
-                await db.GameSessions.Set(session);
-            else await db.GameSessions.Delete(sessionId);
-                var saveDto = game.Save();
+            await db.GameSessions.Set(session);
+
+            var saveDto = game.Save();
             var saveState = saveDto.SaveState;
             if (saveState != null)
             {
                 // TODO: dont serialize twice
                 save.SaveData = ProtoBufHelpers.SerializeToString(saveState);
-                if(!await games.Set(save))
+                if (!await games.Set(save))
                     Debug.Assert(false);
             }
 

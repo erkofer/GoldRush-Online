@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Caroline.Persistence.Models;
 
-namespace Caroline.App.Models.Tests
+namespace Caroline.Persistence.Models.Tests
 {
     [TestClass]
     public class CompressableHelpersTests
