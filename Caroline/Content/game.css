@@ -27,15 +27,13 @@ body{
     background:grey;
 }
 
-.Rock{
+.rockContainer{
     margin:0 auto;
-    transform:scale(0.8);
-    transition:all 0.15s;
+    width: 250px;
+    height: 250px;
 }
 
-.Rock:active{
-    transform:scale(0.95);
-}
+
 
 .header{
     background:darkgray;

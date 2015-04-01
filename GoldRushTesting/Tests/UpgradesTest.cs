@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using GoldRush;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -7,13 +8,10 @@ namespace GoldRushTesting
     [TestClass]
     public class UpgradesTest
     {
-
-        private Game _game;
-
         [ClassInitialize]
         private Game GetGame()
         {
-            return _game ?? (_game = new Game());
+            return new Game();
         }
 
         /// <summary>

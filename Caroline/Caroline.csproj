@@ -37,7 +37,7 @@
     <TypeScriptSourceMap>true</TypeScriptSourceMap>
     <OutputPath>bin\</OutputPath>
     <TypeScriptModuleKind>amd</TypeScriptModuleKind>
-    <TypeScriptSourceMap> Scripts/utils.ts Scripts/modal.ts Scripts\objects.ts Scripts/register.ts Scripts/tabs.ts Scripts/connection.ts Scripts/chat.ts Scripts/inventory.ts Scripts/store.ts Scripts/stats.ts Scripts/crafting.ts</TypeScriptSourceMap>
+    <TypeScriptSourceMap> Scripts/utils.ts Scripts/modal.ts Scripts/objects.ts Scripts/register.ts Scripts/rock.ts Scripts/tabs.ts Scripts/connection.ts Scripts/chat.ts Scripts/inventory.ts Scripts/store.ts Scripts/stats.ts Scripts/crafting.ts</TypeScriptSourceMap>
     <TypeScriptOutFile>game.js</TypeScriptOutFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -222,6 +222,7 @@
     <Content Include="Content\background.png" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Content\Rock.png" />
     <Content Include="Content\sprites.png" />
     <Content Include="Content\sprites.css" />
     <Content Include="Content\Sprites\Achievements.png" />
@@ -292,6 +293,7 @@
     <Content Include="Content\Sprites\Unknown.png" />
     <Content Include="Content\Sprites\up.png" />
     <Content Include="Content\Sprites\Uranium.png" />
+    <Content Include="Content\Stone.png" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
@@ -420,6 +422,7 @@
     <TypeScriptCompile Include="Scripts\modal.ts" />
     <TypeScriptCompile Include="Scripts\objects.ts" />
     <TypeScriptCompile Include="Scripts\register.ts" />
+    <TypeScriptCompile Include="Scripts\rock.ts" />
     <TypeScriptCompile Include="Scripts\stats.ts" />
     <TypeScriptCompile Include="Scripts\store.ts" />
     <TypeScriptCompile Include="Scripts\tabs.ts" />

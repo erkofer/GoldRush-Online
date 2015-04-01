@@ -196,7 +196,7 @@ namespace GoldRush
                 public int Duration;
             }
 
-            public static BuffConfig SpeechBuff = new BuffConfig() { Name = "SpeechBuff", Duration = 45 };
+            public static BuffConfig SpeechBuff = new BuffConfig() { Name = "Speech Buff", Duration = 45 };
             public static UpgradeConfig Backpack = new UpgradeConfig() { Name = "Backpack" };
             public static UpgradeConfig Researcher = new UpgradeConfig() { Name = "Researcher" };
             public static UpgradeConfig Botanist = new UpgradeConfig() { Name = "Botanist" };
