@@ -15,41 +15,39 @@ namespace Caroline.Persistence
         readonly IStringTable _userNameLookup;
         readonly IStringTable _emailsLookup;
         readonly IStringTable _loginsLookup;
-        readonly IAutoKeyEntityTable<User> _users;
+        readonly IEntityTable<User> _users;
+        readonly IIdManager<User> _userIds; 
         bool _disposed;
 
         public RedisUserStore(CarolineRedisDb db)
         {
             _users = db.Users;
+            _userIds = db.UserIdIncrement;
             _userNameLookup = db.UserNames;
             _loginsLookup = db.Logins;
             _emailsLookup = db.Emails;
         }
 
         #region IUserLoginStore Implementation
-        public Task CreateAsync(User user)
-        {
-            return UpdateAsync(user, SetMode.Add);
-        }
-
-        public Task UpdateAsync(User user)
-        {
-            return UpdateAsync(user, SetMode.Overwrite);
-        }
-
-        async Task<bool> UpdateAsync(User user, SetMode mode)
+        public async Task CreateAsync(User user)
         {
             Check(user);
-            await _users.Set(user, mode);
+            await _userIds.SetNewId(user);
+            await UpdateAsync(user);
+        }
+
+        public async Task UpdateAsync(User user)
+        {
+            Check(user);
+            await _users.Set(user);
             var userId = user.Id.ToStringInvariant();
             await _userNameLookup.Set(user.UserName, userId);
             if (!string.IsNullOrEmpty(user.Email))
                 await _emailsLookup.Set(user.Email, userId);
-            foreach (UserLogin login in user.Logins)
+            foreach (var login in user.Logins)
             {
                 await _loginsLookup.Set(GetLoginKey(login), userId);
             }
-            return true;
         }
 
         public async Task DeleteAsync(User user)
@@ -88,7 +86,7 @@ namespace Caroline.Persistence
 
             var dbUser = await _users.Get(user);
             dbUser.Logins.Add(userLogin);
-            await _users.Set(dbUser, SetMode.Overwrite);
+            await _users.Set(dbUser);
             await _loginsLookup.Set(GetLoginKey(login), dbUser.Id.ToStringInvariant());
         }
 
@@ -102,7 +100,7 @@ namespace Caroline.Persistence
             dbUser.Logins.Clear();
             dbUser.Logins.AddRange(goodLogins);
             await _loginsLookup.Delete(GetLoginKey(login));
-            await _users.Set(dbUser, SetMode.Overwrite);
+            await _users.Set(dbUser);
         }
 
         public Task<IList<UserLoginInfo>> GetLoginsAsync(User user)
@@ -224,7 +222,6 @@ namespace Caroline.Persistence
             if (_disposed)
                 throw new ObjectDisposedException(GetType().Name);
         }
-
 
         void Check(object obj)
         {

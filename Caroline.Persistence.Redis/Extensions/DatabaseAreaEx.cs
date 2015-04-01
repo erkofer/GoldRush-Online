@@ -5,18 +5,6 @@ namespace Caroline.Persistence.Redis.Extensions
 {
     public static class DatabaseAreaEx
     {
-        public static IAutoKeyEntityTable<TEntity> Set<TEntity>(this IDatabaseArea area, RedisKey id, ILongTable idIncrementDb, ISerializer<TEntity> serializer, IIdentifier<TEntity, long> identifier, TimeSpan? defaultExpiry = null)
-        {
-            var db = area.CreateSubArea(id);
-            return new AutoKeyRedisEntityTable<TEntity>(db, idIncrementDb, id, serializer, identifier, defaultExpiry);
-        }
-
-        public static IAutoKeyEntityTable<TEntity> Set<TEntity>(this IDatabaseArea area, RedisKey id, ILongTable idIncrementDb, TimeSpan? defaultExpiry = null)
-            where TEntity : IIdentifiableEntity<long>
-        {
-            return Set(area, id, idIncrementDb, Objects<TEntity>.Serializer, Objects<TEntity, long>.Identifier, defaultExpiry);
-        }
-
         public static IEntityTable<TEntity> Set<TEntity>(this IDatabaseArea area, RedisKey id, ISerializer<TEntity> serializer, IIdentifier<TEntity, RedisKey> identifier, TimeSpan? defaultExpiry = null)
         {
             var db = area.CreateSubArea(id);
@@ -53,6 +41,18 @@ namespace Caroline.Persistence.Redis.Extensions
         {
             var db = area.CreateSubArea(id);
             return new RedisLongTable(db, defaultExpiry);
+        }
+
+        public static IIdManager<TEntity> SetIdManager<TEntity>(this IDatabaseArea area, RedisKey id, IIdentifier<TEntity, long> identifier)
+        {
+            var db = area.CreateSubArea(id);
+            return new RedisIdManager<TEntity>(db, identifier);
+        }
+        public static IIdManager<TEntity> SetIdManager<TEntity>(this IDatabaseArea area, RedisKey id)
+            where TEntity : IIdentifiableEntity<long>
+        {
+            var db = area.CreateSubArea(id);
+            return new RedisIdManager<TEntity>(db, Objects<TEntity, long>.Identifier);
         }
 
         public static IStringTable SetString(this IDatabaseArea area, RedisKey id, TimeSpan? defaultExpiry = null)

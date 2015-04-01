@@ -5,7 +5,7 @@ using StackExchange.Redis;
 
 namespace Caroline.Persistence.Models
 {
-    public partial class Game : IIdentifiableEntity<RedisKey>
+    public partial class Game : IIdentifiableEntity<long>, IIdentifiableEntity<RedisKey>
     {
         public long Id { get; set; }
 
