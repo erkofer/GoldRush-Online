@@ -337,12 +337,14 @@ module Inventory {
     }
 
     export function changeQuantity(id: number, quantity: number) {
-        Objects.setQuantity(id, quantity);
-        Crafting.update();
-        items[id].quantityElm.textContent = Utils.formatNumber(quantity);
-        items[id].quantity = quantity;
-        items[id].container.style.display = quantity == 0 ? 'none' : 'inline-block';
-        limitTextQuantity();
+        Utils.ifNotDefault(quantity, function () {
+            Objects.setQuantity(id, quantity);
+            Crafting.update();
+            items[id].quantityElm.textContent = Utils.formatNumber(quantity);
+            items[id].quantity = quantity;
+            items[id].container.style.display = quantity == 0 ? 'none' : 'inline-block';
+            limitTextQuantity();
+        });
     }
 
     export function update() {

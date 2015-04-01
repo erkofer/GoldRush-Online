@@ -2,13 +2,13 @@
 using System.Web;
 using Caroline.Api;
 using Caroline.App;
-using Caroline.App.Models;
 using Caroline.Persistence;
 using Caroline.Persistence.Models;
 using Caroline.Persistence.Redis;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.SignalR;
 using System;
+using Caroline.App.Models;
 
 namespace Caroline.Connections
 {

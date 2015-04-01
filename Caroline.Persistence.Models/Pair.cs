@@ -1,7 +1,7 @@
 using System;
 using JetBrains.Annotations;
 
-namespace Caroline.App.Models
+namespace Caroline.Persistence.Models
 {
     internal struct Pair<T>
         where T : class

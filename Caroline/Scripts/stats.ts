@@ -16,14 +16,17 @@
 
     export function changeStats(id: number, prestige: number, lifetime: number) {
         var item = items[id];
-        item.prestigeQuantity = prestige?prestige:item.prestigeQuantity;
-        item.lifetimeQuantity = lifetime?lifetime:item.lifetimeQuantity;
 
-        if(lifetime)
+        Utils.ifNotDefault(prestige, function () {
+            item.prestigeQuantity = prestige;
+            item.prestigeRow.textContent = Utils.formatNumber(prestige);
+        });
+
+        Utils.ifNotDefault(lifetime, function () {
+            item.lifetimeQuantity = lifetime;
             Objects.setLifeTimeTotal(id, lifetime);
-
-        item.prestigeRow.textContent = prestige ? Utils.formatNumber(prestige):'0';
-        item.alltimeRow.textContent = lifetime ? Utils.formatNumber(lifetime):'0';
+            item.alltimeRow.textContent = Utils.formatNumber(lifetime);
+        });
     }
 
     export function addItem(id:number,name:string) {

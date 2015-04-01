@@ -1,10 +1,10 @@
+using JetBrains.Annotations;
 using System.Collections.Generic;
 using System.Diagnostics;
-using JetBrains.Annotations;
 
-namespace Caroline.App.Models
+namespace Caroline.Persistence.Models
 {
-    internal static class CompressableHelpers
+    public static class CompressableHelpers
     {
         public static void CompressList<T>([NotNull] List<T> currentList, [NotNull] List<T> oldList, List<T> destinationList)
             where T : class, ICompressable<T>, IIdentifiableObject

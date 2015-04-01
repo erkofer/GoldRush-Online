@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Caroline.App.Models.Tests
+namespace Caroline.Persistence.Models.Tests
 {
     class CompressableFake : ICompressable<CompressableFake>, IIdentifiableObject
     {

@@ -1,6 +1,7 @@
 package Caroline.Persistence.Models;
 
 import "csharp_options.proto";
+import "GameState.proto";
 option (google.protobuf.csharp_file_options).namespace = "Caroline.Persistence.Models";
 
 option optimize_for = SPEED;
@@ -12,4 +13,7 @@ message GameSession
 	
 	// Sessions are uniquely identified by a layer 4 connection:
 	// SourceIp:SourcePort:DestinationIp:DestinationPort:GameId
+
+	
+	optional GameState CachedGameState = 1;
 }

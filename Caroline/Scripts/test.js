@@ -20,7 +20,7 @@
         ByteBuffer = ProtoBuf.ByteBuffer;
 
     var builder = ProtoBuf.loadProtoFile("../Content/GameState.proto"),
-        GameStateDecoder = builder.build("Caroline.App.Models");
+        GameStateDecoder = builder.build("Caroline.Persistence.Models");
 
     var outputBuilder = ProtoBuf.loadProtoFile("../Content/ClientActions.proto"),
         ClientActionsEncoder = outputBuilder.build("Caroline.App.Models");

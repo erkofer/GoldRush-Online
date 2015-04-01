@@ -33,7 +33,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="JetBrains.Annotations">
-      <HintPath>..\packages\JetBrains.Annotations.8.0.3.0\lib\net20\JetBrains.Annotations.dll</HintPath>
+      <HintPath>..\packages\JetBrains.Annotations.8.0.5.0\lib\net20\JetBrains.Annotations.dll</HintPath>
     </Reference>
     <Reference Include="protobuf-net">
       <HintPath>..\packages\protobuf-net.2.0.0.668\lib\net40\protobuf-net.dll</HintPath>
@@ -47,37 +47,31 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CompressableHelpers.cs" />
-    <Compile Include="GameState.cs" />
-    <Compile Include="ICompressable.cs" />
-    <Compile Include="IIdentifiableObject.cs" />
-    <Compile Include="Pair.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProtoBuf Include="Common.proto" />
-  </ItemGroup>
-  <ItemGroup>
     <ProtoBuf Include="ClientActions.proto" />
-    <ProtoBuf Include="GameState.proto" />
     <ProtoBuf Include="SaveState.proto" />
-  </ItemGroup>
-  <ItemGroup>
     <ProtoBuf Include="csharp_options.proto" />
     <ProtoBuf Include="descriptor.proto" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Caroline.Persistence.Models\Caroline.Persistence.Models.csproj">
+      <Project>{7d8032ab-3c86-4894-b5fa-302ac5b474e5}</Project>
+      <Name>Caroline.Persistence.Models</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="BeforeBuild">
-    <Copy SourceFiles="$(SolutionDir)\Caroline.App.Models\GameState.proto" DestinationFolder="$(SolutionDir)\Caroline\Content" />
     <Copy SourceFiles="$(SolutionDir)\Caroline.App.Models\csharp_options.proto" DestinationFolder="$(SolutionDir)\Caroline\Content" />
     <Copy SourceFiles="$(SolutionDir)\Caroline.App.Models\descriptor.proto" DestinationFolder="$(SolutionDir)\Caroline\Content" />
     <Copy SourceFiles="$(SolutionDir)\Caroline.App.Models\ClientActions.proto" DestinationFolder="$(SolutionDir)\Caroline\Content" />
-	<Exec Command="cmd &quot;$(SolutionDir)Build\ProtobufFixed.exe&quot; &quot;$(SolutionDir)Caroline.App.Models\obj\Debug\ProtoBuf.g.i.cs&quot;" />
-	<Exec Command="cmd &quot;$(SolutionDir)Build\ProtobufFixed.exe&quot; &quot;$(SolutionDir)Caroline.App.Models\obj\Release\ProtoBuf.g.i.cs&quot;" />
+    <Exec Command="cmd &quot;$(SolutionDir)Build\ProtobufFixed.exe&quot; &quot;$(SolutionDir)Caroline.App.Models\obj\Debug\ProtoBuf.g.i.cs&quot;" />
+    <Exec Command="cmd &quot;$(SolutionDir)Build\ProtobufFixed.exe&quot; &quot;$(SolutionDir)Caroline.App.Models\obj\Release\ProtoBuf.g.i.cs&quot;" />
   </Target>
   <Target Name="AfterBuild">
-	
   </Target>
   <PropertyGroup>
     <ProtoGenFile>$(SolutionDir)\Build\ProtoGen\protogen</ProtoGenFile>

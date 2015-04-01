@@ -21,7 +21,7 @@ namespace GoldRush
             Foreman = new Upgrade(new EfficiencyMagnitudeUpgradeEffect(game,
                 new [] {game.Gatherers.Miner,
                     game.Gatherers.Lumberjack},
-                0.15),GameConfig.Upgrades.Foreman);
+                1.15),GameConfig.Upgrades.Foreman);
             All.Add(Foreman.Id,Foreman);
             /*
             Backpack = new Upgrade(new ResourceUpgradeEffect(game,
@@ -72,10 +72,8 @@ namespace GoldRush
             #endregion
 
             #region Buffs
-           /* SpeechBuff = new Buff(new ItemValueUpgradeEffect(game, 0.2));
-            SpeechBuff.Name = "Speech Buff";
-            SpeechBuff.Duration = 45;
-            game.Items.SpeechPotion.Effect = SpeechBuff;*/
+            SpeechBuff = new Buff(new ItemValueUpgradeEffect(game, 0.2),GameConfig.Upgrades.SpeechBuff);
+            game.Items.SpeechPotion.Effect = SpeechBuff;
             #endregion
         }
 
@@ -143,10 +141,12 @@ namespace GoldRush
 
         internal class Buff : Upgrade
         {
-            public Buff(UpgradeEffect effect, GameConfig.Upgrades.UpgradeConfig config)
+            private GameConfig.Upgrades.BuffConfig _config;
+
+            public Buff(UpgradeEffect effect, GameConfig.Upgrades.BuffConfig config)
                 :base(effect,config)
             {
-                
+                _config = config;
             }
 
             public override void Activate()
@@ -171,7 +171,7 @@ namespace GoldRush
             /// <summary>
             /// The length of time this buff will last for.
             /// </summary>
-            public double Duration;
+            public double Duration { get { return _config.Duration; } }
 
             /// <summary>
             /// The time the buff has been active for.
@@ -302,14 +302,14 @@ namespace GoldRush
             public override void Activate()
             {
                 foreach (var gatherer in gatherers)
-                    gatherer.ResourcesPerSecondEfficiency += magnitude;
+                    gatherer.ResourcesPerSecondEfficiency *= magnitude;
                     
             }
 
             public override void Deactivate()
             {
                 foreach (var gatherer in gatherers)
-                    gatherer.ResourcesPerSecondEfficiency -= magnitude;
+                    gatherer.ResourcesPerSecondEfficiency /= magnitude;
                     
             }
         }

@@ -23,8 +23,8 @@ namespace GoldRushTesting
             var game = GetGame();
             game.objs.Items.Copper.Quantity = 1000;
             game.objs.Items.BronzeBar.Quantity = 10;
+            game.objs.Crafting.Craft(game.objs.Items.CopperWire.Id,1);
 
-            game.objs.Items.CopperWire.Craft();
             Assert.AreEqual(100,game.objs.Items.CopperWire.Quantity);
         }
 
@@ -32,7 +32,8 @@ namespace GoldRushTesting
         public void CraftWithoutPrerequisites()
         {
             var game = GetGame();
-            game.objs.Items.CopperWire.Craft();
+            game.objs.Crafting.Craft(game.objs.Items.CopperWire.Id, 1);
+
             Assert.AreEqual(0,game.objs.Items.CopperWire.Quantity);
         }
 
@@ -42,7 +43,7 @@ namespace GoldRushTesting
             var game = GetGame();
             game.objs.Items.Copper.Quantity = 5000;
             game.objs.Items.BronzeBar.Quantity = 50;
-            game.objs.Items.CopperWire.Craft(5);
+            game.objs.Crafting.Craft(game.objs.Items.CopperWire.Id, 5);
          
 
             Assert.AreEqual(500, game.objs.Items.CopperWire.Quantity);
@@ -54,7 +55,7 @@ namespace GoldRushTesting
         public void CraftManyWithoutPrerequisites()
         {
             var game = GetGame();
-            game.objs.Items.CopperWire.Craft(5);
+            game.objs.Crafting.Craft(game.objs.Items.CopperWire.Id, 5);
 
             Assert.AreEqual(0, game.objs.Items.CopperWire.Quantity);
         }

@@ -12,8 +12,6 @@ namespace Caroline.Persistence.Models
 
         public GameSessionEndpoint EndPoint { get; set; }
         
-        public long GameId { get; set; }
-
         public RedisKey Id
         {
             get { return GameSessionEndpoint.Serialize(EndPoint); }
