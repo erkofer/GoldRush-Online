@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Caroline.App.Models;
 using Caroline.Persistence;
 using Caroline.Persistence.Models;
@@ -11,7 +10,6 @@ namespace Caroline.App
     public class GameManager : IGameManager
     {
         readonly KomodoSessionFactory _sessionFactory = new KomodoSessionFactory();
-        readonly GoldRushCache _goldRushCache = new GoldRushCache();
 
         public async Task<GameState> Update(GameSessionEndpoint endpoint, ClientActions input = null)
         {
@@ -51,25 +49,13 @@ namespace Caroline.App
             {
                 // TODO: dont serialize twice
                 save.SaveData = ProtoBufHelpers.SerializeToString(saveState);
-                if(!await games.Set(save))
-                    Debug.Assert(false);
+                await games.Set(save);
             }
 
             // dispose lock on user, no more reading/saving
             await userLock.DisposeAsync();
 
-            GameState dataToSend = null;
-            if (updateDto != null)
-                dataToSend = updateDto.GameState;
-            if (dataToSend == null)
-                dataToSend = new GameState();
-
-            // minify the GameState by only sending differences since the last state
-            //var previousState = _goldRushCache.GetGameData(sessionGuid);
-            //_goldRushCache.SetGameData(sessionGuid, dataToSend);
-            //if (previousState != null)
-            //    dataToSend = dataToSend.Compress(previousState);
-            return dataToSend;
+            return updateDto != null ? updateDto.GameState : null;
         }
     }
 

@@ -14,35 +14,34 @@ namespace Caroline.Connections
 {
     public class GameConnection : PersistentConnection
     {
-        readonly GameManager _gameManager = new GameManager();
+        readonly IGameManager _gameManager = new GameManager();
 
         protected override async Task OnConnected(IRequest request, string connectionId)
         {
             await AnonymousProfileApi.GenerateAnonymousProfileIfNotAuthenticated(request.GetHttpContext());
-            
-            var userId = HttpContext.Current.User.Identity.GetUserId<long>();
-            IpEndpoint endpoint;
-            if(!IpEndpoint.TryParse(request.Environment, out endpoint))
-                throw new Exception("Can not get IP addresses from owin environment.");
-            var gameEndpoint = new GameSessionEndpoint(endpoint, HttpContext.Current.User.Identity.GetUserId<long>());
 
-            var state = await _gameManager.Update(gameEndpoint);
-            await Connection.Send(connectionId, ProtoBufHelpers.SerializeToString(state));
+            await Update(request, connectionId);
         }
 
         protected override async Task OnReceived(IRequest request, string connectionId, string data)
         {
             var actions = ProtoBufHelpers.Deserialize<ClientActions>(data);
-
             if (actions.SocialActions != null) await Socialize(request, connectionId, actions);
 
+            await Update(request, connectionId);
+        }
+
+        async Task Update(IRequest request, string connectionId)
+        {
             IpEndpoint endpoint;
             if (!IpEndpoint.TryParse(request.Environment, out endpoint))
-                throw new Exception("Cant get IP address of environment");
-            var gameEndpoint = new GameSessionEndpoint(endpoint, HttpContext.Current.User.Identity.GetUserId<long>());
+                throw new Exception("Can not get IP addresses from owin environment.");
+            var userId = HttpContext.Current.User.Identity.GetUserId<long>();
+            var gameEndpoint = new GameSessionEndpoint(endpoint, userId);
 
-            var state = await _gameManager.Update(gameEndpoint, actions);
-            await Connection.Send(connectionId, ProtoBufHelpers.SerializeToString(state));
+            var state = await _gameManager.Update(gameEndpoint);
+            if (state != null)
+                await Connection.Send(connectionId, ProtoBufHelpers.SerializeToString(state));
         }
 
         private async Task Socialize(IRequest request, string connectionId, ClientActions actions)
