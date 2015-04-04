@@ -25,39 +25,40 @@ namespace Caroline.Connections
 
         protected override async Task OnReceived(IRequest request, string connectionId, string data)
         {
-            var actions = ProtoBufHelpers.Deserialize<ClientActions>(data);
-            if (actions.SocialActions != null) await Socialize(request, connectionId, actions);
-
-            await Update(request, connectionId);
+            await Update(request, connectionId, data);
         }
 
-        async Task Update(IRequest request, string connectionId)
+        async Task Update(IRequest request, string connectionId, string data = null)
         {
+            var actions = data != null ? ProtoBufHelpers.Deserialize<ClientActions>(data) : null;
             IpEndpoint endpoint;
             if (!IpEndpoint.TryParse(request.Environment, out endpoint))
                 throw new Exception("Can not get IP addresses from owin environment.");
             var userId = HttpContext.Current.User.Identity.GetUserId<long>();
             var gameEndpoint = new GameSessionEndpoint(endpoint, userId);
 
-            var state = await _gameManager.Update(gameEndpoint);
+            var state = await _gameManager.Update(gameEndpoint, actions);
             if (state != null)
                 await Connection.Send(connectionId, ProtoBufHelpers.SerializeToString(state));
+
+            await Socialize(request, connectionId, actions);
         }
 
         private async Task Socialize(IRequest request, string connectionId, ClientActions actions)
         {
+            if (actions == null)
+                return;
             foreach (var action in actions.SocialActions)
             {
-                if (action.Chat != null)
-                    if (action.Chat.GlobalMessage != null)
-                    {
-                        var user = await GetUserName(request.GetHttpContext().User.Identity.GetUserId<long>());
-                        if (!user.IsAnonymous)
-                            SendGlobalChatMessage(user.UserName, action.Chat.GlobalMessage);
-                        else
-                            SendServerMessage(connectionId, "You must be registered to send chat messages.");
-                    }
-
+                if (action.Chat == null) 
+                    continue;
+                if (action.Chat.GlobalMessage == null) 
+                    continue;
+                var user = await GetUserName(request.GetHttpContext().User.Identity.GetUserId<long>());
+                if (!user.IsAnonymous)
+                    SendGlobalChatMessage(user.UserName, action.Chat.GlobalMessage);
+                else
+                    SendServerMessage(connectionId, "You must be registered to send chat messages.");
             }
         }
 
