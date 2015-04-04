@@ -30,10 +30,10 @@ namespace Caroline.Domain.Models
             return _db.Users.Set(entity);
         }
 
-        public Task<Game> GetGame()
+        public async Task<Game> GetGame()
         {
             Check();
-            return _db.Games.Get(_id);
+            return await _db.Games.Get(_id) ?? new Game { Id = _id };
         }
         // When we retire games, have a RetireGame(Game newGame = null) method that saves old games statistics and then deletes it.
 
@@ -43,9 +43,9 @@ namespace Caroline.Domain.Models
             return _db.Games.Set(game);
         }
 
-        public Task<GameSession> GetSession(IpEndpoint id)
+        public async Task<GameSession> GetSession(IpEndpoint id)
         {
-            return _db.GameSessions.Get(new GameSessionEndpoint(id, _id));
+            return await _db.GameSessions.Get(new GameSessionEndpoint(id, _id)) ?? new GameSession { Id = new GameSessionEndpoint(id, _id) };
         }
 
         public Task<bool> SetSession(GameSession entity)

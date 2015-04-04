@@ -18,13 +18,18 @@ namespace Caroline.Domain
     {
         private readonly CarolineRedisDb _db;
 
-        public UserManager(CarolineRedisDb db)
+        public static async Task<UserManager> CreateAsync()
+        {
+            return new UserManager(await CarolineRedisDb.CreateAsync());
+        }
+
+        UserManager(CarolineRedisDb db)
             : base(new RedisUserStore(db))
         {
             _db = db;
         }
 
-        async Task<UserDto> GetUser(long id)
+        public async Task<UserDto> GetUser(long id)
         {
             var ulock = await _db.UserLocks.Lock(id);
             if (ulock == null)

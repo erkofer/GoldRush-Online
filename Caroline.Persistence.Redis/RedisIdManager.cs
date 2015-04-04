@@ -16,7 +16,7 @@ namespace Caroline.Persistence.Redis
 
         public async Task SetNewId(TEntity entity)
         {
-            _identifier.SetId(entity, await _db.StringIncrementAsync(new RedisKey()));
+            _identifier.SetId(entity, await _db.StringIncrementAsync(""));
         }
     }
 }

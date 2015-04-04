@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Caroline.Persistence;
+using Caroline.Domain;
 using Caroline.Persistence.Models;
 using Caroline.Persistence.Redis;
 using GoldRush.APIs;
@@ -14,19 +14,15 @@ namespace Caroline.App
         public async Task<GameState> Update(GameSessionEndpoint endpoint, ClientActions input = null)
         {
             var userId = endpoint.GameId;
-            var db = await CarolineRedisDb.CreateAsync();
+            var manager = await UserManager.CreateAsync();
+            var userDto = await manager.GetUser(userId);
 
-            var games = db.Games;
-
-            // lock the user and its games
-            var userLock = await db.UserLocks.Lock(userId);
-
-            // get game save, if it doesn't exist then use a new game
-            var save = await games.Get(userId) ?? new Game();
-
+            // get game save and connection session
+            var save = await userDto.GetGame();
             var saveData = save.SaveData;
             var saveObject = saveData != null ? ProtoBufHelpers.Deserialize<SaveState>(saveData) : null;
-            var session = await db.GameSessions.Get(endpoint) ?? new GameSession();
+            var session = await userDto.GetSession(endpoint.EndPoint);
+
             // load game save into an game instance
             var game = _sessionFactory.Create();
             game.Load(new LoadArgs { SaveState = saveObject });
@@ -36,7 +32,7 @@ namespace Caroline.App
 
             // save to the database
             // session gets modified by update
-            await db.GameSessions.Set(session);
+            await userDto.SetSession(session);
 
             var saveDto = game.Save();
             var saveState = saveDto.SaveState;
@@ -44,11 +40,11 @@ namespace Caroline.App
             {
                 // TODO: dont serialize twice
                 save.SaveData = ProtoBufHelpers.SerializeToString(saveState);
-                await games.Set(save);
+                await userDto.SetGame(save);
             }
 
             // dispose lock on user, no more reading/saving
-            await userLock.DisposeAsync();
+            await userDto.DisposeAsync();
 
             return updateDto != null ? updateDto.GameState : null;
         }

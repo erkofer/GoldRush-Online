@@ -15,6 +15,8 @@ namespace Caroline.Persistence
         static readonly AsyncLock StaticInitializationLock = new AsyncLock();
         static RedisDbMultiplexer _redisConnection;
 
+        CarolineRedisDb() { }
+
         public static async Task<CarolineRedisDb> CreateAsync()
         {
             using (await StaticInitializationLock.LockAsync())
@@ -56,7 +58,7 @@ namespace Caroline.Persistence
         static CarolineRedisDb CreateDb()
         {
             var db = _redisConnection.Connect();
-            return new CarolineRedisDb
+            var ret = new CarolineRedisDb
             {
                 Games = db.SetLong<Game>("g"),
                 Users = db.SetLong<User>("u"),
@@ -67,6 +69,7 @@ namespace Caroline.Persistence
                 Logins = db.String("ul"),
                 Emails = db.String("ue")
             };
+            return ret;
         }
 
         public IPessimisticLockTable<long> UserLocks { get; private set; }
