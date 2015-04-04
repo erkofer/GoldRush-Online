@@ -29,4 +29,13 @@ message SaveState
 	repeated Gatherer Gatherers=3;
 
 	optional int64 LastUpdate=4;
+
+	message Processor {
+		optional int32 Id=1;
+		optional int32 SelectedRecipe=2;
+		optional double Progress=3;
+		optional int32 RecipesCrafted=4;
+		optional int32 RecipesToCraft=5;
+	}
+	repeated Processor Processors=5;
 }

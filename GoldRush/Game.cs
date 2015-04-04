@@ -281,6 +281,20 @@ namespace GoldRush
                 saveState.Gatherers.Add(saveStateGatherer);
             }
 
+            foreach (var processor in objs.Crafting.Processors)
+            {
+                var toSaveProcessor = processor.Value;
+                var saveStateProcessor = new SaveState.Processor();
+
+                saveStateProcessor.Id = toSaveProcessor.Id;
+                saveStateProcessor.SelectedRecipe = toSaveProcessor.SelectedRecipeIndex;
+                saveStateProcessor.Progress = toSaveProcessor.RecipeProgress;
+                saveStateProcessor.RecipesCrafted = toSaveProcessor.RecipesCrafted;
+                saveStateProcessor.RecipesToCraft = toSaveProcessor.RecipesToCraft;
+
+                saveState.Processors.Add(saveStateProcessor);
+            }
+
             return saveState;
         }
 
@@ -318,6 +332,17 @@ namespace GoldRush
                 if (save.LastUpdate != null)
                 {
                     lastUpdate = save.LastUpdate;
+                }
+                if (save.Processors != null)
+                {
+                    foreach (var processor in save.Processors)
+                    {
+                        var toLoadProcessor = objs.Crafting.Processors[processor.Id];
+                        toLoadProcessor.SelectedRecipeIndex = processor.SelectedRecipe;
+                        toLoadProcessor.RecipeProgress = processor.Progress;
+                        toLoadProcessor.RecipesCrafted = processor.RecipesCrafted;
+                        toLoadProcessor.RecipesToCraft = processor.RecipesToCraft;
+                    }
                 }
             }
         }
