@@ -4,9 +4,9 @@ using System.Web.Mvc;
 using Caroline.Api;
 using Caroline.Areas.Api.Models;
 using Caroline.Domain;
+using Caroline.Extensions;
 using Caroline.Models;
 using Caroline.Persistence;
-using Caroline.Persistence.Models;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Newtonsoft.Json;
@@ -54,23 +54,29 @@ namespace Caroline.Areas.Api.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return JsonConvert.SerializeObject(new SuccessViewModel { Success = false });
+                return JsonConvert.SerializeObject(new IdentityResult());
             }
             // This doesn't count login failures towards account lockout
             // To enable password failures to trigger account lockout, change to shouldLockout: true
             var result = await SignInManager.PasswordSignInAsync(model.UserName, model.Password, model.RememberMe, shouldLockout: false);
+            IdentityResult ret;
             switch (result)
             {
                 case SignInStatus.Success:
-                    return JsonConvert.SerializeObject(new SuccessViewModel { Success = true });
+                    ret = new IdentityResult();
+                    break;
                 case SignInStatus.LockedOut:
-                    return JsonConvert.SerializeObject(new SuccessViewModel { Success = false });
+                    ret = new IdentityResult("Locked out.");
+                    break;
                 case SignInStatus.RequiresVerification:
-                    return JsonConvert.SerializeObject(new SuccessViewModel { Success = false });
+                    ret = new IdentityResult("Your email address must be verified.");
+                    break;
                 case SignInStatus.Failure:
                 default:
-                    return JsonConvert.SerializeObject(new SuccessViewModel { Success = false });
+                    ret = new IdentityResult("We couldn't sign you in, sure you have the right credentials?");
+                    break;
             }
+            return JsonConvert.SerializeObject(ret);
         }
 
         // /hyper/seecret/adventure
@@ -78,22 +84,16 @@ namespace Caroline.Areas.Api.Controllers
         public async Task<string> Register(RegisterViewModel model)
         {
             if (!ModelState.IsValid)
-                return JsonConvert.SerializeObject(new IdentityResult("Some fields are missing."));
+                return JsonConvert.SerializeObject(new IdentityResult(ModelState.GetErrors()));
 
-            var user = new User { UserName = model.UserName, Email = model.Email };
             var result = await AnonymousProfileApi.TryMigrateAnonymousAccountOrRegister(HttpContext, model);
-            if (!result.Succeeded)
-            {
-                return JsonConvert.SerializeObject(result);
-            }
+            return JsonConvert.SerializeObject(result);
 
             // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
             // Send an email with this link
             // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
             // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
             // await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
-
-            return JsonConvert.SerializeObject(result);
         }
 
         //public string ForgotPassword(string email)

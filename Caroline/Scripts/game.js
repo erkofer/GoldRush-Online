@@ -1556,28 +1556,35 @@ var Connection;
     }
 
     function loadSchema(schema) {
-        for (var i = 0; i < schema.Items.length; i++) {
-            Inventory.addItem(schema.Items[i].Id, schema.Items[i].Name, schema.Items[i].Worth, schema.Items[i].Category);
-            Statistics.addItem(schema.Items[i].Id, schema.Items[i].Name);
-        }
-
-        for (var i = 0; i < schema.StoreItems.length; i++) {
-            var item = schema.StoreItems[i];
-            Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.MaxQuantity);
-        }
-
-        for (var i = 0; i < schema.Processors.length; i++) {
-            var processor = schema.Processors[i];
-            console.log(processor.Name);
-            Crafting.addProcessor(processor.Id, processor.Name);
-            for (var r = 0; r < processor.Recipes.length; r++) {
-                Crafting.addProcessorRecipe(processor.Id, processor.Recipes[r].Ingredients, processor.Recipes[r].Resultants);
+        if (schema.Items) {
+            for (var i = 0; i < schema.Items.length; i++) {
+                Inventory.addItem(schema.Items[i].Id, schema.Items[i].Name, schema.Items[i].Worth, schema.Items[i].Category);
+                Statistics.addItem(schema.Items[i].Id, schema.Items[i].Name);
             }
         }
 
-        for (var i = 0; i < schema.CraftingItems.length; i++) {
-            var item = schema.CraftingItems[i];
-            Crafting.addRecipe(item.Id, item.Ingredients, item.Resultants, item.IsItem);
+        if (schema.StoreItems) {
+            for (var i = 0; i < schema.StoreItems.length; i++) {
+                var item = schema.StoreItems[i];
+                Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.MaxQuantity);
+            }
+        }
+
+        if (schema.Processors) {
+            for (var i = 0; i < schema.Processors.length; i++) {
+                var processor = schema.Processors[i];
+                console.log(processor.Name);
+                Crafting.addProcessor(processor.Id, processor.Name);
+                for (var r = 0; r < processor.Recipes.length; r++) {
+                    Crafting.addProcessorRecipe(processor.Id, processor.Recipes[r].Ingredients, processor.Recipes[r].Resultants);
+                }
+            }
+        }
+        if (schema.CraftingItems) {
+            for (var i = 0; i < schema.CraftingItems.length; i++) {
+                var item = schema.CraftingItems[i];
+                Crafting.addRecipe(item.Id, item.Ingredients, item.Resultants, item.IsItem);
+            }
         }
     }
 

@@ -37,6 +37,22 @@ namespace Caroline.Domain
             return new UserDto(ulock, _db, id);
         }
 
+        public async Task<IdentityResult> SetPassword(User user, string password)
+        {
+
+            var result = await PasswordValidator.ValidateAsync(password);
+            if (!result.Succeeded)
+            {
+                return result;
+            }
+            var store = Store as IUserPasswordStore<User, long>;
+            var hash = PasswordHasher.HashPassword(password);
+            await store.SetPasswordHashAsync(user, hash);
+            await UpdateSecurityStampAsync(user.Id);
+            await Store.UpdateAsync(user);
+            return IdentityResult.Success;
+        }
+
         public static UserManager Create(IdentityFactoryOptions<UserManager> options, IOwinContext context)
         {
             var manager = new UserManager(CarolineRedisDb.Create());
