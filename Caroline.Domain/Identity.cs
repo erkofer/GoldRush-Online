@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Caroline.Domain.Models;
 using Caroline.Persistence;
 using Caroline.Persistence.Models;
 using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
 using Microsoft.Owin.Security;
@@ -14,17 +14,27 @@ using Microsoft.Owin.Security;
 namespace Caroline.Domain
 {
     // Configure the application user manager used in this application. UserManager is defined in ASP.NET Identity and is used by the application.
-    public class ApplicationUserManager : UserManager<User,long>
+    public class UserManager : UserManager<User, long>
     {
-        public ApplicationUserManager(IUserStore<User, long> store)
-            : base(store)
-        {
+        private readonly CarolineRedisDb _db;
 
+        public UserManager(CarolineRedisDb db)
+            : base(new RedisUserStore(db))
+        {
+            _db = db;
         }
 
-        public static ApplicationUserManager Create(IdentityFactoryOptions<ApplicationUserManager> options, IOwinContext context)
+        async Task<UserDto> GetUser(long id)
         {
-            var manager = new ApplicationUserManager(new RedisUserStore(CarolineRedisDb.Create()));
+            var ulock = await _db.UserLocks.Lock(id);
+            if (ulock == null)
+                throw new TimeoutException();
+            return new UserDto(ulock, _db, id);
+        }
+
+        public static UserManager Create(IdentityFactoryOptions<UserManager> options, IOwinContext context)
+        {
+            var manager = new UserManager(CarolineRedisDb.Create());
             // Configure validation logic for usernames
             manager.UserValidator = new GoldRushUserValidator(manager)
             {
@@ -70,7 +80,7 @@ namespace Caroline.Domain
         public override async Task<IdentityResult> ValidateAsync(User item)
         {
             var baseResult = await base.ValidateAsync(item);
-            
+
             var hash = item.IsAnonymous ? Base64CharactersHash : RegisteredCharactersHash;
             List<char> illegalChars = null;
             for (int i = 0; i < item.UserName.Length; i++)
@@ -94,7 +104,7 @@ namespace Caroline.Domain
     // Configure the application sign-in manager which is used in this application.
     public class ApplicationSignInManager : SignInManager<User, long>
     {
-        public ApplicationSignInManager(ApplicationUserManager userManager, IAuthenticationManager authenticationManager)
+        public ApplicationSignInManager(UserManager userManager, IAuthenticationManager authenticationManager)
             : base(userManager, authenticationManager)
         {
         }
@@ -106,7 +116,7 @@ namespace Caroline.Domain
 
         public static ApplicationSignInManager Create(IdentityFactoryOptions<ApplicationSignInManager> options, IOwinContext context)
         {
-            return new ApplicationSignInManager(context.GetUserManager<ApplicationUserManager>(), context.Authentication);
+            return new ApplicationSignInManager(context.GetUserManager<UserManager>(), context.Authentication);
         }
     }
 }

@@ -15,7 +15,7 @@ namespace Caroline.Persistence
         readonly IStringTable _userNameLookup;
         readonly IStringTable _emailsLookup;
         readonly IStringTable _loginsLookup;
-        readonly IEntityTable<User> _users;
+        readonly IEntityTable<User, long> _users;
         readonly IIdManager<User> _userIds; 
         bool _disposed;
 
@@ -53,7 +53,7 @@ namespace Caroline.Persistence
         public async Task DeleteAsync(User user)
         {
             Check(user);
-            await _users.Delete(user);
+            await _users.Delete(user.Id);
             await _userNameLookup.Delete(user.UserName);
             await _emailsLookup.Delete(user.Email);
             foreach (UserLogin login in user.Logins)
@@ -65,7 +65,7 @@ namespace Caroline.Persistence
         public Task<User> FindByIdAsync(long userId)
         {
             ThrowIfDisposed();
-            return _users.Get(new User { Id = userId });
+            return _users.Get(userId);
         }
 
         public async Task<User> FindByNameAsync(string userName)
@@ -75,7 +75,7 @@ namespace Caroline.Persistence
             if (userId == null)
                 return null;
             var id = long.Parse(userId, CultureInfo.InvariantCulture);
-            return await _users.Get(new User { Id = id });
+            return await _users.Get(id);
         }
 
         public async Task AddLoginAsync(User user, UserLoginInfo login)
@@ -84,7 +84,7 @@ namespace Caroline.Persistence
             var userLogin = new UserLogin { LoginProvider = login.LoginProvider, ProviderKey = login.ProviderKey };
             user.Logins.Add(userLogin);
 
-            var dbUser = await _users.Get(user);
+            var dbUser = await _users.Get(user.Id);
             dbUser.Logins.Add(userLogin);
             await _users.Set(dbUser);
             await _loginsLookup.Set(GetLoginKey(login), dbUser.Id.ToStringInvariant());
@@ -93,7 +93,7 @@ namespace Caroline.Persistence
         public async Task RemoveLoginAsync(User user, UserLoginInfo login)
         {
             Check(user, login);
-            var dbUser = await _users.Get(user);
+            var dbUser = await _users.Get(user.Id);
 
             var badLogins = dbUser.Logins.Where(l => l.LoginProvider == login.LoginProvider && l.ProviderKey == login.ProviderKey);
             var goodLogins = dbUser.Logins.Except(badLogins).ToList();
@@ -116,7 +116,7 @@ namespace Caroline.Persistence
             var userId = await _loginsLookup.Get(GetLoginKey(login));
             if (userId == null)
                 return null;
-            return await _users.Get(new User { Id = long.Parse(userId, CultureInfo.InvariantCulture) });
+            return await _users.Get(long.Parse(userId, CultureInfo.InvariantCulture));
         }
 
         static string GetLoginKey(UserLogin login)
@@ -205,7 +205,7 @@ namespace Caroline.Persistence
             var userId = await _emailsLookup.Get(email);
             if (userId == null)
                 return null;
-            return await _users.Get(new User { Id = long.Parse(userId, CultureInfo.InvariantCulture) });
+            return await _users.Get(long.Parse(userId, CultureInfo.InvariantCulture));
         }
 
         #endregion

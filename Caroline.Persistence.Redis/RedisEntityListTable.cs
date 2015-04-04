@@ -4,112 +4,116 @@ using StackExchange.Redis;
 
 namespace Caroline.Persistence.Redis
 {
-    class RedisEntityListTable<TEntity> : RedisEntityTableBase<TEntity, string>, IEntityListTable<TEntity>
+    class RedisEntityListTable<TEntity, TId> : RedisEntityTableBase<TEntity, TId>, IEntityListTable<TEntity, TId>
     {
         private readonly IDatabase _db;
 
-        public RedisEntityListTable(IDatabase db, ISerializer<TEntity> serializer, IIdentifier<TEntity, RedisKey> identifier)
-            : base(serializer, identifier)
+        public RedisEntityListTable(IDatabase db, ISerializer<TEntity> serializer, ISerializer<TId> keySerializer, IIdentifier<TEntity, TId> identifier)
+            : base(serializer, keySerializer, identifier)
         {
             _db = db;
         }
 
-        public async Task<TEntity> GetByIndex(TEntity key, long index)
+        public async Task<TEntity> GetByIndex(TId id, long index)
         {
-            var tid = Identifier.GetId(key);
-            var result = await _db.ListGetByIndexAsync(tid, index);
-            return Deserialize(result, tid);
+            var key = KeySerializer.Serialize(id);
+            var result = await _db.ListGetByIndexAsync(key, index);
+            return Deserialize(result, id);
         }
 
-        public Task<long> InsertAt(TEntity key, RedisValue pivot, RedisValue value,IndexSide side)
+        public Task<long> InsertAt(TId id, RedisValue pivot, RedisValue value, IndexSide side)
         {
-            var tid = Identifier.GetId(key);
+            var key = KeySerializer.Serialize(id);
             switch (side)
             {
                 case IndexSide.Left:
-                    return _db.ListInsertBeforeAsync(tid, pivot, value);
+                    return _db.ListInsertBeforeAsync(key, pivot, value);
                 case IndexSide.Right:
-                    return _db.ListInsertAfterAsync(tid, pivot, value);
-                    default:
+                    return _db.ListInsertAfterAsync(key, pivot, value);
+                default:
                     throw new ArgumentOutOfRangeException("side");
             }
         }
 
-        public async Task<TEntity> Pop(TEntity key, RedisValue value, IndexSide side)
+        public async Task<TEntity> Pop(TId id, IndexSide side)
         {
-            var tid = Identifier.GetId(key);
+            var key = KeySerializer.Serialize(id);
             RedisValue result;
             switch (side)
             {
                 case IndexSide.Left:
-                    result = await _db.ListLeftPopAsync(tid);
+                    result = await _db.ListLeftPopAsync(key);
                     break;
                 case IndexSide.Right:
-                    result = await _db.ListRightPopAsync(tid);
+                    result = await _db.ListRightPopAsync(key);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException("side");
             }
-            return Deserialize(result, tid);
+            return Deserialize(result, id);
         }
 
-        public Task<long> Push(TEntity key, RedisValue value, IndexSide side)
+        public Task<long> Push(TEntity entity, IndexSide side)
         {
-            var tid = Identifier.GetId(key);
+            var id = Identifier.GetId(entity);
+            var key = KeySerializer.Serialize(id);
+            var serial = Serializer.Serialize(entity);
             switch (side)
             {
                 case IndexSide.Left:
-                    return _db.ListLeftPushAsync( tid, value);
+                    return _db.ListLeftPushAsync(key, serial);
                 case IndexSide.Right:
-                    return _db.ListRightPushAsync(tid, value);
+                    return _db.ListRightPushAsync(key, serial);
                 default:
                     throw new ArgumentOutOfRangeException("side");
             }
         }
 
-        public Task<long> Length(TEntity key)
+        public Task<long> Length(TId id)
         {
-            var tid = Identifier.GetId(key);
+            var tid = KeySerializer.Serialize(id);
             return _db.ListLengthAsync(tid);
         }
 
-        public async Task<TEntity[]> Range(TEntity key, long start = 0, long stop = -1)
+        public async Task<TEntity[]> Range(TId id, long start = 0, long stop = -1)
         {
-            var tid = Identifier.GetId(key);
-            var results = await _db.ListRangeAsync(tid, start, stop);
+            var key = KeySerializer.Serialize(id);
+            var results = await _db.ListRangeAsync(key, start, stop);
             var ret = new TEntity[results.Length];
             for (var i = 0; i < results.Length; i++)
             {
-                ret[i] = Deserialize(results[i], tid);
+                ret[i] = Deserialize(results[i], id);
             }
             return ret;
         }
 
-        public Task<long> Remove(TEntity key, RedisValue value, long count = 0)
+        public Task<long> Remove(TId id, TEntity value, long count = 0)
         {
-            var tid = Identifier.GetId(key);
-            return _db.ListRemoveAsync(tid, value, count);
+            var key = KeySerializer.Serialize(id);
+            var serial = Serializer.Serialize(value);
+            return _db.ListRemoveAsync(key, serial, count);
         }
 
-        public async Task<TEntity> RightPushLeftPop(TEntity source, TEntity destination)
+        public async Task<TEntity> RightPushLeftPop(TId source, TId destination)
         {
-            var tidSource = Identifier.GetId(source);
-            var tidDestination = Identifier.GetId(destination);
+            var tidSource = KeySerializer.Serialize(source);
+            var tidDestination = KeySerializer.Serialize(destination);
             var result = await _db.ListRightPopLeftPushAsync(tidSource, tidDestination);
-            return Deserialize(result, tidDestination);
+            return Deserialize(result, destination);
         }
 
         public Task SetByIndex(TEntity entity, long index)
         {
-            var tid = Identifier.GetId(entity);
+            var id = Identifier.GetId(entity);
+            var key = KeySerializer.Serialize(id);
             var serial = Serializer.Serialize(entity);
-            return _db.ListSetByIndexAsync(tid, index, serial);
+            return _db.ListSetByIndexAsync(key, index, serial);
         }
 
-        public Task Trim(TEntity key, long start, long stop)
+        public Task Trim(TId id, long start, long stop)
         {
-            var tid = Identifier.GetId(key);
-            return _db.ListTrimAsync(tid, start, stop);
+            var key = KeySerializer.Serialize(id);
+            return _db.ListTrimAsync(key, start, stop);
         }
     }
 
@@ -119,17 +123,17 @@ namespace Caroline.Persistence.Redis
         Right
     }
 
-    public interface IEntityListTable<TEntity>
+    public interface IEntityListTable<TEntity, in TId>
     {
-        Task<TEntity> GetByIndex(TEntity key, long index);
-        Task<long> InsertAt(TEntity key, RedisValue pivot, RedisValue value,IndexSide side);
-        Task<TEntity> Pop(TEntity key, RedisValue value, IndexSide side);
-        Task<long> Push(TEntity key, RedisValue value, IndexSide side);
-        Task<long> Length(TEntity key);
-        Task<TEntity[]> Range(TEntity key, long start = 0, long stop = -1);
-        Task<long> Remove(TEntity key, RedisValue value, long count = 0);
-        Task<TEntity> RightPushLeftPop(TEntity source, TEntity destination);
+        Task<TEntity> GetByIndex(TId id, long index);
+        Task<long> InsertAt(TId id, RedisValue pivot, RedisValue value, IndexSide side);
+        Task<TEntity> Pop(TId id, IndexSide side);
+        Task<long> Push(TEntity entity, IndexSide side);
+        Task<long> Length(TId id);
+        Task<TEntity[]> Range(TId id, long start = 0, long stop = -1);
+        Task<long> Remove(TId id, TEntity value, long count = 0);
+        Task<TEntity> RightPushLeftPop(TId source, TId destination);
         Task SetByIndex(TEntity entity, long index);
-        Task Trim(TEntity key, long start, long stop);
+        Task Trim(TId id, long start, long stop);
     }
 }

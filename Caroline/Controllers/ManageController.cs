@@ -18,17 +18,17 @@ namespace Caroline.Controllers
         {
         }
 
-        public ManageController(ApplicationUserManager userManager)
+        public ManageController(UserManager userManager)
         {
             UserManager = userManager;
         }
 
-        private ApplicationUserManager _userManager;
-        public ApplicationUserManager UserManager
+        private UserManager _userManager;
+        public UserManager UserManager
         {
             get
             {
-                return _userManager ?? HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();
+                return _userManager ?? HttpContext.GetOwinContext().GetUserManager<UserManager>();
             }
             private set
             {

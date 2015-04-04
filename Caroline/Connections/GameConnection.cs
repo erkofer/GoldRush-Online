@@ -64,7 +64,7 @@ namespace Caroline.Connections
         async Task<User> GetUserName(long userId)
         {
             var db = await CarolineRedisDb.CreateAsync();
-            return await db.Users.Get(new User { Id = userId });
+            return await db.Users.Get(userId);
 
         }
 

@@ -38,7 +38,7 @@ namespace Caroline.Api
 
         public static async Task<IdentityResult> TryMigrateAnonymousAccountOrRegister(HttpContextBase context, RegisterViewModel model)
         {
-            using (var users = context.GetOwinContext().Get<ApplicationUserManager>())
+            using (var users = context.GetOwinContext().Get<UserManager>())
             {
                 IdentityResult result;
 
@@ -122,7 +122,7 @@ namespace Caroline.Api
                 };
                 var user = new User { UserName = anonymousCookie.UserName, IsAnonymous = true };
 
-                var userManager = context.GetOwinContext().GetUserManager<ApplicationUserManager>();
+                var userManager = context.GetOwinContext().GetUserManager<UserManager>();
                 var result = userManager.Create(user, anonymousCookie.Password);
                 if (!result.Succeeded) continue;
 

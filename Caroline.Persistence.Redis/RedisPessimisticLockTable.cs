@@ -6,24 +6,25 @@ using StackExchange.Redis;
 
 namespace Caroline.Persistence.Redis
 {
-    public class RedisPessimisticLockTable<TEntity> : RedisEntityTableBase<TEntity, RedisKey>, IPessimisticLockTable<TEntity>
+    public class RedisPessimisticLockTable<TId> : IPessimisticLockTable<TId>
     {
         readonly IDatabase _db;
+        private readonly ISerializer<TId> _keySerializer;
         readonly TimeSpan _defaultExpiry;
         readonly CarolineScriptsRepo _scripts;
 
-        public RedisPessimisticLockTable(IDatabaseArea db, ISerializer<TEntity> serializer, IIdentifier<TEntity, RedisKey> identifier, TimeSpan defaultExpiry)
-            : base(serializer, identifier)
+        public RedisPessimisticLockTable(IDatabaseArea db, ISerializer<TId> keySerializer, TimeSpan defaultExpiry)
         {
             _db = db;
+            _keySerializer = keySerializer;
             _defaultExpiry = defaultExpiry;
             _scripts = db.Scripts;
         }
 
-        public async Task<IAsyncDisposable> Lock(TEntity id)
+        public async Task<IAsyncDisposable> Lock(TId id)
         {
-            RedisKey tid = Identifier.GetId(id);
-            for (int i = 0; i < 15; i++) // run 1.5x times the length of _defaultExpiry
+            var tid = _keySerializer.Serialize(id);
+            for (var i = 0; i < 15; i++) // run 1.5x times the length of _defaultExpiry
             {
                 var lockSucess = await _db.TryLock(_scripts, tid, _defaultExpiry);
                 if (lockSucess.IsLockAquired)
@@ -59,8 +60,8 @@ namespace Caroline.Persistence.Redis
         }
     }
 
-    public interface IPessimisticLockTable<in TEntity>
+    public interface IPessimisticLockTable<in TId>
     {
-        Task<IAsyncDisposable> Lock(TEntity id);
+        Task<IAsyncDisposable> Lock(TId id);
     }
 }

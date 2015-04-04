@@ -1,9 +1,15 @@
-﻿using Caroline.Persistence.Redis.Extensions;
+﻿using Caroline.Persistence.Redis;
+using Caroline.Persistence.Redis.Extensions;
 
 namespace Caroline.Persistence.Models
 {
-    public class GameSessionEndpoint
+    public class GameSessionEndpoint : IIdentifiableEntity<string>
     {
+        public GameSessionEndpoint()
+        {
+            
+        }
+
         public GameSessionEndpoint(IpEndpoint endpoint, long gameId)
         {
             EndPoint = endpoint;
@@ -11,21 +17,24 @@ namespace Caroline.Persistence.Models
         }
 
         public IpEndpoint EndPoint { get; set; }
-        
+
         public long GameId { get; set; }
 
-        public static string Serialize(GameSessionEndpoint session)
+        string IIdentifiableEntity<string>.Id
         {
-            return IpEndpoint.Serialize(session.EndPoint) + ';' + session.GameId.ToStringInvariant();
-        }
+            get
+            {
+                return IpEndpoint.Serialize(EndPoint) + ';' + GameId.ToStringInvariant();
+            }
+            set
+            {
+                var lastColonIndex = value.LastIndexOf(';');
+                var ipAddress = value.Substring(0, lastColonIndex);
+                var gameId = value.Substring(lastColonIndex + 1);
 
-        public static GameSessionEndpoint Deserialize(string value)
-        {
-            var lastColonIndex = value.LastIndexOf(';');
-            var ipAddress = value.Substring(0, lastColonIndex);
-            var gameId = value.Substring(lastColonIndex + 1);
-
-            return new GameSessionEndpoint(IpEndpoint.Deserialize(ipAddress), long.Parse(gameId));
+                EndPoint = IpEndpoint.Deserialize(ipAddress);
+                GameId = long.Parse(gameId);
+            }
         }
     }
 }

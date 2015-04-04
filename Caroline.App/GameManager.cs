@@ -19,17 +19,14 @@ namespace Caroline.App
             var games = db.Games;
 
             // lock the user and its games
-            var user = new User { Id = userId };
-            var userLock = await db.UserLocks.Lock(user);
+            var userLock = await db.UserLocks.Lock(userId);
 
             // get game save, if it doesn't exist then use a new game
-            Game save;
-            save = await games.Get(save = new Game { Id = userId }) ?? save;
+            var save = await games.Get(userId) ?? new Game();
 
             var saveData = save.SaveData;
             var saveObject = saveData != null ? ProtoBufHelpers.Deserialize<SaveState>(saveData) : null;
-            var sessionId = new GameSession(endpoint);
-            var session = await db.GameSessions.Get(sessionId) ?? sessionId;
+            var session = await db.GameSessions.Get(endpoint) ?? new GameSession();
             // load game save into an game instance
             var game = _sessionFactory.Create();
             game.Load(new LoadArgs { SaveState = saveObject });

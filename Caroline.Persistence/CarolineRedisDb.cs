@@ -58,26 +58,26 @@ namespace Caroline.Persistence
             var db = _redisConnection.Connect();
             return new CarolineRedisDb
             {
-                Games = db.Set<Game>("g"),
-                Users = db.Set<User>("u"),
-                UserIdIncrement = db.SetIdManager<User>("u-id"),
-                UserLocks = db.SetLockLong<User>("u-l", TimeSpan.FromSeconds(10)),
-                GameSessions = db.Set<GameSession>("c", TimeSpan.FromMinutes(2)),
-                UserNames = db.SetString("uu"),
-                Logins = db.SetString("ul"),
-                Emails = db.SetString("ue")
+                Games = db.SetLong<Game>("g"),
+                Users = db.SetLong<User>("u"),
+                UserIdIncrement = db.IdManager<User>("u-id"),
+                UserLocks = db.LockLong("u-l", TimeSpan.FromSeconds(10)),
+                GameSessions = db.Set<GameSession, GameSessionEndpoint>("s", TimeSpan.FromMinutes(2)),
+                UserNames = db.String("uu"),
+                Logins = db.String("ul"),
+                Emails = db.String("ue")
             };
         }
 
-        public IPessimisticLockTable<User> UserLocks { get; private set; }
+        public IPessimisticLockTable<long> UserLocks { get; private set; }
 
         public IIdManager<User> UserIdIncrement { get; private set; }
 
-        public IEntityTable<Game> Games { get; private set; }
+        public IEntityTable<Game, long> Games { get; private set; }
 
-        public IEntityTable<User> Users { get; private set; }
+        public IEntityTable<User, long> Users { get; private set; }
 
-        public IEntityTable<GameSession> GameSessions { get; private set; }
+        public IEntityTable<GameSession, GameSessionEndpoint> GameSessions { get; private set; }
 
         public IStringTable UserNames { get; private set; }
         public IStringTable Logins { get; private set; }
