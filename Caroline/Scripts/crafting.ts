@@ -27,6 +27,7 @@
         recipeSelector: HTMLElement;
         capacityElm: HTMLElement;
         recipeList: HTMLElement;
+        quantityTextbox: HTMLElement;
 
         completedOperations: number;
         totalOperations: number;
@@ -39,7 +40,7 @@
         addRecipe(recipe: Recipe) {
             this._recipes.push(recipe);
             if (!this.selectedRecipe)
-                this.selectedRecipe = recipe.resultants[0].id;
+                this.selectedRecipe = 0;
         }
     }
 
@@ -160,10 +161,23 @@
         }
     }
 
+    function hasRecipe(id: number, resultantId: number) {
+        if (!processors[id]) return;
+        var processor = processors[id];
+
+        for (var i = 0; i < processor._recipes.length; i++) {
+            if (resultantId == processor._recipes[i].resultants[0].id) return true;
+        }
+        return false;
+    }
+
     export function addProcessorRecipe(id: number, ingredients: any, resultants: any) {
         if (!processors[id]) return;
-
         var processor = processors[id];
+
+        // if we've already added this recipe ignore this.
+        if (hasRecipe(id, resultants[0].Id)) return;
+
         var recipe = new Recipe();
 
         for (var i = 0; i < ingredients.length; i++)
@@ -188,7 +202,7 @@
         if (!processor) return;
 
         var recipe = processor._recipes[recipeIndex];
-        processor.selectedRecipe = recipe.resultants[0].id;
+        processor.selectedRecipe = recipeIndex;
 
         while (processor.recipeList.lastChild) {
             processor.recipeList.removeChild(processor.recipeList.lastChild);
@@ -204,14 +218,14 @@
             recipe.ingredients[x].quantityDiv = ingredientQuantity;
             ingredientQuantity.style.display = 'inline-block';
             ingredientQuantity.style.verticalAlign = 'super';
-            ingredientQuantity.style.color = (recipe.ingredients[x].quantity <=Objects.getQuantity(recipe.ingredients[x].id)) ? 'darkgreen' : 'darkred';
+            ingredientQuantity.style.color = (recipe.ingredients[x].quantity <= Objects.getQuantity(recipe.ingredients[x].id)) ? 'darkgreen' : 'darkred';
             ingredientQuantity.textContent = Utils.formatNumber(recipe.ingredients[x].quantity);
             ingredientImage.classList.add("Half-" + Utils.cssifyName(Objects.lookupName(recipe.ingredients[x].id)));
 
             ingredientBox.appendChild(ingredientImage);
             ingredientBox.appendChild(ingredientQuantity);
             processor.recipeList.appendChild(ingredientBox);
-         }
+        }
     }
 
     function drawProcessor(processor: Processor) {
@@ -309,6 +323,7 @@
                 var quantitySelector = document.createElement('INPUT');
                 (<HTMLInputElement>quantitySelector).type = 'TEXT';
                 quantitySelector.style.width = '35px';
+                processor.quantityTextbox = quantitySelector;
                 cell.appendChild(quantitySelector);
                 var id = processor.id;
                 var selector = document.createElement('SELECT');
@@ -318,11 +333,12 @@
                 processor.recipeSelector = selector;
                 cell.appendChild(selector);
             }
-            
+
             if (processorCellDescriptions[i] == "Action") {
                 var activateBtn = Utils.createButton('Activate', '');
                 activateBtn.addEventListener('click', function () {//fix.
-                    Connection.processRecipe(processor.id, (<HTMLSelectElement>processor.recipeSelector).selectedIndex, 1);
+                    if(Utils.isNumber((<HTMLInputElement>processor.quantityTextbox).value))
+                        Connection.processRecipe(processor.id, (<HTMLSelectElement>processor.recipeSelector).selectedIndex, +(<HTMLInputElement>processor.quantityTextbox).value);
                 }, false);
                 cell.appendChild(activateBtn);
             }
@@ -334,45 +350,87 @@
     export function updateProcessor(id: number, selectedRecipe: number, operationDuration: number, completedOperations: number, totalOperations: number, capacity: number) {
         var processor = processors[id];
         if (!processor) return;
-        console.log('updating ' + processor.name);
 
-        processor.selectedRecipe = selectedRecipe ? selectedRecipe : processor.selectedRecipe;
-        
+        var progressChanged = false;
 
-        if(totalOperations)
+        Utils.ifNotDefault(selectedRecipe, function () {
+            processor.selectedRecipe = selectedRecipe;
+        });
+
+        Utils.ifNotDefault(totalOperations, function () {
             processor.totalOperations = totalOperations;
+            progressChanged = true;
+        });
 
-        if(operationDuration)
+        Utils.ifNotDefault(operationDuration, function () {
             processor.operationDuration = operationDuration;
+        });
 
-        if(capacity)
+        Utils.ifNotDefault(capacity, function () {
             processor.capacityElm.textContent = capacity.toString();
+        });
 
-        if (processor.completedOperations != completedOperations) {
-            console.log('New '+processor.name+' operation');
+        Utils.ifNotDefault(completedOperations, function () {
             processor.completedOperations = completedOperations;
+            progressChanged = true;
+        });
+
+        if (progressChanged) {
+            if (processor.totalOperations <= 0) return;
+            if (processor.completedOperations == processor.totalOperations) return;
+
             processor.operationStartTime = Date.now();
             processor.operationCompletionTime = processor.operationStartTime + (processor.operationDuration * 1000);
-        } 
-
-        if (processor.operationDuration > -1) {
-            processor.progressText.textContent = Objects.lookupName(processor._recipes[processor.selectedRecipe].resultants[0].id);
+            console.log('Start: ' + processor.operationStartTime + ' End: ' + processor.operationCompletionTime);
         }
-       /* if (processor.operationCompletionTime != operationCompletionTime) {
-            processor.operationStartTime = Date.now() / 1000;
-            processor.operationCompletionTime = operationCompletionTime;
-        }*/
+        /*
+        Utils.ifNotDefault(completedOperations, function () {
+            if (processor.completedOperations != completedOperations) {
+                console.log('New ' + processor.name + ' operation');
+                processor.completedOperations = completedOperations;
+                if (processor.totalOperations > 0) {
+                    processor.operationStartTime = Date.now();
+                    processor.operationCompletionTime = processor.operationStartTime + (processor.operationDuration * 1000);
+                    console.log('Start: ' + processor.operationStartTime + ' End: ' + processor.operationCompletionTime);
+                } else {
+                    console.log('Operation finished.');
+                }
+            }
+        });*/
+
+
+        if (processor.selectedRecipe > -1) {
+            try {
+                processor.progressText.textContent = Objects.lookupName(processor._recipes[processor.selectedRecipe].resultants[0].id) + ' (' + processor.completedOperations + '/' + processor.totalOperations + ')';
+            }
+            catch (err) {
+                console.log("invalid processor recipe " + processor.selectedRecipe);
+            }
+        } else {
+            processor.progressText.textContent = '';
+        }
+        /* if (processor.operationCompletionTime != operationCompletionTime) {
+             processor.operationStartTime = Date.now() / 1000;
+             processor.operationCompletionTime = operationCompletionTime;
+         }*/
     }
 
     function processorBars() {
         processors.forEach(processor => {
-            if (processor.operationDuration < 0)
+            if (processor.operationDuration <= 0)
                 processor.progressBar.style.width = '0%';
             else if (processor.completedOperations != processor.totalOperations && processor.totalOperations > 0) {
                 /*console.log(processor.operationCompletionTime);
                 console.log(processor.operationStartTime);
                 console.log(((((processor.operationCompletionTime - processor.operationStartTime) / processor.operationDuration))/10) + '%');*/
-                processor.progressBar.style.width = ((((processor.operationCompletionTime - processor.operationStartTime) / processor.operationDuration))/10) + '%';
+                var timeToFinish = processor.operationCompletionTime - Date.now();
+                timeToFinish /= 1000;
+
+                var completionPerc = timeToFinish / processor.operationDuration;
+                completionPerc *= 100;
+                completionPerc = 100 - completionPerc;
+                // processor.progressBar.style.width = ((((processor.operationCompletionTime - processor.operationStartTime) / processor.operationDuration)) / 10) + '%';
+                processor.progressBar.style.width = completionPerc + '%';
             }
         });
     }

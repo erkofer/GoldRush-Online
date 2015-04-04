@@ -1037,28 +1037,35 @@ var Connection;
     }
 
     function loadSchema(schema) {
-        for (var i = 0; i < schema.Items.length; i++) {
-            Inventory.addItem(schema.Items[i].Id, schema.Items[i].Name, schema.Items[i].Worth, schema.Items[i].Category);
-            Statistics.addItem(schema.Items[i].Id, schema.Items[i].Name);
-        }
-
-        for (var i = 0; i < schema.StoreItems.length; i++) {
-            var item = schema.StoreItems[i];
-            Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.MaxQuantity);
-        }
-
-        for (var i = 0; i < schema.Processors.length; i++) {
-            var processor = schema.Processors[i];
-            console.log(processor.Name);
-            Crafting.addProcessor(processor.Id, processor.Name);
-            for (var r = 0; r < processor.Recipes.length; r++) {
-                Crafting.addProcessorRecipe(processor.Id, processor.Recipes[r].Ingredients, processor.Recipes[r].Resultants);
+        if (schema.Items) {
+            for (var i = 0; i < schema.Items.length; i++) {
+                Inventory.addItem(schema.Items[i].Id, schema.Items[i].Name, schema.Items[i].Worth, schema.Items[i].Category);
+                Statistics.addItem(schema.Items[i].Id, schema.Items[i].Name);
             }
         }
 
-        for (var i = 0; i < schema.CraftingItems.length; i++) {
-            var item = schema.CraftingItems[i];
-            Crafting.addRecipe(item.Id, item.Ingredients, item.Resultants, item.IsItem);
+        if (schema.StoreItems) {
+            for (var i = 0; i < schema.StoreItems.length; i++) {
+                var item = schema.StoreItems[i];
+                Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.MaxQuantity);
+            }
+        }
+
+        if (schema.Processors) {
+            for (var i = 0; i < schema.Processors.length; i++) {
+                var processor = schema.Processors[i];
+                console.log(processor.Name);
+                Crafting.addProcessor(processor.Id, processor.Name);
+                for (var r = 0; r < processor.Recipes.length; r++) {
+                    Crafting.addProcessorRecipe(processor.Id, processor.Recipes[r].Ingredients, processor.Recipes[r].Resultants);
+                }
+            }
+        }
+        if (schema.CraftingItems) {
+            for (var i = 0; i < schema.CraftingItems.length; i++) {
+                var item = schema.CraftingItems[i];
+                Crafting.addRecipe(item.Id, item.Ingredients, item.Resultants, item.IsItem);
+            }
         }
     }
 
@@ -1225,7 +1232,7 @@ var Crafting;
         Processor.prototype.addRecipe = function (recipe) {
             this._recipes.push(recipe);
             if (!this.selectedRecipe)
-                this.selectedRecipe = recipe.resultants[0].id;
+                this.selectedRecipe = 0;
         };
         return Processor;
     })();
@@ -1343,11 +1350,26 @@ var Crafting;
     }
     Crafting.addProcessor = addProcessor;
 
+    function hasRecipe(id, resultantId) {
+        if (!Crafting.processors[id])
+            return;
+        var processor = Crafting.processors[id];
+
+        for (var i = 0; i < processor._recipes.length; i++) {
+            if (resultantId == processor._recipes[i].resultants[0].id)
+                return true;
+        }
+        return false;
+    }
+
     function addProcessorRecipe(id, ingredients, resultants) {
         if (!Crafting.processors[id])
             return;
-
         var processor = Crafting.processors[id];
+
+        if (hasRecipe(id, resultants[0].Id))
+            return;
+
         var recipe = new Recipe();
 
         for (var i = 0; i < ingredients.length; i++)
@@ -1374,7 +1396,7 @@ var Crafting;
             return;
 
         var recipe = processor._recipes[recipeIndex];
-        processor.selectedRecipe = recipe.resultants[0].id;
+        processor.selectedRecipe = recipeIndex;
 
         while (processor.recipeList.lastChild) {
             processor.recipeList.removeChild(processor.recipeList.lastChild);
@@ -1477,6 +1499,7 @@ var Crafting;
                 var quantitySelector = document.createElement('INPUT');
                 quantitySelector.type = 'TEXT';
                 quantitySelector.style.width = '35px';
+                processor.quantityTextbox = quantitySelector;
                 cell.appendChild(quantitySelector);
                 var id = processor.id;
                 var selector = document.createElement('SELECT');
@@ -1490,7 +1513,8 @@ var Crafting;
             if (processorCellDescriptions[i] == "Action") {
                 var activateBtn = Utils.createButton('Activate', '');
                 activateBtn.addEventListener('click', function () {
-                    Connection.processRecipe(processor.id, processor.recipeSelector.selectedIndex, 1);
+                    if (Utils.isNumber(processor.quantityTextbox.value))
+                        Connection.processRecipe(processor.id, processor.recipeSelector.selectedIndex, +processor.quantityTextbox.value);
                 }, false);
                 cell.appendChild(activateBtn);
             }
@@ -1503,38 +1527,67 @@ var Crafting;
         var processor = Crafting.processors[id];
         if (!processor)
             return;
-        console.log('updating ' + processor.name);
 
-        processor.selectedRecipe = selectedRecipe ? selectedRecipe : processor.selectedRecipe;
+        var progressChanged = false;
 
-        if (totalOperations)
+        Utils.ifNotDefault(selectedRecipe, function () {
+            processor.selectedRecipe = selectedRecipe;
+        });
+
+        Utils.ifNotDefault(totalOperations, function () {
             processor.totalOperations = totalOperations;
+            progressChanged = true;
+        });
 
-        if (operationDuration)
+        Utils.ifNotDefault(operationDuration, function () {
             processor.operationDuration = operationDuration;
+        });
 
-        if (capacity)
+        Utils.ifNotDefault(capacity, function () {
             processor.capacityElm.textContent = capacity.toString();
+        });
 
-        if (processor.completedOperations != completedOperations) {
-            console.log('New ' + processor.name + ' operation');
+        Utils.ifNotDefault(completedOperations, function () {
             processor.completedOperations = completedOperations;
+            progressChanged = true;
+        });
+
+        if (progressChanged) {
+            if (processor.totalOperations <= 0)
+                return;
+            if (processor.completedOperations == processor.totalOperations)
+                return;
+
             processor.operationStartTime = Date.now();
             processor.operationCompletionTime = processor.operationStartTime + (processor.operationDuration * 1000);
+            console.log('Start: ' + processor.operationStartTime + ' End: ' + processor.operationCompletionTime);
         }
 
-        if (processor.operationDuration > -1) {
-            processor.progressText.textContent = Objects.lookupName(processor._recipes[processor.selectedRecipe].resultants[0].id);
+        if (processor.selectedRecipe > -1) {
+            try  {
+                processor.progressText.textContent = Objects.lookupName(processor._recipes[processor.selectedRecipe].resultants[0].id) + ' (' + processor.completedOperations + '/' + processor.totalOperations + ')';
+            } catch (err) {
+                console.log("invalid processor recipe " + processor.selectedRecipe);
+            }
+        } else {
+            processor.progressText.textContent = '';
         }
     }
     Crafting.updateProcessor = updateProcessor;
 
     function processorBars() {
         Crafting.processors.forEach(function (processor) {
-            if (processor.operationDuration < 0)
+            if (processor.operationDuration <= 0)
                 processor.progressBar.style.width = '0%';
             else if (processor.completedOperations != processor.totalOperations && processor.totalOperations > 0) {
-                processor.progressBar.style.width = ((((processor.operationCompletionTime - processor.operationStartTime) / processor.operationDuration)) / 10) + '%';
+                var timeToFinish = processor.operationCompletionTime - Date.now();
+                timeToFinish /= 1000;
+
+                var completionPerc = timeToFinish / processor.operationDuration;
+                completionPerc *= 100;
+                completionPerc = 100 - completionPerc;
+
+                processor.progressBar.style.width = completionPerc + '%';
             }
         });
     }

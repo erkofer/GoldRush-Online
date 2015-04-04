@@ -159,7 +159,13 @@ namespace GoldRush
             /// </summary>
             private ProcessorRecipe selectedRecipe;
 
-            public int SelectedRecipeIndex { get { return selectedRecipe != null ? Recipes.IndexOf(selectedRecipe) : -1; } }
+            public int SelectedRecipeIndex
+            {
+                get { return selectedRecipe != null ? Recipes.IndexOf(selectedRecipe) : -1; }
+                set {
+                    selectedRecipe = value == -1 ? null : Recipes[value];
+                }
+            }
 
             public double SelectedRecipeDuration { get { return selectedRecipe != null ? selectedRecipe.Duration : 0; } }
             /// <summary>
@@ -167,14 +173,14 @@ namespace GoldRush
             /// </summary>
             private int recipesToCraft;
 
-            public int RecipesToCraft { get { return recipesToCraft; } }
+            public int RecipesToCraft { get { return recipesToCraft; } set { recipesToCraft = value; } }
 
             /// <summary>
             /// The number of iterations the recipe has been crafted for.
             /// </summary>
             private int recipesCrafted;
 
-            public int RecipesCrafted { get { return recipesCrafted; } }
+            public int RecipesCrafted { get { return recipesCrafted; } set { recipesCrafted = value; } }
 
             private int recipesLeftToCraft { get { return recipesToCraft - recipesCrafted; } }
 
@@ -182,6 +188,8 @@ namespace GoldRush
             /// The progress on the current crafting iteration.
             /// </summary>
             private double recipeProgress;
+
+            public double RecipeProgress {get { return recipeProgress; } set { recipeProgress = value; }}
 
             public void Stop()
             {
@@ -233,6 +241,8 @@ namespace GoldRush
 
                 var iterations = Math.Floor(recipeProgress / selectedRecipe.Duration);
                 Craft((int)iterations);
+
+                if (recipesLeftToCraft == 0) Stop();
             }
 
             private void Craft(int iterations)
