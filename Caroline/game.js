@@ -1148,7 +1148,7 @@ var Connection;
 
     function updateStore(items) {
         for (var i = 0; i < items.length; i++)
-            Store.changeQuantity(items[i].Id, items[i].Quantity);
+            Store.changeQuantity(items[i].Id, items[i].Quantity, items[i].MaxQuantity, items[i].Price);
     }
 
     function mine(x, y) {
@@ -2405,19 +2405,42 @@ var Store;
     }
     Store.addItem = addItem;
 
-    function changeQuantity(id, quantity) {
+    function changeQuantity(id, quantity, maxQuantity, price) {
         var item = items[id];
 
-        Objects.setQuantity(id, quantity);
-        item.quantity = quantity;
-        Crafting.update();
+        Utils.ifNotDefault(maxQuantity, function () {
+            if (maxQuantity != 0) {
+                try  {
+                    item.maxQuantity = maxQuantity;
+                    item.maxQuantityElm.textContent = maxQuantity.toString();
+                } catch (err) {
+                    console.log(id);
+                }
+            }
+        });
 
-        if (item.category == 6 /* CRAFTING */)
-            return;
+        Utils.ifNotDefault(quantity, function () {
+            Objects.setQuantity(id, quantity);
+            item.quantity = quantity;
+            Crafting.update();
 
-        item.container.style.display = (item.quantity <= -1 || item.quantity >= item.maxQuantity && item.maxQuantity > 0) ? 'none' : 'inline-block';
-        if (item.maxQuantity && item.maxQuantity > 1)
-            item.nameElm.textContent = item.name + ' (' + ((item.quantity) ? item.quantity : 0) + '/' + item.maxQuantity + ')';
+            if (maxQuantity != 0) {
+                if (item.category == 6 /* CRAFTING */)
+                    return;
+
+                item.container.style.display = (item.quantity <= -1 || item.quantity >= item.maxQuantity && item.maxQuantity > 0) ? 'none' : 'inline-block';
+                if (item.maxQuantity && item.maxQuantity > 1) {
+                    item.quantityElm.textContent = quantity.toString();
+                }
+            }
+        });
+
+        Utils.ifNotDefault(price, function () {
+            if (item.priceElm) {
+                item.price = price;
+                item.priceElm.textContent = Utils.formatNumber(price);
+            }
+        });
     }
     Store.changeQuantity = changeQuantity;
 
@@ -2430,12 +2453,33 @@ var Store;
         item.container = itemContainer;
         var header = document.createElement('div');
         header.classList.add('store-item-header');
-        if (item.maxQuantity <= 1) {
-            header.textContent = item.name;
-        } else {
-            header.textContent = item.name + ' (' + item.quantity + '/' + item.maxQuantity + ')';
+        var headerText = document.createElement('div');
+        headerText.classList.add('store-item-header-text');
+        headerText.textContent = item.name;
+        header.appendChild(headerText);
+
+        var headerQuantityContainer = document.createElement('div');
+        headerQuantityContainer.classList.add('store-item-header-quantity-container');
+
+        var headerMaxQuantity = document.createElement('span');
+        headerMaxQuantity.classList.add('store-item-header-quantity');
+        var headerQuantity = document.createElement('span');
+        headerQuantity.classList.add('store-item-header-quantity');
+        var divider = document.createElement('span');
+        divider.classList.add('store-item-header-quantity');
+        divider.textContent = '/';
+
+        if (item.maxQuantity > 1) {
+            headerQuantityContainer.appendChild(headerQuantity);
+            headerQuantityContainer.appendChild(divider);
+            headerQuantityContainer.appendChild(headerMaxQuantity);
         }
-        item.nameElm = header;
+        header.appendChild(headerQuantityContainer);
+
+        item.maxQuantityElm = headerMaxQuantity;
+        item.quantityElm = headerQuantity;
+
+        item.nameElm = headerText;
         itemContainer.appendChild(header);
 
         var itemImage = document.createElement('DIV');

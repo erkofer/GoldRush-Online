@@ -410,6 +410,28 @@ body{
     text-align:center;
     border-top-left-radius:5px;
     border-top-right-radius:5px;
+    position: relative;
+}
+
+.store-item-header-text {
+    position: absolute;
+    width: 100%;
+    height: 18px;
+    text-align: center;
+    top:0;
+    left:0;
+    font-size:12px;
+}
+
+.store-item-header-quantity-container {
+    position:absolute;
+    top:0;
+    right:0;
+    text-align:right;
+}
+
+.store-item-header-quantity {
+    font-size:9px;
 }
 
 .store-item-footer {

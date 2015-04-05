@@ -227,6 +227,8 @@ namespace GoldRush
                 objs.All.TryGetValue(item.Key, out gameobject);
                 stateStoreItem.Id = gameobject.Id;
                 stateStoreItem.Quantity = gameobject.Quantity;
+                stateStoreItem.MaxQuantity = item.Value.MaxQuantity;
+                stateStoreItem.Price = item.Value.GetPrice();
 
                 if (gameobject.Requires != null && gameobject.Requires.Active == false)// if the gameobject requires something and is not active.
                     stateStoreItem.Quantity = -1;

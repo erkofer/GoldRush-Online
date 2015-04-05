@@ -93,6 +93,8 @@ message GameState {
 	message StoreItem {
 		optional int32 Id = 1;
 		optional sint32 Quantity = 2 [default = -100];
+		optional int32 MaxQuantity = 3 [default = -100];
+		optional int32 Price = 4 [default=-100];
 	}
 	repeated StoreItem StoreItemsUpdate=5;
 

@@ -147,7 +147,7 @@ module Connection {
 
     function updateStore(items: any) {
         for (var i = 0; i < items.length; i++)
-            Store.changeQuantity(items[i].Id, items[i].Quantity);
+            Store.changeQuantity(items[i].Id, items[i].Quantity,items[i].MaxQuantity,items[i].Price);
     }
 
     export function mine(x: number, y: number) {

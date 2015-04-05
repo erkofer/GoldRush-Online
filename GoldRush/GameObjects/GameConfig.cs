@@ -152,8 +152,8 @@ namespace GoldRush
                 public double Factor = 1;
             }
 
-            public static StoreItemConfig EmptyVial = new StoreItemConfig() { BasePrice = 1000, Category = Store.Category.ITEMS, MaxQuantity = 0 };
-            public static StoreItemConfig Gunpowder = new StoreItemConfig() { BasePrice = 2500, Category = Store.Category.ITEMS, MaxQuantity = 0 };
+            public static StoreItemConfig EmptyVial = new StoreItemConfig() { BasePrice = 1000, Category = Store.Category.ITEMS};
+            public static StoreItemConfig Gunpowder = new StoreItemConfig() { BasePrice = 2500, Category = Store.Category.ITEMS};
             public static StoreItemConfig Researcher = new StoreItemConfig() { BasePrice = 1000000, Category = Store.Category.GATHERING };
             public static StoreItemConfig Foreman = new StoreItemConfig() { BasePrice = 250000, Category = Store.Category.GATHERING };
             public static StoreItemConfig Botanist = new StoreItemConfig() { BasePrice = 100000000, Category = Store.Category.GATHERING };
