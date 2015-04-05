@@ -74,8 +74,8 @@ namespace Caroline.Domain
 
             // Configure user lockout defaults
             manager.UserLockoutEnabledByDefault = false;
-            manager.DefaultAccountLockoutTimeSpan = TimeSpan.FromMinutes(5);
-            manager.MaxFailedAccessAttemptsBeforeLockout = 20;
+            //manager.DefaultAccountLockoutTimeSpan = TimeSpan.FromMinutes(5);
+            //manager.MaxFailedAccessAttemptsBeforeLockout = 20;
 
             var dataProtectionProvider = options.DataProtectionProvider;
             if (dataProtectionProvider != null)
