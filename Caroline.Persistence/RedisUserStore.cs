@@ -7,6 +7,7 @@ using Caroline.Persistence.Models;
 using Caroline.Persistence.Redis;
 using Caroline.Persistence.Redis.Extensions;
 using Microsoft.AspNet.Identity;
+using StackExchange.Redis;
 
 namespace Caroline.Persistence
 {
@@ -41,13 +42,12 @@ namespace Caroline.Persistence
             Check(user);
             await _users.Set(user);
             var userId = user.Id.ToStringInvariant();
+
             await _userNameLookup.Set(user.UserName, userId);
             if (!string.IsNullOrEmpty(user.Email))
                 await _emailsLookup.Set(user.Email, userId);
             foreach (var login in user.Logins)
-            {
                 await _loginsLookup.Set(GetLoginKey(login), userId);
-            }
         }
 
         public async Task DeleteAsync(User user)

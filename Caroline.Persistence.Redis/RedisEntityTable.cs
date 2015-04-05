@@ -27,12 +27,12 @@ namespace Caroline.Persistence.Redis
             return entity;
         }
 
-        public async Task<bool> Set(TEntity entity, TimeSpan? expiry = null)
+        public async Task<bool> Set(TEntity entity, TimeSpan? expiry = null, When when = When.Always)
         {
             var id = Identifier.GetId(entity);
             var key = KeySerializer.Serialize(id);
             var value = Serializer.Serialize(entity);
-            return await _db.StringSetAsync(key, value, expiry ?? _defaultExpiry);
+            return await _db.StringSetAsync(key, value, expiry ?? _defaultExpiry, when);
         }
 
         public async Task<TEntity> GetSet(TEntity entity, TimeSpan? expiry = null)

@@ -23,9 +23,9 @@ namespace Caroline.Persistence.Redis
             return await _db.StringGetAsync(id);
         }
 
-        public Task<bool> Set(string id, string value, TimeSpan? expiry = null)
+        public Task<bool> Set(string id, string value, TimeSpan? expiry = null, When when = When.Always)
         {
-            return _db.StringSetAsync(id, value, expiry ?? _defaultExpiry);
+            return _db.StringSetAsync(id, value, expiry ?? _defaultExpiry, when);
         }
 
         public async Task<string> GetSet(string id, string setValue, TimeSpan? expiry = null)
