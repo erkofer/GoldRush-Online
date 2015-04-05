@@ -88,6 +88,13 @@ namespace GoldRush
                         objs.Crafting.Process(message.ProcessingActions[i].Id, message.ProcessingActions[i].RecipeIndex, message.ProcessingActions[i].Iterations);
                     }
                 }
+                if (message.MiningActions.Count > 0)
+                {
+                    for (var i = 0; i < message.MiningActions.Count; i++)
+                    {
+                        objs.Gatherers.Mine(message.MiningActions[i].X,message.MiningActions[i].Y);
+                    }
+                }
             }
 
             // SEND DATA TO CLIENT
@@ -242,6 +249,14 @@ namespace GoldRush
                 state.Processors.Add(stateProcessor);
             }
 
+            // ANTICHEAT
+
+            var stateAntiCheat = new GameState.AntiCheat();
+            stateAntiCheat.X = objs.Gatherers.AntiCheatX;
+            stateAntiCheat.Y = objs.Gatherers.AntiCheatY;
+
+            state.AntiCheatCoordinates = stateAntiCheat;
+
             return state;
         }
 
@@ -295,6 +310,25 @@ namespace GoldRush
                 saveState.Processors.Add(saveStateProcessor);
             }
 
+            //Anticheat
+            var anticheatSave = new SaveState.AntiCheat();
+            anticheatSave.X = objs.Gatherers.AntiCheatX;
+            anticheatSave.Y = objs.Gatherers.AntiCheatY;
+            anticheatSave.NextChange = objs.Gatherers.AntiCheatNextChange;
+
+            saveState.AntiCheatCoordinates = anticheatSave;
+
+            foreach (var storeItem in objs.Store.All)
+            {
+                var toSaveStoreItem = storeItem.Value;
+                var saveStateStoreItem = new SaveState.StoreItem();
+
+                saveStateStoreItem.Id = toSaveStoreItem.Item.Id;
+                saveStateStoreItem.Quantity = toSaveStoreItem.Item.Quantity;
+
+                saveState.StoreItems.Add(saveStateStoreItem);
+            }
+
             return saveState;
         }
 
@@ -342,6 +376,20 @@ namespace GoldRush
                         toLoadProcessor.RecipeProgress = processor.Progress;
                         toLoadProcessor.RecipesCrafted = processor.RecipesCrafted;
                         toLoadProcessor.RecipesToCraft = processor.RecipesToCraft;
+                    }
+                }
+                if (save.AntiCheatCoordinates != null)
+                {
+                    objs.Gatherers.AntiCheatX = save.AntiCheatCoordinates.X;
+                    objs.Gatherers.AntiCheatY = save.AntiCheatCoordinates.Y;
+                    objs.Gatherers.AntiCheatNextChange = save.AntiCheatCoordinates.NextChange;
+                }
+                if (save.StoreItems != null)
+                {
+                    foreach (var storeItem in save.StoreItems)
+                    {
+                        var toLoadStoreItem = objs.Store.All[storeItem.Id];
+                        toLoadStoreItem.Item.Quantity = storeItem.Quantity;
                     }
                 }
             }

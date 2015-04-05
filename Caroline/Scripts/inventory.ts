@@ -17,6 +17,8 @@ module Inventory {
     var configNames = new Array<HTMLElement>();
     var configImages = new Array<HTMLElement>();
 
+    console.log("Typescript is still compiling. WTF?");
+
     export class Item {
         id: number;
         name: string;
@@ -91,11 +93,15 @@ module Inventory {
         if (!inventoryPane)
             draw();
 
-        inventory.appendChild(drawItem(item));
+        if (item.category != Category.NFS && item.category != null)
+            inventory.appendChild(drawItem(item));
+        else
+            document.getElementById('headerInventory').appendChild(drawItem(item));
     }
 
     function draw() {
         // SELECTED ITEM HEADER
+
         inventoryPane = document.createElement('DIV');
         document.getElementById('paneContainer').appendChild(inventoryPane);
         selectedItemPane = document.createElement('DIV');
@@ -182,7 +188,7 @@ module Inventory {
         titleRow.classList.add('table-subheader');
         // TODO: finish config table
         for (var enumMember in Category) {
-            var isValueProperty = parseInt(enumMember, 10) >= 0
+            var isValueProperty = parseInt(enumMember, 10) >= 0;
             if (isValueProperty) {
                 if (Category[enumMember] != "NFS") { // if the item is in fact for sale.
                     var configCell = (<HTMLTableRowElement>titleRow).insertCell((<HTMLTableRowElement>titleRow).cells.length);
@@ -214,13 +220,46 @@ module Inventory {
 
     export function toggleConfig() {
         if (configTableContainer.classList.contains('closed')) {
-            configTableContainer.classList.remove('closed')
+            configTableContainer.classList.remove('closed');
         }
-        else 
-            configTableContainer.classList.add('closed')
+        else
+            configTableContainer.classList.add('closed');
+    }
+
+    function drawHeaderItem(item: Item): HTMLElement {
+        var itemElement = document.createElement('DIV');
+        item.container = itemElement;
+
+        itemElement.classList.add('header-item');
+
+        var itemImage = document.createElement('DIV');
+        itemImage.style.width = '32px';
+        itemImage.style.height = '32px';
+        itemImage.style.position = 'relative';
+        itemImage.style.margin = '0 auto';
+        var image = document.createElement('DIV');
+        image.classList.add('Half-'+item.name.replace(' ', '_'));
+        itemImage.appendChild(image);
+        itemElement.appendChild(itemImage);
+
+        var itemQuantity = document.createElement('DIV');
+        item.quantityElm = itemQuantity;
+        itemQuantity.classList.add("item-text");
+        itemQuantity.textContent = Utils.formatNumber(0);
+        itemElement.appendChild(itemQuantity);
+
+        var itemValue = document.createElement('DIV');
+        itemValue.style.display = 'none';
+        item.worthElm = itemValue;
+        itemElement.appendChild(itemValue);
+
+        return itemElement;
     }
 
     function drawItem(item: Item): HTMLElement {
+        if (item.category == Category.NFS || item.category == null) 
+            return drawHeaderItem(item);
+
         var itemElement = document.createElement('DIV');
         item.container = itemElement;
         itemElement.classList.add("item");
@@ -237,7 +276,7 @@ module Inventory {
         itemValue.textContent = Utils.formatNumber(item.worth);
         item.worthElm = itemValue;
         var itemCurrency = document.createElement('DIV');
-        itemCurrency.classList.add('Third-Coins');
+        itemCurrency.classList.add('Quarter-Coins');
         itemCurrency.style.display = 'inline-block';
         itemValueContainer.appendChild(itemCurrency);
         itemValueContainer.appendChild(itemValue);
@@ -280,7 +319,7 @@ module Inventory {
                 var row = (<HTMLTableElement>configTableBody).insertRow((<HTMLTableElement>configTableBody).rows.length);
                 row.classList.add('table-row');
                 for (var enumMember in Category) {
-                    var isValueProperty = parseInt(enumMember, 10) >= 0
+                    var isValueProperty = parseInt(enumMember, 10) >= 0;
                     if (isValueProperty) {
                         if (Category[enumMember] != "NFS") { // if the item is in fact for sale.
                             var configCell = (<HTMLTableRowElement>row).insertCell((<HTMLTableRowElement>row).cells.length);
@@ -342,7 +381,10 @@ module Inventory {
             Crafting.update();
             items[id].quantityElm.textContent = Utils.formatNumber(quantity);
             items[id].quantity = quantity;
-            items[id].container.style.display = quantity == 0 ? 'none' : 'inline-block';
+            if (items[id].category != Category.NFS && items[id].category != null)
+                items[id].container.style.display = quantity == 0 ? 'none' : 'inline-block';
+            else
+                items[id].container.style.display = Objects.getLifeTimeTotal(id) == 0 ? 'none' : 'inline-block';
             limitTextQuantity();
         });
     }

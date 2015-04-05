@@ -118,5 +118,11 @@ message GameState {
 		optional int32 Capacity=6 [default = -100];
 	}
 	repeated Processor Processors=8;
+
+	message AntiCheat {
+		optional int32 X = 1 [default = -100];
+		optional int32 Y = 2 [default = -100];
+	}
+	optional AntiCheat AntiCheatCoordinates=9;
 } 
 

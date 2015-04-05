@@ -577,6 +577,7 @@ var Rock;
             var mousePos = getMousePos(canvas, e);
             mouseDown = true;
             isOverRock(mousePos.x, mousePos.y);
+            Connection.mine(mousePos.x, mousePos.y);
         }, false);
         canvas.addEventListener('mouseup', function (e) {
             var mousePos = getMousePos(canvas, e);
@@ -613,14 +614,16 @@ var Rock;
     }
 
     function moveRock(x, y) {
-        lastX = x;
-        lastY = y;
-        if (stoneLoaded)
-            drawRock(x, y, rockSize, rockSize);
-        else
-            setTimeout(function () {
-                moveRock(x, y);
-            }, 10);
+        if (x != lastX && y != lastY) {
+            lastX = x;
+            lastY = y;
+            if (stoneLoaded)
+                drawRock(x, y, rockSize, rockSize);
+            else
+                setTimeout(function () {
+                    moveRock(x, y);
+                }, 10);
+        }
     }
     Rock.moveRock = moveRock;
 
@@ -1130,6 +1133,8 @@ var Inventory;
     var configNames = new Array();
     var configImages = new Array();
 
+    console.log("Typescript is still compiling. WTF?");
+
     var Item = (function () {
         function Item(id, name, worth, category) {
             this.id = id;
@@ -1201,7 +1206,10 @@ var Inventory;
         if (!inventoryPane)
             draw();
 
-        inventory.appendChild(drawItem(item));
+        if (item.category != 0 /* NFS */ && item.category != null)
+            inventory.appendChild(drawItem(item));
+        else
+            document.getElementById('headerInventory').appendChild(drawItem(item));
     }
 
     function draw() {
@@ -1330,7 +1338,40 @@ var Inventory;
     }
     Inventory.toggleConfig = toggleConfig;
 
+    function drawHeaderItem(item) {
+        var itemElement = document.createElement('DIV');
+        item.container = itemElement;
+
+        itemElement.classList.add('header-item');
+
+        var itemImage = document.createElement('DIV');
+        itemImage.style.width = '32px';
+        itemImage.style.height = '32px';
+        itemImage.style.position = 'relative';
+        itemImage.style.margin = '0 auto';
+        var image = document.createElement('DIV');
+        image.classList.add('Half-' + item.name.replace(' ', '_'));
+        itemImage.appendChild(image);
+        itemElement.appendChild(itemImage);
+
+        var itemQuantity = document.createElement('DIV');
+        item.quantityElm = itemQuantity;
+        itemQuantity.classList.add("item-text");
+        itemQuantity.textContent = Utils.formatNumber(0);
+        itemElement.appendChild(itemQuantity);
+
+        var itemValue = document.createElement('DIV');
+        itemValue.style.display = 'none';
+        item.worthElm = itemValue;
+        itemElement.appendChild(itemValue);
+
+        return itemElement;
+    }
+
     function drawItem(item) {
+        if (item.category == 0 /* NFS */ || item.category == null)
+            return drawHeaderItem(item);
+
         var itemElement = document.createElement('DIV');
         item.container = itemElement;
         itemElement.classList.add("item");
@@ -1348,7 +1389,7 @@ var Inventory;
         itemValue.textContent = Utils.formatNumber(item.worth);
         item.worthElm = itemValue;
         var itemCurrency = document.createElement('DIV');
-        itemCurrency.classList.add('Third-Coins');
+        itemCurrency.classList.add('Quarter-Coins');
         itemCurrency.style.display = 'inline-block';
         itemValueContainer.appendChild(itemCurrency);
         itemValueContainer.appendChild(itemValue);
@@ -1455,7 +1496,10 @@ var Inventory;
             Crafting.update();
             Inventory.items[id].quantityElm.textContent = Utils.formatNumber(quantity);
             Inventory.items[id].quantity = quantity;
-            Inventory.items[id].container.style.display = quantity == 0 ? 'none' : 'inline-block';
+            if (Inventory.items[id].category != 0 /* NFS */ && Inventory.items[id].category != null)
+                Inventory.items[id].container.style.display = quantity == 0 ? 'none' : 'inline-block';
+            else
+                Inventory.items[id].container.style.display = Objects.getLifeTimeTotal(id) == 0 ? 'none' : 'inline-block';
             limitTextQuantity();
         });
     }
@@ -1520,6 +1564,11 @@ var Connection;
         if (msg.Processors != null) {
             updateProcessors(msg.Processors);
         }
+
+        // Anti cheat
+        if (msg.AntiCheatCoordinates != null) {
+            antiCheat(msg.AntiCheatCoordinates);
+        }
     });
 
     function restart() {
@@ -1556,28 +1605,34 @@ var Connection;
     }
 
     function loadSchema(schema) {
-        for (var i = 0; i < schema.Items.length; i++) {
-            Inventory.addItem(schema.Items[i].Id, schema.Items[i].Name, schema.Items[i].Worth, schema.Items[i].Category);
-            Statistics.addItem(schema.Items[i].Id, schema.Items[i].Name);
-        }
-
-        for (var i = 0; i < schema.StoreItems.length; i++) {
-            var item = schema.StoreItems[i];
-            Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.MaxQuantity);
-        }
-
-        for (var i = 0; i < schema.Processors.length; i++) {
-            var processor = schema.Processors[i];
-            console.log(processor.Name);
-            Crafting.addProcessor(processor.Id, processor.Name);
-            for (var r = 0; r < processor.Recipes.length; r++) {
-                Crafting.addProcessorRecipe(processor.Id, processor.Recipes[r].Ingredients, processor.Recipes[r].Resultants);
+        if (schema.Items) {
+            for (var i = 0; i < schema.Items.length; i++) {
+                Inventory.addItem(schema.Items[i].Id, schema.Items[i].Name, schema.Items[i].Worth, schema.Items[i].Category);
+                Statistics.addItem(schema.Items[i].Id, schema.Items[i].Name);
             }
         }
 
-        for (var i = 0; i < schema.CraftingItems.length; i++) {
-            var item = schema.CraftingItems[i];
-            Crafting.addRecipe(item.Id, item.Ingredients, item.Resultants, item.IsItem);
+        if (schema.StoreItems) {
+            for (var i = 0; i < schema.StoreItems.length; i++) {
+                var item = schema.StoreItems[i];
+                Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.MaxQuantity);
+            }
+        }
+
+        if (schema.Processors) {
+            for (var i = 0; i < schema.Processors.length; i++) {
+                var processor = schema.Processors[i];
+                Crafting.addProcessor(processor.Id, processor.Name);
+                for (var r = 0; r < processor.Recipes.length; r++) {
+                    Crafting.addProcessorRecipe(processor.Id, processor.Recipes[r].Ingredients, processor.Recipes[r].Resultants);
+                }
+            }
+        }
+        if (schema.CraftingItems) {
+            for (var i = 0; i < schema.CraftingItems.length; i++) {
+                var item = schema.CraftingItems[i];
+                Crafting.addRecipe(item.Id, item.Ingredients, item.Resultants, item.IsItem);
+            }
         }
     }
 
@@ -1593,6 +1648,10 @@ var Connection;
             var processor = processors[i];
             Crafting.updateProcessor(processor.Id, processor.SelectedRecipe, processor.OperationDuration, processor.CompletedOperations, processor.TotalOperations, processor.Capacity);
         }
+    }
+
+    function antiCheat(ac) {
+        Rock.moveRock(ac.X, ac.Y);
     }
 
     function updateStats(items) {
@@ -1614,6 +1673,14 @@ var Connection;
         for (var i = 0; i < items.length; i++)
             Store.changeQuantity(items[i].Id, items[i].Quantity);
     }
+
+    function mine(x, y) {
+        var miningAction = new Komodo.ClientActions.MiningAction();
+        miningAction.X = x;
+        miningAction.Y = y;
+        actions.MiningActions.push(miningAction);
+    }
+    Connection.mine = mine;
 
     function sellItem(id, quantity) {
         var inventoryAction = new Komodo.ClientActions.InventoryAction();
@@ -1865,7 +1932,7 @@ var Store;
         price.style.verticalAlign = 'top';
         item.priceElm = price;
         var coins = document.createElement('div');
-        coins.classList.add('Third-Coins');
+        coins.classList.add('Quarter-Coins');
         coins.style.display = 'inline-block';
         priceContainer.appendChild(coins);
         priceContainer.appendChild(price);

@@ -101,15 +101,16 @@ namespace GoldRush
                     }
                 }
                 public double BaseResourcesPerSecond;
+                public int FuelConsumption;
             }
 
-            public static GathererConfig Player = new GathererConfig() { Name = "Player", BaseResourcesPerSecond = 1 };
+            public static GathererConfig Player = new GathererConfig() { Name = "Player", BaseResourcesPerSecond = 1};
             public static GathererConfig Miner = new GathererConfig() { Name = "Miner", BaseResourcesPerSecond = 0.5 };
             public static GathererConfig Lumberjack = new GathererConfig() { Name = "Lumberjack", BaseResourcesPerSecond = 0.5 };
-            public static GathererConfig Drill = new GathererConfig() { Name = "Drill", BaseResourcesPerSecond = 2.5 };
-            public static GathererConfig Crusher = new GathererConfig() { Name = "Crusher", BaseResourcesPerSecond = 5 };
-            public static GathererConfig Excavator = new GathererConfig() { Name = "Excavator", BaseResourcesPerSecond = 10 };
-            public static GathererConfig MegaDrill = new GathererConfig() { Name = "Mega Drill", BaseResourcesPerSecond = 20 };
+            public static GathererConfig Drill = new GathererConfig() { Name = "Drill", BaseResourcesPerSecond = 2.5, FuelConsumption = 1};
+            public static GathererConfig Crusher = new GathererConfig() { Name = "Crusher", BaseResourcesPerSecond = 5, FuelConsumption = 2};
+            public static GathererConfig Excavator = new GathererConfig() { Name = "Excavator", BaseResourcesPerSecond = 10, FuelConsumption = 4};
+            public static GathererConfig MegaDrill = new GathererConfig() { Name = "Mega Drill", BaseResourcesPerSecond = 20, FuelConsumption = 8};
             public static GathererConfig Pumpjack = new GathererConfig() { Name = "Pumpjack", BaseResourcesPerSecond = 0.2 };
             public static GathererConfig BigTexan = new GathererConfig() { Name = "Big Texan", BaseResourcesPerSecond = 0.5 };
         }

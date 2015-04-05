@@ -140,7 +140,7 @@
         price.style.verticalAlign = 'top';
         item.priceElm = price;
         var coins = document.createElement('div');
-        coins.classList.add('Third-Coins');
+        coins.classList.add('Quarter-Coins');
         coins.style.display = 'inline-block';
         priceContainer.appendChild(coins);
         priceContainer.appendChild(price);

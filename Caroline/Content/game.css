@@ -27,17 +27,31 @@ body{
     background:grey;
 }
 
-.rockContainer{
+.rock-container{
     margin:0 auto;
     width: 250px;
     height: 250px;
 }
 
+.header-title {
+    height: 40px;
+    text-align: center;
+    font-size: 35px;
+}
 
+.header-inventory {
+    display: inline-block;
+    height: 40px;
+    position: absolute;
+    top: 0;
+    right: 0;
+}
 
 .header{
     background:darkgray;
     border-bottom:#757575 1px solid;
+    height: 40px;
+    position: relative;
 }
 
 .tab-area{
@@ -324,6 +338,11 @@ body{
     width:16%;
 }
 
+.header-item {
+    display: inline-block;
+    height: 35px;
+}
+
 .item {
     height:100px;
     width: 100px;
@@ -331,14 +350,19 @@ body{
     display: inline-block;
     border-radius:5px;
     margin: 3px;
+
+    -webkit-transition:all 0.2s ease;
+    -moz-transition: all 0.2s ease;
+    -o-transition: all 0.2s ease;
+    transition: all 0.2s ease;
 }
 
 .item:hover{
-    opacity:0.9;
+    opacity:0.85;
 }
 
 .item:active {
-    opacity:0.8;
+    opacity:0.7;
 }
 
 .item-text{

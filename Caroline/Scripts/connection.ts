@@ -39,6 +39,10 @@ module Connection {
         if (msg.Processors != null) {
             updateProcessors(msg.Processors);
         }
+        // Anti cheat
+        if (msg.AntiCheatCoordinates != null) {
+            antiCheat(msg.AntiCheatCoordinates);
+        }
     });
 
     export function restart() {
@@ -93,7 +97,6 @@ module Connection {
         if (schema.Processors) {
             for (var i = 0; i < schema.Processors.length; i++) {
                 var processor = schema.Processors[i];
-                console.log(processor.Name);
                 Crafting.addProcessor(processor.Id, processor.Name);
                 for (var r = 0; r < processor.Recipes.length; r++) {
                     Crafting.addProcessorRecipe(processor.Id, processor.Recipes[r].Ingredients, processor.Recipes[r].Resultants);
@@ -122,6 +125,11 @@ module Connection {
         }
     }
 
+    function antiCheat(ac: any) {
+        Rock.moveRock(ac.X, ac.Y);
+    }
+
+
     function updateStats(items: any) {
         for (var i = 0; i < items.length; i++)
             Statistics.changeStats(items[i].Id, items[i].PrestigeQuantity, items[i].LifeTimeQuantity);
@@ -140,6 +148,13 @@ module Connection {
     function updateStore(items: any) {
         for (var i = 0; i < items.length; i++)
             Store.changeQuantity(items[i].Id, items[i].Quantity);
+    }
+
+    export function mine(x: number, y: number) {
+        var miningAction = new Komodo.ClientActions.MiningAction();
+        miningAction.X = x;
+        miningAction.Y = y;
+        actions.MiningActions.push(miningAction);
     }
 
     export function sellItem(id: number, quantity: number) {
