@@ -5,14 +5,15 @@ using StackExchange.Redis;
 
 namespace Caroline.Persistence.Models
 {
-    public partial class Game : IIdentifiableEntity<RedisKey>
+    public partial class Game : IIdentifiableEntity<long>, IIdentifiableEntity<byte[]>
     {
         public long Id { get; set; }
 
-        RedisKey IIdentifiableEntity<RedisKey>.Id
+        byte[] IIdentifiableEntity<byte[]>.Id
         {
-            get { return Id.ToStringInvariant(); }
-            set { Id = long.Parse(value, CultureInfo.InvariantCulture); }
+            // use RedisKey casting for 
+            get { return (RedisKey)Id.ToStringInvariant(); }
+            set { Id = long.Parse((RedisKey)value, CultureInfo.InvariantCulture); }
         }
     }
 }

@@ -73,11 +73,11 @@
 
     export function moveRock(x: number, y: number) {
         if (x != lastX && y != lastY) {
-            lastX = x;
-            lastY = y;
-            if (stoneLoaded)
-                drawRock(x, y, rockSize, rockSize);
-            else
+        lastX = x;
+        lastY = y;
+        if (stoneLoaded)
+            drawRock(x, y, rockSize, rockSize);
+        else 
                 setTimeout(function () { moveRock(x, y); }, 10);
         }
     }

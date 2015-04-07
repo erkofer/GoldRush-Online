@@ -1,11 +1,14 @@
-﻿using System.Security.Claims;
+﻿using System.Globalization;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Caroline.Persistence.Redis;
+using Caroline.Persistence.Redis.Extensions;
 using Microsoft.AspNet.Identity;
+using StackExchange.Redis;
 
 namespace Caroline.Persistence.Models
 {
-    public partial class User : IUser<long>, IIdentifiableEntity<long>
+    public partial class User : IUser<long>, IIdentifiableEntity<long>, IIdentifiableEntity<RedisKey>
     {
         // User identity generation?
         public long Id { get; set; }
@@ -15,6 +18,12 @@ namespace Caroline.Persistence.Models
             var userIdentity = await manager.CreateIdentityAsync(this, DefaultAuthenticationTypes.ApplicationCookie);
             // Add custom user claims here
             return userIdentity;
+        }
+
+        RedisKey IIdentifiableEntity<RedisKey>.Id
+        {
+            get { return Id.ToStringInvariant(); }
+            set { Id = long.Parse(value, CultureInfo.InvariantCulture); }
         }
     }
 

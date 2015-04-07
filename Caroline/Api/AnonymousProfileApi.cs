@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
@@ -38,28 +37,28 @@ namespace Caroline.Api
 
         public static async Task<IdentityResult> TryMigrateAnonymousAccountOrRegister(HttpContextBase context, RegisterViewModel model)
         {
-            using (var users = context.GetOwinContext().Get<ApplicationUserManager>())
+            using (var users = context.GetOwinContext().Get<UserManager>())
             {
-                IdentityResult result;
-
                 if (context.User.Identity.IsAuthenticated)
                 {
                     // migrate from an anonymous account
                     var id = context.User.Identity.GetUserId<long>();
+
+                    var passwordResult = await users.PasswordValidator.ValidateAsync(model.Password);
+                    if (!passwordResult.Succeeded)
+                        return passwordResult;
+
                     var anonUser = await users.FindByIdAsync(id);
-                    if (anonUser == null || !anonUser.IsAnonymous)
-                        return new IdentityResult();
+                    if (!anonUser.IsAnonymous)
+                        return new IdentityResult("User is already registered.");
                     anonUser.IsAnonymous = false;
                     anonUser.Email = model.Email;
                     anonUser.UserName = model.UserName;
-                    result = await users.UpdateAsync(anonUser);
-                    Debug.Assert(result.Succeeded);
-                    result = await users.RemovePasswordAsync(id);
-                    Debug.Assert(result.Succeeded);
-                    result = await users.AddPasswordAsync(id, model.Password);
-                    Debug.Assert(result.Succeeded);
+                    var result = await users.UpdateAsync(anonUser);
 
-                    return result;
+                    if (!result.Succeeded)
+                        return result;
+                    return await users.SetPassword(anonUser, model.Password);
                 }
 
                 // register a new account
@@ -68,10 +67,12 @@ namespace Caroline.Api
                     Email = model.Email,
                     UserName = model.UserName
                 };
-                result = await users.CreateAsync(user, model.Password);
+                var createResult = await users.CreateAsync(user, model.Password);
+                if (!createResult.Succeeded)
+                    return createResult;
                 var signIn = context.GetOwinContext().Get<ApplicationSignInManager>();
                 await signIn.SignInAsync(user, isPersistent: false, rememberBrowser: false);
-                return result;
+                return createResult;
             }
         }
 
@@ -122,7 +123,7 @@ namespace Caroline.Api
                 };
                 var user = new User { UserName = anonymousCookie.UserName, IsAnonymous = true };
 
-                var userManager = context.GetOwinContext().GetUserManager<ApplicationUserManager>();
+                var userManager = context.GetOwinContext().GetUserManager<UserManager>();
                 var result = userManager.Create(user, anonymousCookie.Password);
                 if (!result.Succeeded) continue;
 
@@ -143,7 +144,7 @@ namespace Caroline.Api
         [CanBeNull]
         static string Unprotect(string encryptedBase64String)
         {
-            if(encryptedBase64String == null)
+            if (encryptedBase64String == null)
                 throw new ArgumentNullException();
 
             try

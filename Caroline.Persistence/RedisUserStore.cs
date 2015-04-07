@@ -7,6 +7,7 @@ using Caroline.Persistence.Models;
 using Caroline.Persistence.Redis;
 using Caroline.Persistence.Redis.Extensions;
 using Microsoft.AspNet.Identity;
+using StackExchange.Redis;
 
 namespace Caroline.Persistence
 {
@@ -15,47 +16,44 @@ namespace Caroline.Persistence
         readonly IStringTable _userNameLookup;
         readonly IStringTable _emailsLookup;
         readonly IStringTable _loginsLookup;
-        readonly IAutoKeyEntityTable<User> _users;
+        readonly IEntityTable<User, long> _users;
+        readonly IIdManager<User> _userIds; 
         bool _disposed;
 
         public RedisUserStore(CarolineRedisDb db)
         {
             _users = db.Users;
+            _userIds = db.UserIdIncrement;
             _userNameLookup = db.UserNames;
             _loginsLookup = db.Logins;
             _emailsLookup = db.Emails;
         }
 
         #region IUserLoginStore Implementation
-        public Task CreateAsync(User user)
-        {
-            return UpdateAsync(user, SetMode.Add);
-        }
-
-        public Task UpdateAsync(User user)
-        {
-            return UpdateAsync(user, SetMode.Overwrite);
-        }
-
-        async Task<bool> UpdateAsync(User user, SetMode mode)
+        public async Task CreateAsync(User user)
         {
             Check(user);
-            await _users.Set(user, mode);
+            await _userIds.SetNewId(user);
+            await UpdateAsync(user);
+        }
+
+        public async Task UpdateAsync(User user)
+        {
+            Check(user);
+            await _users.Set(user);
             var userId = user.Id.ToStringInvariant();
+
             await _userNameLookup.Set(user.UserName, userId);
             if (!string.IsNullOrEmpty(user.Email))
                 await _emailsLookup.Set(user.Email, userId);
-            foreach (UserLogin login in user.Logins)
-            {
+            foreach (var login in user.Logins)
                 await _loginsLookup.Set(GetLoginKey(login), userId);
-            }
-            return true;
         }
 
         public async Task DeleteAsync(User user)
         {
             Check(user);
-            await _users.Delete(user);
+            await _users.Delete(user.Id);
             await _userNameLookup.Delete(user.UserName);
             await _emailsLookup.Delete(user.Email);
             foreach (UserLogin login in user.Logins)
@@ -67,7 +65,7 @@ namespace Caroline.Persistence
         public Task<User> FindByIdAsync(long userId)
         {
             ThrowIfDisposed();
-            return _users.Get(new User { Id = userId });
+            return _users.Get(userId);
         }
 
         public async Task<User> FindByNameAsync(string userName)
@@ -77,7 +75,7 @@ namespace Caroline.Persistence
             if (userId == null)
                 return null;
             var id = long.Parse(userId, CultureInfo.InvariantCulture);
-            return await _users.Get(new User { Id = id });
+            return await _users.Get(id);
         }
 
         public async Task AddLoginAsync(User user, UserLoginInfo login)
@@ -86,23 +84,23 @@ namespace Caroline.Persistence
             var userLogin = new UserLogin { LoginProvider = login.LoginProvider, ProviderKey = login.ProviderKey };
             user.Logins.Add(userLogin);
 
-            var dbUser = await _users.Get(user);
+            var dbUser = await _users.Get(user.Id);
             dbUser.Logins.Add(userLogin);
-            await _users.Set(dbUser, SetMode.Overwrite);
+            await _users.Set(dbUser);
             await _loginsLookup.Set(GetLoginKey(login), dbUser.Id.ToStringInvariant());
         }
 
         public async Task RemoveLoginAsync(User user, UserLoginInfo login)
         {
             Check(user, login);
-            var dbUser = await _users.Get(user);
+            var dbUser = await _users.Get(user.Id);
 
             var badLogins = dbUser.Logins.Where(l => l.LoginProvider == login.LoginProvider && l.ProviderKey == login.ProviderKey);
             var goodLogins = dbUser.Logins.Except(badLogins).ToList();
             dbUser.Logins.Clear();
             dbUser.Logins.AddRange(goodLogins);
             await _loginsLookup.Delete(GetLoginKey(login));
-            await _users.Set(dbUser, SetMode.Overwrite);
+            await _users.Set(dbUser);
         }
 
         public Task<IList<UserLoginInfo>> GetLoginsAsync(User user)
@@ -118,7 +116,7 @@ namespace Caroline.Persistence
             var userId = await _loginsLookup.Get(GetLoginKey(login));
             if (userId == null)
                 return null;
-            return await _users.Get(new User { Id = long.Parse(userId, CultureInfo.InvariantCulture) });
+            return await _users.Get(long.Parse(userId, CultureInfo.InvariantCulture));
         }
 
         static string GetLoginKey(UserLogin login)
@@ -207,7 +205,7 @@ namespace Caroline.Persistence
             var userId = await _emailsLookup.Get(email);
             if (userId == null)
                 return null;
-            return await _users.Get(new User { Id = long.Parse(userId, CultureInfo.InvariantCulture) });
+            return await _users.Get(long.Parse(userId, CultureInfo.InvariantCulture));
         }
 
         #endregion
@@ -224,7 +222,6 @@ namespace Caroline.Persistence
             if (_disposed)
                 throw new ObjectDisposedException(GetType().Name);
         }
-
 
         void Check(object obj)
         {

@@ -65,10 +65,10 @@
     <Compile Include="Extensions\LongEx.cs" />
     <Compile Include="IAsyncDisposable.cs" />
     <Compile Include="IDatabaseArea.cs" />
-    <Compile Include="IAutoKeyEntityTable.cs" />
     <Compile Include="IEntityTable.cs" />
     <Compile Include="IIdentifiableEntity.cs" />
     <Compile Include="IIdentifier.cs" />
+    <Compile Include="IIdManager.cs" />
     <Compile Include="ILongTable.cs" />
     <Compile Include="ISerializer.cs" />
     <Compile Include="IStringTable.cs" />
@@ -77,13 +77,14 @@
     <Compile Include="ProtoBufSerializer.cs" />
     <Compile Include="RandomSingleton.cs" />
     <Compile Include="ReadOnlyTypeSafeDictionary.cs" />
+    <Compile Include="RedisEntityListTable.cs" />
     <Compile Include="RedisEntityTable.cs" />
+    <Compile Include="RedisIdManager.cs" />
     <Compile Include="RedisPessimisticLockTable.cs" />
     <Compile Include="RedisScripts\TryLockResult.cs" />
     <Compile Include="RedisStringTable.cs" />
     <Compile Include="RootDatabaseArea.cs" />
     <Compile Include="RedisDbMultiplexer.cs" />
-    <Compile Include="AutoKeyRedisEntityTable.cs" />
     <Compile Include="RedisLongTable.cs" />
     <Compile Include="RedisScripts\ScriptsNamespace.cs" />
     <Compile Include="SetMode.cs" />

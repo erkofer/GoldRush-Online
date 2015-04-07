@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Caroline.Domain.Models;
 using Caroline.Persistence;
 using Caroline.Persistence.Models;
 using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
 using Microsoft.Owin.Security;
@@ -14,17 +14,48 @@ using Microsoft.Owin.Security;
 namespace Caroline.Domain
 {
     // Configure the application user manager used in this application. UserManager is defined in ASP.NET Identity and is used by the application.
-    public class ApplicationUserManager : UserManager<User,long>
+    public class UserManager : UserManager<User, long>
     {
-        public ApplicationUserManager(IUserStore<User, long> store)
-            : base(store)
-        {
+        private readonly CarolineRedisDb _db;
 
+        public static async Task<UserManager> CreateAsync()
+        {
+            return new UserManager(await CarolineRedisDb.CreateAsync());
         }
 
-        public static ApplicationUserManager Create(IdentityFactoryOptions<ApplicationUserManager> options, IOwinContext context)
+        UserManager(CarolineRedisDb db)
+            : base(new RedisUserStore(db))
         {
-            var manager = new ApplicationUserManager(new RedisUserStore(CarolineRedisDb.Create()));
+            _db = db;
+        }
+
+        public async Task<UserDto> GetUser(long id)
+        {
+            var ulock = await _db.UserLocks.Lock(id);
+            if (ulock == null)
+                throw new TimeoutException();
+            return new UserDto(ulock, _db, id);
+        }
+
+        public async Task<IdentityResult> SetPassword(User user, string password)
+        {
+
+            var result = await PasswordValidator.ValidateAsync(password);
+            if (!result.Succeeded)
+            {
+                return result;
+            }
+            var store = Store as IUserPasswordStore<User, long>;
+            var hash = PasswordHasher.HashPassword(password);
+            await store.SetPasswordHashAsync(user, hash);
+            await UpdateSecurityStampAsync(user.Id);
+            await Store.UpdateAsync(user);
+            return IdentityResult.Success;
+        }
+
+        public static UserManager Create(IdentityFactoryOptions<UserManager> options, IOwinContext context)
+        {
+            var manager = new UserManager(CarolineRedisDb.Create());
             // Configure validation logic for usernames
             manager.UserValidator = new GoldRushUserValidator(manager)
             {
@@ -43,8 +74,8 @@ namespace Caroline.Domain
 
             // Configure user lockout defaults
             manager.UserLockoutEnabledByDefault = false;
-            manager.DefaultAccountLockoutTimeSpan = TimeSpan.FromMinutes(5);
-            manager.MaxFailedAccessAttemptsBeforeLockout = 20;
+            //manager.DefaultAccountLockoutTimeSpan = TimeSpan.FromMinutes(5);
+            //manager.MaxFailedAccessAttemptsBeforeLockout = 20;
 
             var dataProtectionProvider = options.DataProtectionProvider;
             if (dataProtectionProvider != null)
@@ -70,7 +101,7 @@ namespace Caroline.Domain
         public override async Task<IdentityResult> ValidateAsync(User item)
         {
             var baseResult = await base.ValidateAsync(item);
-            
+
             var hash = item.IsAnonymous ? Base64CharactersHash : RegisteredCharactersHash;
             List<char> illegalChars = null;
             for (int i = 0; i < item.UserName.Length; i++)
@@ -94,7 +125,7 @@ namespace Caroline.Domain
     // Configure the application sign-in manager which is used in this application.
     public class ApplicationSignInManager : SignInManager<User, long>
     {
-        public ApplicationSignInManager(ApplicationUserManager userManager, IAuthenticationManager authenticationManager)
+        public ApplicationSignInManager(UserManager userManager, IAuthenticationManager authenticationManager)
             : base(userManager, authenticationManager)
         {
         }
@@ -106,7 +137,7 @@ namespace Caroline.Domain
 
         public static ApplicationSignInManager Create(IdentityFactoryOptions<ApplicationSignInManager> options, IOwinContext context)
         {
-            return new ApplicationSignInManager(context.GetUserManager<ApplicationUserManager>(), context.Authentication);
+            return new ApplicationSignInManager(context.GetUserManager<UserManager>(), context.Authentication);
         }
     }
 }

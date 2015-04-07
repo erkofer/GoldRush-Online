@@ -15,6 +15,8 @@ namespace Caroline.Persistence
         static readonly AsyncLock StaticInitializationLock = new AsyncLock();
         static RedisDbMultiplexer _redisConnection;
 
+        CarolineRedisDb() { }
+
         public static async Task<CarolineRedisDb> CreateAsync()
         {
             using (await StaticInitializationLock.LockAsync())
@@ -56,32 +58,32 @@ namespace Caroline.Persistence
         static CarolineRedisDb CreateDb()
         {
             var db = _redisConnection.Connect();
-            ILongTable ids;
-            return new CarolineRedisDb
+            var ret = new CarolineRedisDb
             {
-                Ids = ids = db.SetLong("idincr"),
-                Games = db.Set<Game>("g"),
-                Users = db.Set<User>("u", ids),
-                UserLocks = db.SetLockLong<User>("u-l", TimeSpan.FromSeconds(10)),
-                GameSessions = db.Set<GameSession>("c", TimeSpan.FromMinutes(2)),
-                UserNames = db.SetString("uu"),
-                Logins = db.SetString("ul"),
-                Emails = db.SetString("ue")
+                Games = db.SetLong<Game>("g"),
+                Users = db.SetLong<User>("u"),
+                UserIdIncrement = db.IdManager<User>("u-id"),
+                UserLocks = db.LockLong("u-l", TimeSpan.FromSeconds(10)),
+                GameSessions = db.Set<GameSession, GameSessionEndpoint>("s", TimeSpan.FromMinutes(2)),
+                UserNames = db.String("uu"),
+                Logins = db.String("ul"),
+                Emails = db.String("ue")
             };
+            return ret;
         }
 
-        public IPessimisticLockTable<User> UserLocks { get; set; }
+        public IPessimisticLockTable<long> UserLocks { get; private set; }
 
-        public ILongTable Ids { get; set; }
+        public IIdManager<User> UserIdIncrement { get; private set; }
 
-        public IEntityTable<Game> Games { get; private set; }
+        public IEntityTable<Game, long> Games { get; private set; }
 
-        public IAutoKeyEntityTable<User> Users { get; private set; }
+        public IEntityTable<User, long> Users { get; private set; }
 
-        public IEntityTable<GameSession> GameSessions { get; set; }
+        public IEntityTable<GameSession, GameSessionEndpoint> GameSessions { get; private set; }
 
-        public IStringTable UserNames { get; set; }
-        public IStringTable Logins { get; set; }
-        public IStringTable Emails { get; set; }
+        public IStringTable UserNames { get; private set; }
+        public IStringTable Logins { get; private set; }
+        public IStringTable Emails { get; private set; }
     }
 }

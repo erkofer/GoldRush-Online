@@ -121,7 +121,7 @@ window.Modernizr = (function( window, document, undefined ) {
 
       var style, ret, node, docOverflow,
           div = document.createElement('div'),
-          // After page load injecting a fake body doesn't work so check if body exists
+          // Right page load injecting a fake body doesn't work so check if body exists
           body = document.body,
           // IE6 and 7 won't return offsetWidth or offsetHeight unless it's in the body element, so we fake it.
           fakeBody = body || document.createElement('body');
