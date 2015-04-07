@@ -53,4 +53,10 @@ message ClientActions
 		optional int32 Iterations=3;
 	}
 	repeated ProcessingAction ProcessingActions=5;
+
+	message MiningAction {
+		optional int32 X=1;
+		optional int32 Y=2;
+	}
+	repeated MiningAction MiningActions = 6;
 }

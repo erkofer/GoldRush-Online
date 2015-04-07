@@ -4,15 +4,19 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Caroline.Persistence.Models;
 
 namespace GoldRush
 {
     class Gatherers
     {
         public GameObjects Game;
+        private Random acRandom = new Random();
 
         public Gatherers(GameObjects game)
         {
+            ScrambleAntiCheat();
+
             Game = game;
             var baseResources = new[]
             {
@@ -21,6 +25,7 @@ namespace GoldRush
             };
 
             Player = new Gatherer(game, GameConfig.Gatherers.Player);
+            Player.Quantity = 1;
             Player.PossibleResources.AddRange(baseResources);
 
             Miner = new Gatherer(game,GameConfig.Gatherers.Miner);
@@ -35,16 +40,19 @@ namespace GoldRush
             Drill = new Gatherer(game, GameConfig.Gatherers.Drill);
             Drill.PossibleResources.AddRange(baseResources);
             Drill.Requires = Miner;
+            Drill.Fuel = game.Items.Oil;
             All.Add(Drill.Id, Drill);
 
             Crusher = new Gatherer(game, GameConfig.Gatherers.Crusher);
             Crusher.PossibleResources.AddRange(baseResources);
             Crusher.Requires = Drill;
+            Crusher.Fuel = game.Items.Oil;
             All.Add(Crusher.Id, Crusher);
 
             Excavator = new Gatherer(game, GameConfig.Gatherers.Excavator);
             Excavator.PossibleResources.AddRange(baseResources);
             Excavator.Requires = Crusher;
+            Excavator.Fuel = game.Items.Oil;
             All.Add(Excavator.Id, Excavator);
 
             Pumpjack = new Gatherer(game, GameConfig.Gatherers.Pumpjack);
@@ -65,16 +73,29 @@ namespace GoldRush
             }
         }
 
-        
 
-        public void Mine()
+        public void Mine(int x, int y)
         {
-            Mine(1);
+            if (AntiCheat(x, y))
+            {
+                Player.Mine(1000);
+                AntiCheatNextChange--;
+            }
+
+            if(AntiCheatNextChange <= 0)
+                ScrambleAntiCheat();
         }
 
-        public void Mine(int iterations)
+        private bool AntiCheat(int x, int y)
         {
-            Player.Mine(1000 * iterations);
+            return (x > AntiCheatX && x < AntiCheatX + 64 && y > AntiCheatY && y < AntiCheatY + 64);
+        }
+
+        private void ScrambleAntiCheat()
+        {
+            AntiCheatX = acRandom.Next(5, 195);
+            AntiCheatY = acRandom.Next(5, 195);
+            AntiCheatNextChange = 25;
         }
 
         public Dictionary<int,Gatherer> All = new Dictionary<int,Gatherer>();
@@ -87,6 +108,10 @@ namespace GoldRush
         public Gatherer Excavator;
         public Gatherer Pumpjack;
         public Gatherer BigTexan;
+
+        public int AntiCheatX;
+        public int AntiCheatY;
+        public int AntiCheatNextChange;
 
         internal class Gatherer : GameObjects.GameObject
         {
@@ -105,6 +130,10 @@ namespace GoldRush
             /// The odds of no resources being gathered.
             /// </summary>
             public int ChanceOfNothing { get; set; }
+
+            public GameObjects.GameObject Fuel { get; set; }
+
+            public int FuelConsumption { get { return _config.FuelConsumption; } }
 
             private double resourcesPerSecondEfficiency=1;
             /// <summary>
@@ -237,12 +266,24 @@ namespace GoldRush
                     recalculate = false;
                 }
 
+                var fuelEfficiency=1.0;
+                if (Fuel != null)
+                {
+                    var fuelToConsume = Math.Min(Fuel.Quantity, FuelConsumption*Quantity);
+                    Fuel.Quantity -= fuelToConsume;
+
+                    fuelEfficiency = fuelToConsume/FuelConsumption;
+                }
+
                 var resourcesGained = ResourcesPerSecond;
+                resourcesGained *= fuelEfficiency;
+
                 resourcesGained += resourceBuffer;
                 resourcesGained *= (ms / 1000); // gathers resources based on time passed.
                 // Stores excess resources in the resource buffer.
                 resourceBuffer = resourcesGained - Math.Floor(resourcesGained);
                 resourcesGained = Math.Floor(resourcesGained);
+
                 if (GuaranteedResources.Count > 0)
                     foreach (var resource in GuaranteedResources)
                         resource.Quantity += (int) resourcesGained;

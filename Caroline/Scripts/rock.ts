@@ -34,6 +34,7 @@
             var mousePos = getMousePos(canvas, e);
             mouseDown = true;
             isOverRock(mousePos.x, mousePos.y);
+            Connection.mine(mousePos.x, mousePos.y);
         }, false);
         canvas.addEventListener('mouseup', function (e) {
             var mousePos = getMousePos(canvas, e);
@@ -70,13 +71,15 @@
         }
     }
 
-    export function moveRock(x:number,y:number) {
+    export function moveRock(x: number, y: number) {
+        if (x != lastX && y != lastY) {
         lastX = x;
         lastY = y;
         if (stoneLoaded)
             drawRock(x, y, rockSize, rockSize);
         else 
-            setTimeout(function () {moveRock(x, y); }, 10);
+                setTimeout(function () { moveRock(x, y); }, 10);
+        }
     }
 
     function clearCanvas() {

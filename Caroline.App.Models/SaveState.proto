@@ -38,4 +38,18 @@ message SaveState
 		optional int32 RecipesToCraft=5;
 	}
 	repeated Processor Processors=5;
+
+	message AntiCheat {
+		optional int32 X=1;
+		optional int32 Y=2;
+		optional int32 NextChange=3;
+	}
+	optional AntiCheat AntiCheatCoordinates=6;
+
+	message StoreItem {
+		optional int32 Id=1;
+		optional int32 Quantity=2;
+	}
+	repeated StoreItem StoreItems=7;
+
 }
