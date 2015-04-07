@@ -375,6 +375,14 @@ module Inventory {
             add(new Item(id, name, worth,category));
     }
 
+    export function changePrice(id: number, price: number) {
+        Utils.ifNotDefault(price, function () {
+            var item = items[id];
+            item.worth = price;
+            item.worthElm.textContent = Utils.formatNumber(price);
+        });
+    }
+
     export function changeQuantity(id: number, quantity: number) {
         Utils.ifNotDefault(quantity, function () {
             Objects.setQuantity(id, quantity);

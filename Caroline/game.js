@@ -977,6 +977,15 @@ var Inventory;
     }
     Inventory.addItem = addItem;
 
+    function changePrice(id, price) {
+        Utils.ifNotDefault(price, function () {
+            var item = Inventory.items[id];
+            item.worth = price;
+            item.worthElm.textContent = Utils.formatNumber(price);
+        });
+    }
+    Inventory.changePrice = changePrice;
+
     function changeQuantity(id, quantity) {
         Utils.ifNotDefault(quantity, function () {
             Objects.setQuantity(id, quantity);
