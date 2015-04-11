@@ -615,15 +615,15 @@ var Rock;
 
     function moveRock(x, y) {
         if (x != lastX && y != lastY) {
-        lastX = x;
-        lastY = y;
-        if (stoneLoaded)
-            drawRock(x, y, rockSize, rockSize);
-        else
-            setTimeout(function () {
-                moveRock(x, y);
-            }, 10);
-    }
+            lastX = x;
+            lastY = y;
+            if (stoneLoaded)
+                drawRock(x, y, rockSize, rockSize);
+            else
+                setTimeout(function () {
+                    moveRock(x, y);
+                }, 10);
+        }
     }
     Rock.moveRock = moveRock;
 
@@ -1207,7 +1207,7 @@ var Inventory;
             draw();
 
         if (item.category != 0 /* NFS */ && item.category != null)
-        inventory.appendChild(drawItem(item));
+            inventory.appendChild(drawItem(item));
         else
             document.getElementById('headerInventory').appendChild(drawItem(item));
     }
@@ -1497,7 +1497,7 @@ var Inventory;
             Inventory.items[id].quantityElm.textContent = Utils.formatNumber(quantity);
             Inventory.items[id].quantity = quantity;
             if (Inventory.items[id].category != 0 /* NFS */ && Inventory.items[id].category != null)
-            Inventory.items[id].container.style.display = quantity == 0 ? 'none' : 'inline-block';
+                Inventory.items[id].container.style.display = quantity == 0 ? 'none' : 'inline-block';
             else
                 Inventory.items[id].container.style.display = Objects.getLifeTimeTotal(id) == 0 ? 'none' : 'inline-block';
             limitTextQuantity();
@@ -1606,34 +1606,34 @@ var Connection;
 
     function loadSchema(schema) {
         if (schema.Items) {
-        for (var i = 0; i < schema.Items.length; i++) {
-            Inventory.addItem(schema.Items[i].Id, schema.Items[i].Name, schema.Items[i].Worth, schema.Items[i].Category);
-            Statistics.addItem(schema.Items[i].Id, schema.Items[i].Name);
-        }
+            for (var i = 0; i < schema.Items.length; i++) {
+                Inventory.addItem(schema.Items[i].Id, schema.Items[i].Name, schema.Items[i].Worth, schema.Items[i].Category);
+                Statistics.addItem(schema.Items[i].Id, schema.Items[i].Name);
+            }
         }
 
         if (schema.StoreItems) {
-        for (var i = 0; i < schema.StoreItems.length; i++) {
-            var item = schema.StoreItems[i];
-            Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.MaxQuantity);
-        }
+            for (var i = 0; i < schema.StoreItems.length; i++) {
+                var item = schema.StoreItems[i];
+                Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.MaxQuantity);
+            }
         }
 
         if (schema.Processors) {
-        for (var i = 0; i < schema.Processors.length; i++) {
-            var processor = schema.Processors[i];
-            Crafting.addProcessor(processor.Id, processor.Name);
-            for (var r = 0; r < processor.Recipes.length; r++) {
-                Crafting.addProcessorRecipe(processor.Id, processor.Recipes[r].Ingredients, processor.Recipes[r].Resultants);
+            for (var i = 0; i < schema.Processors.length; i++) {
+                var processor = schema.Processors[i];
+                Crafting.addProcessor(processor.Id, processor.Name);
+                for (var r = 0; r < processor.Recipes.length; r++) {
+                    Crafting.addProcessorRecipe(processor.Id, processor.Recipes[r].Ingredients, processor.Recipes[r].Resultants);
+                }
             }
         }
-        }
         if (schema.CraftingItems) {
-        for (var i = 0; i < schema.CraftingItems.length; i++) {
-            var item = schema.CraftingItems[i];
-            Crafting.addRecipe(item.Id, item.Ingredients, item.Resultants, item.IsItem);
+            for (var i = 0; i < schema.CraftingItems.length; i++) {
+                var item = schema.CraftingItems[i];
+                Crafting.addRecipe(item.Id, item.Ingredients, item.Resultants, item.IsItem);
+            }
         }
-    }
     }
 
     function receiveGlobalMessages(messages) {
@@ -1892,15 +1892,15 @@ var Store;
         });
 
         Utils.ifNotDefault(quantity, function () {
-        Objects.setQuantity(id, quantity);
-        item.quantity = quantity;
-        Crafting.update();
+            Objects.setQuantity(id, quantity);
+            item.quantity = quantity;
+            Crafting.update();
 
             if (maxQuantity != 0) {
-        if (item.category == 6 /* CRAFTING */)
-            return;
+                if (item.category == 6 /* CRAFTING */)
+                    return;
 
-        item.container.style.display = (item.quantity <= -1 || item.quantity >= item.maxQuantity && item.maxQuantity > 0) ? 'none' : 'inline-block';
+                item.container.style.display = (item.quantity <= -1 || item.quantity >= item.maxQuantity && item.maxQuantity > 0) ? 'none' : 'inline-block';
                 if (item.maxQuantity && item.maxQuantity > 1) {
                     item.quantityElm.textContent = quantity.toString();
                 }
