@@ -632,6 +632,7 @@ var Inventory;
 
     var configTableBody;
     var configTableContainer;
+    var drinkButton;
 
     var configNames = new Array();
     var configImages = new Array();
@@ -672,6 +673,11 @@ var Inventory;
             }
             selectedItem = Inventory.items[id];
             selectedItemImage.classList.add(Utils.cssifyName(selectedItem.name));
+            if (selectedItem.category == 5 /* POTION */) {
+                drinkButton.style.display = 'inline-block';
+            } else {
+                drinkButton.style.display = 'none';
+            }
             limitTextQuantity();
         } else {
             selectedItemImage.classList.remove(Utils.cssifyName(selectedItem.name));
@@ -742,6 +748,13 @@ var Inventory;
             limitTextQuantity();
         });
 
+        drinkButton = Utils.createButton('Drink', '');
+        drinkButton.classList.add('selected-item-quantity');
+        drinkButton.addEventListener('click', function () {
+            Connection.drink(selectedItem.id);
+            limitTextQuantity();
+        });
+
         var sellItems = Utils.createButton('Sell', '');
         sellItems.classList.add('selected-item-quantity');
         sellItems.addEventListener('click', function () {
@@ -764,6 +777,7 @@ var Inventory;
         selectedItemPane.appendChild(sellAllItems);
 
         selectedItemPane.appendChild(sellItems);
+        selectedItemPane.appendChild(drinkButton);
         selectedItemPane.appendChild(selectedItemQuantity);
         inventoryPane.appendChild(selectedItemPane);
 
@@ -1057,6 +1071,10 @@ var Connection;
         if (msg.AntiCheatCoordinates != null) {
             antiCheat(msg.AntiCheatCoordinates);
         }
+
+        if (msg.Buffs != null) {
+            console.log(msg.Buffs);
+        }
     });
 
     function restart() {
@@ -1146,8 +1164,10 @@ var Connection;
     }
 
     function updateInventory(items) {
-        for (var i = 0; i < items.length; i++)
+        for (var i = 0; i < items.length; i++) {
             Inventory.changeQuantity(items[i].Id, items[i].Quantity);
+            Inventory.changePrice(items[i].Id, items[i].Worth);
+        }
     }
 
     function updateInventoryConfigurations(items) {
@@ -1159,6 +1179,13 @@ var Connection;
         for (var i = 0; i < items.length; i++)
             Store.changeQuantity(items[i].Id, items[i].Quantity, items[i].MaxQuantity, items[i].Price);
     }
+
+    function drink(id) {
+        var potionAction = new Komodo.ClientActions.PotionAction();
+        potionAction.Id = id;
+        actions.PotionActions.push(potionAction);
+    }
+    Connection.drink = drink;
 
     function mine(x, y) {
         var miningAction = new Komodo.ClientActions.MiningAction();
@@ -2423,7 +2450,6 @@ var Store;
                     item.maxQuantity = maxQuantity;
                     item.maxQuantityElm.textContent = maxQuantity.toString();
                 } catch (err) {
-                    console.log(id);
                 }
             }
         });

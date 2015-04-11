@@ -43,6 +43,10 @@ module Connection {
         if (msg.AntiCheatCoordinates != null) {
             antiCheat(msg.AntiCheatCoordinates);
         }
+        // Buffs
+        if(msg.Buffs != null){
+            updateBuffs(msg.Buffs);
+        }
     });
 
     export function restart() {
@@ -59,25 +63,25 @@ module Connection {
         if (change.newState === (<any>$).signalR.connectionState.disconnected) {
             clearInterval(conInterval);
         }
-   });
+    });
 
-   function connected() {
-       console.log('Connection opened');
-       var encoded = actions.encode64();
-       send(encoded);
-       actions = new Komodo.ClientActions();
+    function connected() {
+        console.log('Connection opened');
+        var encoded = actions.encode64();
+        send(encoded);
+        actions = new Komodo.ClientActions();
 
-       conInterval = setInterval(function () {
-           var encoded = actions.encode64();
-           // if (encoded!='') {
-           send(encoded);
-           //}
+        conInterval = setInterval(function () {
+            var encoded = actions.encode64();
+            // if (encoded!='') {
+            send(encoded);
+            //}
 
-           actions = new Komodo.ClientActions();
-       }, 1000);
+            actions = new Komodo.ClientActions();
+        }, 1000);
     }
 
-    
+
 
     function loadSchema(schema: any) {
         if (schema.Items) {
@@ -111,6 +115,13 @@ module Connection {
         }
     }
 
+    function updateBuffs(buffs: any) {
+        for (var i = 0; i < buffs.length; i++){
+            var buff = buffs[i];
+            console.log(buff);
+        }
+    }
+
     function receiveGlobalMessages(messages: any) {
         for (var i = 0; i < messages.length; i++) {
             var msg = messages[i];
@@ -121,7 +132,7 @@ module Connection {
     function updateProcessors(processors: any) {
         for (var i = 0; i < processors.length; i++) {
             var processor = processors[i];
-            Crafting.updateProcessor(processor.Id, processor.SelectedRecipe, processor.OperationDuration, processor.CompletedOperations, processor.TotalOperations,processor.Capacity);
+            Crafting.updateProcessor(processor.Id, processor.SelectedRecipe, processor.OperationDuration, processor.CompletedOperations, processor.TotalOperations, processor.Capacity);
         }
     }
 
@@ -136,8 +147,10 @@ module Connection {
     }
 
     function updateInventory(items: any) {
-        for (var i = 0; i < items.length; i++)
+        for (var i = 0; i < items.length; i++) {
             Inventory.changeQuantity(items[i].Id, items[i].Quantity);
+            Inventory.changePrice(items[i].Id, items[i].Worth);
+        }
     }
 
     function updateInventoryConfigurations(items: any) {
@@ -147,7 +160,13 @@ module Connection {
 
     function updateStore(items: any) {
         for (var i = 0; i < items.length; i++)
-            Store.changeQuantity(items[i].Id, items[i].Quantity,items[i].MaxQuantity,items[i].Price);
+            Store.changeQuantity(items[i].Id, items[i].Quantity, items[i].MaxQuantity, items[i].Price);
+    }
+
+    export function drink(id: number) {
+        var potionAction = new Komodo.ClientActions.PotionAction();
+        potionAction.Id = id;
+        actions.PotionActions.push(potionAction);
     }
 
     export function mine(x: number, y: number) {
