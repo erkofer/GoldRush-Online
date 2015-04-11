@@ -45,7 +45,7 @@ namespace Caroline.Domain.Models
 
         public async Task<GameSession> GetSession(IpEndpoint id)
         {
-            return await _db.GameSessions.Get(new GameSessionEndpoint(id, _id)) ?? new GameSession { Id = new GameSessionEndpoint(id, _id) };
+            return await _db.GameSessions.Get(new GameSessionEndpoint(id, _id)) ?? new GameSession(new GameSessionEndpoint(id, _id));
         }
 
         public Task<bool> SetSession(GameSession entity)
