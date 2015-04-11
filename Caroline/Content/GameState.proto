@@ -11,6 +11,7 @@ message GameState {
 	message Item {
 		optional int32 Id = 1;
 		optional int32 Quantity = 2 [default = -100];
+		optional int32 Worth = 3 [default = -100];
 	}
 	repeated Item Items = 2;
 
@@ -126,5 +127,11 @@ message GameState {
 		optional int32 Y = 2 [default = -100];
 	}
 	optional AntiCheat AntiCheatCoordinates=9;
+	
+	message Buff {
+		optional int32 Id = 1;
+		optional double TimeActive=2[default=-100];
+	}
+	repeated Buff Buffs = 10;
 } 
 
