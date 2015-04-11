@@ -95,13 +95,6 @@ namespace GoldRush
                         objs.Gatherers.Mine(message.MiningActions[i].X,message.MiningActions[i].Y);
                     }
                 }
-                if (message.PotionActions.Count > 0)
-                {
-                    for (var i = 0; i < message.PotionActions.Count; i++)
-                    {
-                        objs.Items.Drink(message.PotionActions[i].Id);
-                    }
-                }
             }
 
             // SEND DATA TO CLIENT
@@ -204,7 +197,6 @@ namespace GoldRush
                 var stateItem = new GameState.Item();
                 stateItem.Id = item.Value.Id;
                 stateItem.Quantity = item.Value.Quantity;
-                stateItem.Worth = item.Value.Value;
 
 
                 var stateStatsItem = new GameState.StatItem();
@@ -266,16 +258,6 @@ namespace GoldRush
             stateAntiCheat.Y = objs.Gatherers.AntiCheatY;
 
             state.AntiCheatCoordinates = stateAntiCheat;
-
-            foreach (var buffPair in objs.Upgrades.Buffs)
-            {
-                var stateBuff = new GameState.Buff();
-                var buff = buffPair.Value;
-
-                stateBuff.Id = buff.Id;
-                stateBuff.TimeActive = buff.TimeActive;
-                state.Buffs.Add(stateBuff);
-            }
 
             return state;
         }
@@ -349,17 +331,6 @@ namespace GoldRush
                 saveState.StoreItems.Add(saveStateStoreItem);
             }
 
-            foreach (var buff in objs.Upgrades.Buffs)
-            {
-                var toSaveBuff = buff.Value;
-                var saveStateBuff = new SaveState.Buff();
-                saveStateBuff.Id = toSaveBuff.Id;
-                saveStateBuff.TimeActive = toSaveBuff.TimeActive;
-                saveStateBuff.Active = toSaveBuff.Active;
-
-                saveState.Buffs.Add(saveStateBuff);
-            }
-
             return saveState;
         }
 
@@ -421,15 +392,6 @@ namespace GoldRush
                     {
                         var toLoadStoreItem = objs.Store.All[storeItem.Id];
                         toLoadStoreItem.Item.Quantity = storeItem.Quantity;
-                    }
-                }
-                if (save.Buffs != null)
-                {
-                    foreach (var buff in save.Buffs)
-                    {
-                        var toLoadBuff = objs.Upgrades.Buffs[buff.Id];
-                        toLoadBuff.TimeActive = buff.TimeActive;
-                        toLoadBuff.Active = buff.Active;
                     }
                 }
             }

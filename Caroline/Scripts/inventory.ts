@@ -13,7 +13,6 @@ module Inventory {
     //var configDiv;
     var configTableBody: HTMLElement;
     var configTableContainer: HTMLElement;
-    var drinkButton;
 
     var configNames = new Array<HTMLElement>();
     var configImages = new Array<HTMLElement>();
@@ -59,11 +58,6 @@ module Inventory {
             }
             selectedItem = items[id];
             selectedItemImage.classList.add(Utils.cssifyName(selectedItem.name));
-            if (selectedItem.category == Category.POTION) {
-                drinkButton.style.display = 'inline-block';
-            } else {
-                drinkButton.style.display = 'none';
-            }
             limitTextQuantity();
         }
         else {
@@ -134,13 +128,6 @@ module Inventory {
             limitTextQuantity();
         });
 
-        drinkButton = <HTMLInputElement>Utils.createButton('Drink', ''); 
-        drinkButton.classList.add('selected-item-quantity');
-        drinkButton.addEventListener('click', function () {
-            Connection.drink(selectedItem.id);
-            limitTextQuantity();
-        });
-
         var sellItems = <HTMLInputElement>Utils.createButton('Sell', '');
         sellItems.classList.add('selected-item-quantity');
         sellItems.addEventListener('click', function () {
@@ -164,7 +151,6 @@ module Inventory {
         selectedItemPane.appendChild(sellAllItems);
 
         selectedItemPane.appendChild(sellItems);
-        selectedItemPane.appendChild(drinkButton);
         selectedItemPane.appendChild(selectedItemQuantity);
         inventoryPane.appendChild(selectedItemPane);
         // CONFIG CONTROLS

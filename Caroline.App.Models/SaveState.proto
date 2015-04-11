@@ -52,10 +52,4 @@ message SaveState
 	}
 	repeated StoreItem StoreItems=7;
 
-	message Buff {
-		optional int32 Id=1;
-		optional double TimeActive=2;
-		optional bool Active=3;
-	}
-	repeated Buff Buffs=8;
 }

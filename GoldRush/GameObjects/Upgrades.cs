@@ -72,9 +72,8 @@ namespace GoldRush
             #endregion
 
             #region Buffs
-            SpeechBuff = new Buff(new ItemValueUpgradeEffect(game, 1.2),GameConfig.Upgrades.SpeechBuff);
+            SpeechBuff = new Buff(new ItemValueUpgradeEffect(game, 0.2),GameConfig.Upgrades.SpeechBuff);
             game.Items.SpeechPotion.Effect = SpeechBuff;
-            Buffs.Add(SpeechBuff.Id, SpeechBuff);
             #endregion
         }
 
@@ -93,22 +92,9 @@ namespace GoldRush
                 if (upgrade.Quantity == 0)
                     upgrade.Deactivate();
             }
-
-            foreach (var buffPair in Buffs)
-            {
-                var buff = buffPair.Value;
-
-                if (buff.TimeActive < buff.Duration)
-                    buff.Activate();
-                else
-                    buff.Deactivate();
-
-                buff.Update(ms);
-            }
         }
 
         public Dictionary<int, Upgrade> All = new Dictionary<int, Upgrade>();
-        public Dictionary<int, Buff> Buffs = new Dictionary<int, Buff>();
 
         public Buff SpeechBuff;
         public Upgrade Backpack;
@@ -163,9 +149,23 @@ namespace GoldRush
                 _config = config;
             }
 
+            public override void Activate()
+            {
+                TimeActive = 0;
+                base.Activate();
+            }
+
+            public override void Deactivate()
+            {
+                TimeActive = 0;
+                base.Deactivate();
+            }
+
             public void Update(double ms)
             {
                 TimeActive += (ms/1000);
+                if(TimeActive>Duration)
+                    Deactivate();
             }
 
             /// <summary>
@@ -176,7 +176,8 @@ namespace GoldRush
             /// <summary>
             /// The time the buff has been active for.
             /// </summary>
-            public double TimeActive = 0;
+            private double TimeActive;
+
         }
 
         #region UpgradeEffects
@@ -208,12 +209,12 @@ namespace GoldRush
 
             public override void Activate()
             {
-                Game.Items.WorthModifier *= value;
+                Game.Items.WorthModifier += value;
             }
 
             public override void Deactivate()
             {
-                Game.Items.WorthModifier /= value;
+                Game.Items.WorthModifier -= value;
             }
         }
 

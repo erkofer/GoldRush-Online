@@ -59,9 +59,4 @@ message ClientActions
 		optional int32 Y=2;
 	}
 	repeated MiningAction MiningActions = 6;
-
-	message PotionAction {
-		optional int32 Id=1;
-	}
-	repeated PotionAction PotionActions = 7;
 }

@@ -19,8 +19,6 @@ namespace GoldRush
             CopperWire,Tnt
             });
 
-            
-
             // If items should have a currency other than coins assign them here.
             // Such as EmptyVial.Currency = ISK;
 
@@ -53,12 +51,6 @@ namespace GoldRush
                 if (item.IncludeInSellAll)
                     item.Sell(item.Quantity);
             
-        }
-
-        public void Drink(int id)
-        {
-            Potion potion = (Potion)All[id];
-            potion.Consume();
         }
 
         public double WorthModifier
@@ -192,12 +184,10 @@ namespace GoldRush
             /// </summary>
             public int Worth { get { return _config.Worth; } }
 
-
-            private double worthMultiplier = 1;
             /// <summary>
             /// How much the item worth is to be multiplied by. For upgrades.
             /// </summary>
-            public double WorthMultiplier { get { return worthMultiplier; } set { worthMultiplier = value; } }
+            public double WorthMultiplier { get; set; }
 
             /// <summary>
             /// The currency this item can be sold for.
@@ -209,7 +199,7 @@ namespace GoldRush
             /// </summary>
             public int Value
             {
-                get { return (int)Math.Floor(Worth * (WorthMultiplier)); }
+                get { return (int)Math.Floor(Worth * (WorthMultiplier+1)); }
             }
 
             public GoldRush.Crafting.Recipe Recipe { get; set; }

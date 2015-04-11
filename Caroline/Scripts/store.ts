@@ -98,7 +98,7 @@
                     item.maxQuantity = maxQuantity;
                     item.maxQuantityElm.textContent = maxQuantity.toString();
                 }catch(err){
-                    
+                    console.log(id);
                 }
             }
         });

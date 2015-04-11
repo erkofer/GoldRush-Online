@@ -26,7 +26,7 @@ namespace GoldRush
 
             TestRecipe = new Recipe();
             TestRecipe.Ingredients.Add(new Ingredient(objs.Items.Coins, 1000));
-            TestRecipe.Resultants.Add(new Ingredient(objs.Items.SpeechPotion, 1));
+            TestRecipe.Resultants.Add(new Ingredient(objs.Items.IronBar, 1));
             All.Add(TestRecipe.Resultants[0].Item.Id, TestRecipe);
 
             ChainsawsT1 = new Recipe();
