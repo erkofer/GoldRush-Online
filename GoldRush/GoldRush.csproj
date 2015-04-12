@@ -56,6 +56,7 @@
     <Compile Include="GameObjects\GameObjects.cs" />
     <Compile Include="GameObjects\Gatherers.cs" />
     <Compile Include="GameObjects\Items.cs" />
+    <Compile Include="GameObjects\Processing.cs" />
     <Compile Include="GameObjects\Store.cs" />
     <Compile Include="APIs\KomodoSession.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

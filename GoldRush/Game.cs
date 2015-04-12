@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Caroline.Persistence.Models;
 using Caroline.App.Models;
 
@@ -15,6 +16,7 @@ namespace GoldRush
         bool sendSchema;
         public GameObjects objs;
         long lastUpdate;
+        public long Score=0;
 
         public long UnixTimeNow()
         {
@@ -85,7 +87,7 @@ namespace GoldRush
                 {
                     for (var i = 0; i < message.ProcessingActions.Count; i++)
                     {
-                        objs.Crafting.Process(message.ProcessingActions[i].Id, message.ProcessingActions[i].RecipeIndex, message.ProcessingActions[i].Iterations);
+                        objs.Processing.Process(message.ProcessingActions[i].Id, message.ProcessingActions[i].RecipeIndex, message.ProcessingActions[i].Iterations);
                     }
                 }
                 if (message.MiningActions.Count > 0)
@@ -165,7 +167,7 @@ namespace GoldRush
                     schema.CraftingItems.Add(schemaItem);
                 }
                 // Processing
-                foreach (var processor in objs.Crafting.Processors)
+                foreach (var processor in objs.Processing.Processors)
                 {
                     var schemaItem = new GameState.Schematic.SchemaProcessor();
                     schemaItem.Id = processor.Value.Id;
@@ -194,6 +196,17 @@ namespace GoldRush
                     }
                     schema.Processors.Add(schemaItem);
                 }
+                foreach (var buffPair in objs.Upgrades.Buffs)
+                {
+                    var buff = buffPair.Value;
+                    var schemaBuff = new GameState.Schematic.SchemaBuff();
+                    schemaBuff.Id = buff.Id;
+                    schemaBuff.Name = buff.Name;
+                    schemaBuff.Duration = buff.Duration;
+                    schemaBuff.Description = buff.Tooltip;
+
+                    schema.Buffs.Add(schemaBuff);
+                }
 
                 state.GameSchema = schema;
             }
@@ -204,7 +217,7 @@ namespace GoldRush
                 var stateItem = new GameState.Item();
                 stateItem.Id = item.Value.Id;
                 stateItem.Quantity = item.Value.Quantity;
-                stateItem.Worth = item.Value.Value;
+                stateItem.Worth = item.Value.Value; // confirm issues with speech potion.
 
 
                 var stateStatsItem = new GameState.StatItem();
@@ -246,7 +259,7 @@ namespace GoldRush
 
             // PROCESSORS
 
-            foreach (var processor in objs.Crafting.Processors)
+            foreach (var processor in objs.Processing.Processors)
             {
                 var stateProcessor = new GameState.Processor();
                 stateProcessor.Id = processor.Value.Id;
@@ -316,7 +329,7 @@ namespace GoldRush
                 saveState.Gatherers.Add(saveStateGatherer);
             }
 
-            foreach (var processor in objs.Crafting.Processors)
+            foreach (var processor in objs.Processing.Processors)
             {
                 var toSaveProcessor = processor.Value;
                 var saveStateProcessor = new SaveState.Processor();
@@ -355,7 +368,6 @@ namespace GoldRush
                 var saveStateBuff = new SaveState.Buff();
                 saveStateBuff.Id = toSaveBuff.Id;
                 saveStateBuff.TimeActive = toSaveBuff.TimeActive;
-                saveStateBuff.Active = toSaveBuff.Active;
 
                 saveState.Buffs.Add(saveStateBuff);
             }
@@ -402,7 +414,7 @@ namespace GoldRush
                 {
                     foreach (var processor in save.Processors)
                     {
-                        var toLoadProcessor = objs.Crafting.Processors[processor.Id];
+                        var toLoadProcessor = objs.Processing.Processors[processor.Id];
                         toLoadProcessor.SelectedRecipeIndex = processor.SelectedRecipe;
                         toLoadProcessor.RecipeProgress = processor.Progress;
                         toLoadProcessor.RecipesCrafted = processor.RecipesCrafted;
@@ -429,9 +441,9 @@ namespace GoldRush
                     {
                         var toLoadBuff = objs.Upgrades.Buffs[buff.Id];
                         toLoadBuff.TimeActive = buff.TimeActive;
-                        toLoadBuff.Active = buff.Active;
                     }
                 }
+                Score = objs.Items.Coins.LifeTimeTotal;
             }
         }
     }

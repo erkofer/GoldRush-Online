@@ -18,8 +18,6 @@ module Inventory {
     var configNames = new Array<HTMLElement>();
     var configImages = new Array<HTMLElement>();
 
-    console.log("Typescript is still compiling. WTF?");
-
     export class Item {
         id: number;
         name: string;
@@ -249,6 +247,7 @@ module Inventory {
         var itemImage = document.createElement('DIV');
         itemImage.style.width = '32px';
         itemImage.style.height = '32px';
+        itemImage.style.display = 'inline-block';
         itemImage.style.position = 'relative';
         itemImage.style.margin = '0 auto';
         var image = document.createElement('DIV');
@@ -260,6 +259,9 @@ module Inventory {
         item.quantityElm = itemQuantity;
         itemQuantity.classList.add("item-text");
         itemQuantity.textContent = Utils.formatNumber(0);
+        itemQuantity.style.verticalAlign = 'top';
+        itemQuantity.style.marginTop = '8px';
+        itemQuantity.style.display = 'inline-block'
         itemElement.appendChild(itemQuantity);
 
         var itemValue = document.createElement('DIV');

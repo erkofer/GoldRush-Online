@@ -18,7 +18,7 @@
                 ? fullGameState.Compress(cachedGameState)
                 : fullGameState;
 
-            return new UpdateDto { GameState = sendState };
+            return new UpdateDto { GameState = sendState, Score = _game.Score };
         }
 
         public SaveDto Save()

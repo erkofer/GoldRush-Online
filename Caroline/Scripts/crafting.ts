@@ -15,6 +15,9 @@
     var recipes = new Array<Recipe>();
     export var processors = new Array<Processor>();
 
+    var sidebar = document.getElementById('sidebarInformation');
+    var processorSidebar;
+
     export class Processor {
         constructor() {
 
@@ -31,9 +34,17 @@
 
         completedOperations: number;
         totalOperations: number;
+        totalDuration: number;
+        totalOperationCompletionTime: number;
         operationDuration: number;
         operationStartTime: number;
         operationCompletionTime: number;
+
+        sidebarContainer: HTMLElement;
+        sidebarJobBar: HTMLElement;
+        sidebarJobText: HTMLElement;
+        sidebarProgressBar: HTMLElement;
+        sidebarProgressText: HTMLElement;
 
         _recipes = new Array<Recipe>();
 
@@ -343,7 +354,7 @@
                 cell.appendChild(activateBtn);
             }
         }
-
+        drawProcessorSidebar(processor);
         processorSection.appendChild(processorTable);
     }
 
@@ -376,12 +387,20 @@
         });
 
         if (progressChanged) {
-            if (processor.totalOperations <= 0) return;
-            if (processor.completedOperations == processor.totalOperations) return;
-
+            if (processor.totalOperations <= 0 || processor.completedOperations == processor.totalOperations) {
+                processor.progressBar.style.width = '0%';
+                processor.progressText.textContent = '';
+                processor.sidebarProgressText.textContent = '';
+                processor.sidebarContainer.style.display = 'none';
+                processor.totalOperationCompletionTime = 0;
+                return;
+            }
+            processor.sidebarContainer.style.display = 'inline-block';
             processor.operationStartTime = Date.now();
             processor.operationCompletionTime = processor.operationStartTime + (processor.operationDuration * 1000);
-            console.log('Start: ' + processor.operationStartTime + ' End: ' + processor.operationCompletionTime);
+
+            if (processor.totalOperationCompletionTime == 0)
+                processor.totalOperationCompletionTime = processor.operationStartTime + ((processor.operationDuration * 1000) * (processor.totalOperations - processor.completedOperations));
         }
         /*
         Utils.ifNotDefault(completedOperations, function () {
@@ -402,12 +421,14 @@
         if (processor.selectedRecipe > -1) {
             try {
                 processor.progressText.textContent = Objects.lookupName(processor._recipes[processor.selectedRecipe].resultants[0].id) + ' (' + processor.completedOperations + '/' + processor.totalOperations + ')';
+                processor.sidebarJobText.textContent = Objects.lookupName(processor._recipes[processor.selectedRecipe].resultants[0].id) + ' (' + processor.completedOperations + '/' + processor.totalOperations + ')';
             }
             catch (err) {
                 console.log("invalid processor recipe " + processor.selectedRecipe);
             }
         } else {
             processor.progressText.textContent = '';
+            processor.sidebarProgressText.textContent = '';
         }
         /* if (processor.operationCompletionTime != operationCompletionTime) {
              processor.operationStartTime = Date.now() / 1000;
@@ -426,11 +447,19 @@
                 var timeToFinish = processor.operationCompletionTime - Date.now();
                 timeToFinish /= 1000;
 
+                var totalTimeToFinish = processor.totalOperationCompletionTime - Date.now();
+                var totalCompletionPerc = totalTimeToFinish / (processor.operationDuration * processor.totalOperations);
+                totalCompletionPerc = (100 - totalCompletionPerc / 10);
+
                 var completionPerc = timeToFinish / processor.operationDuration;
                 completionPerc *= 100;
                 completionPerc = 100 - completionPerc;
                 // processor.progressBar.style.width = ((((processor.operationCompletionTime - processor.operationStartTime) / processor.operationDuration)) / 10) + '%';
                 processor.progressBar.style.width = completionPerc + '%';
+                processor.sidebarJobBar.style.width = completionPerc + '%';
+
+                processor.sidebarProgressBar.style.width = totalCompletionPerc + '%';
+                processor.sidebarProgressText.textContent = Utils.formatTime(totalTimeToFinish / 1000);
             }
         });
     }
@@ -457,6 +486,49 @@
             var quantity = Objects.getQuantity(recipe.id);
             recipe.row.style.display = (quantity == -1) ? 'none' : 'inline-block';
         }*/
+    }
+
+    function drawProcessorSidebar(processor: Processor) {
+        if (!processorSidebar) {
+            processorSidebar = document.createElement('div');
+            sidebar.appendChild(processorSidebar);
+        }
+
+        var container = document.createElement('div');
+        container.classList.add('processor-sidebar');
+        processor.sidebarContainer = container;
+
+        var header = document.createElement('div');
+        header.classList.add('buff-header');
+        header.textContent = processor.name;
+        container.appendChild(header);
+
+        var totalTime = document.createElement('div');
+        totalTime.classList.add('processor-sidebar-progress-bar-container');
+        var totalTimeBar = document.createElement('div');
+        totalTimeBar.classList.add('processor-sidebar-progress-bar');
+        processor.sidebarProgressBar = totalTimeBar;
+        var totalTimeText = document.createElement('div');
+        totalTimeText.classList.add('processor-sidebar-progress-text');
+        processor.sidebarProgressText = totalTimeText;
+        totalTime.appendChild(totalTimeText);
+        totalTime.appendChild(totalTimeBar);
+        container.appendChild(totalTime);
+
+        var jobTime = document.createElement('div');
+        jobTime.classList.add('processor-sidebar-progress-bar-container');
+        var jobTimeBar = document.createElement('div');
+        jobTimeBar.classList.add('processor-sidebar-progress-bar');
+        processor.sidebarJobBar = jobTimeBar;
+        var jobTimeText = document.createElement('div');
+        jobTimeText.classList.add('processor-sidebar-progress-text');
+        processor.sidebarJobText = jobTimeText;
+        jobTime.appendChild(jobTimeText);
+        jobTime.appendChild(jobTimeBar);
+        container.appendChild(jobTime);
+        container.style.display = 'none';
+
+        processorSidebar.appendChild(container);
     }
 
     function drawRecipe(recipe: Recipe, isItem: boolean) {

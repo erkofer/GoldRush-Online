@@ -1,4 +1,71 @@
-﻿var Chat;
+﻿var Buffs;
+(function (Buffs) {
+    var buffs = new Array();
+    var sidebar = document.getElementById('sidebarInformation');
+    var buffContainer;
+
+    var Buff = (function () {
+        function Buff() {
+        }
+        return Buff;
+    })();
+
+    function init() {
+        buffContainer = document.createElement('div');
+        sidebar.appendChild(buffContainer);
+    }
+
+    function register(id, name, description, duration) {
+        if (buffs[id])
+            return;
+
+        var buff = new Buff();
+        buff.name = name;
+        buff.description = description;
+        buff.duration = duration;
+        buffs[id] = buff;
+
+        draw(buff);
+    }
+    Buffs.register = register;
+
+    function draw(buff) {
+        var container = document.createElement('div');
+        container.classList.add('buff-container');
+        tooltip.create(container, buff.description);
+
+        var header = document.createElement('div');
+        header.textContent = buff.name;
+        header.classList.add('buff-header');
+        container.appendChild(header);
+
+        var imageContainer = document.createElement('div');
+        imageContainer.classList.add('buff-image-container');
+        container.appendChild(imageContainer);
+
+        var image = document.createElement('div');
+        image.classList.add(Utils.cssifyName(buff.name));
+        imageContainer.appendChild(image);
+
+        var duration = document.createElement('div');
+        duration.classList.add('buff-header');
+        container.appendChild(duration);
+
+        buffContainer.appendChild(container);
+        buff.container = container;
+        buff.durationElm = duration;
+    }
+
+    function update(id, timeActive) {
+        var buff = buffs[id];
+        buff.timeActive = timeActive;
+        buff.durationElm.textContent = '(' + Utils.formatTime(buff.duration - timeActive) + ')';
+        buff.container.style.display = timeActive == 0 ? 'none' : 'inline-block';
+    }
+    Buffs.update = update;
+    init();
+})(Buffs || (Buffs = {}));
+var Chat;
 (function (Chat) {
     var chatWindow;
     var chatLogContainer;
@@ -249,6 +316,19 @@ var Utils;
         }
     }
     Utils.formatNumber = formatNumber;
+
+    function formatTime(n) {
+        var hours = Math.floor(n / 3600);
+        var minutes = Math.floor((n % 3600) / 60);
+        var seconds = Math.floor(n % 60);
+
+        var hoursString = (hours < 10 ? (hours < 1 ? "" : "0" + hours + ":") : hours + ":");
+        var minutesString = (minutes < 10 ? "0" + minutes + ":" : minutes + ":");
+        var secondsString = (seconds < 10 ? "0" + seconds : seconds + "");
+
+        return hoursString + minutesString + secondsString;
+    }
+    Utils.formatTime = formatTime;
 
     function convertServerTimeToLocal(time) {
         var hours = +time.split(':')[0];
@@ -637,8 +717,6 @@ var Inventory;
     var configNames = new Array();
     var configImages = new Array();
 
-    console.log("Typescript is still compiling. WTF?");
-
     var Item = (function () {
         function Item(id, name, worth, category) {
             this.id = id;
@@ -861,6 +939,7 @@ var Inventory;
         var itemImage = document.createElement('DIV');
         itemImage.style.width = '32px';
         itemImage.style.height = '32px';
+        itemImage.style.display = 'inline-block';
         itemImage.style.position = 'relative';
         itemImage.style.margin = '0 auto';
         var image = document.createElement('DIV');
@@ -872,6 +951,9 @@ var Inventory;
         item.quantityElm = itemQuantity;
         itemQuantity.classList.add("item-text");
         itemQuantity.textContent = Utils.formatNumber(0);
+        itemQuantity.style.verticalAlign = 'top';
+        itemQuantity.style.marginTop = '8px';
+        itemQuantity.style.display = 'inline-block';
         itemElement.appendChild(itemQuantity);
 
         var itemValue = document.createElement('DIV');
@@ -1033,6 +1115,21 @@ var Inventory;
 var Connection;
 (function (Connection) {
     var conInterval;
+    var disconInterval;
+    var networkErrorElm;
+
+    function init() {
+        networkErrorElm = document.createElement('div');
+        networkErrorElm.classList.add('network-error');
+        var networkErrorText = document.createElement('div');
+        networkErrorText.classList.add('network-error-text');
+        networkErrorText.textContent = 'No connection';
+        networkErrorElm.appendChild(networkErrorText);
+        var game = document.getElementById('game');
+        game.insertBefore(networkErrorElm, game.childNodes[0]);
+    }
+    init();
+
     Komodo.connection.received(function (msg) {
         Chat.log("Recieved " + roughSizeOfObject(msg) + " bytes from komodo.");
         Chat.log("Encoded: ");
@@ -1073,7 +1170,7 @@ var Connection;
         }
 
         if (msg.Buffs != null) {
-            console.log(msg.Buffs);
+            updateBuffs(msg.Buffs);
         }
     });
 
@@ -1087,13 +1184,19 @@ var Connection;
     Komodo.connection.stateChanged(function (change) {
         if (change.newState === $.signalR.connectionState.connected) {
             connected();
+            networkErrorElm.style.marginTop = '-21px';
         }
         if (change.newState === $.signalR.connectionState.disconnected) {
             clearInterval(conInterval);
+            networkErrorElm.style.marginTop = '0px';
+        }
+        if (change.newState === $.signalR.connectionState.reconnecting) {
+            networkErrorElm.style.marginTop = '0px';
         }
     });
 
     function connected() {
+        networkErrorElm.style.top = '-21px';
         console.log('Connection opened');
         var encoded = actions.encode64();
         send(encoded);
@@ -1106,6 +1209,14 @@ var Connection;
 
             actions = new Komodo.ClientActions();
         }, 1000);
+    }
+
+    function disconnected() {
+        console.log('Connection lost');
+        networkErrorElm.style.top = '0px';
+        disconInterval = setTimeout(function () {
+            Komodo.restart();
+        }, 5000);
     }
 
     function loadSchema(schema) {
@@ -1137,6 +1248,19 @@ var Connection;
                 var item = schema.CraftingItems[i];
                 Crafting.addRecipe(item.Id, item.Ingredients, item.Resultants, item.IsItem);
             }
+        }
+        if (schema.Buffs) {
+            for (var i = 0; i < schema.Buffs.length; i++) {
+                var buff = schema.Buffs[i];
+                Buffs.register(buff.Id, buff.Name, buff.Description, buff.Duration);
+            }
+        }
+    }
+
+    function updateBuffs(buffs) {
+        for (var i = 0; i < buffs.length; i++) {
+            var buff = buffs[i];
+            Buffs.update(buff.Id, buff.TimeActive);
         }
     }
 
@@ -1316,6 +1440,9 @@ var Crafting;
     var itemsTableOffset = 3;
     var recipes = new Array();
     Crafting.processors = new Array();
+
+    var sidebar = document.getElementById('sidebarInformation');
+    var processorSidebar;
 
     var Processor = (function () {
         function Processor() {
@@ -1611,7 +1738,7 @@ var Crafting;
                 cell.appendChild(activateBtn);
             }
         }
-
+        drawProcessorSidebar(processor);
         processorSection.appendChild(processorTable);
     }
 
@@ -1645,24 +1772,32 @@ var Crafting;
         });
 
         if (progressChanged) {
-            if (processor.totalOperations <= 0)
+            if (processor.totalOperations <= 0 || processor.completedOperations == processor.totalOperations) {
+                processor.progressBar.style.width = '0%';
+                processor.progressText.textContent = '';
+                processor.sidebarProgressText.textContent = '';
+                processor.sidebarContainer.style.display = 'none';
+                processor.totalOperationCompletionTime = 0;
                 return;
-            if (processor.completedOperations == processor.totalOperations)
-                return;
-
+            }
+            processor.sidebarContainer.style.display = 'inline-block';
             processor.operationStartTime = Date.now();
             processor.operationCompletionTime = processor.operationStartTime + (processor.operationDuration * 1000);
-            console.log('Start: ' + processor.operationStartTime + ' End: ' + processor.operationCompletionTime);
+
+            if (processor.totalOperationCompletionTime == 0)
+                processor.totalOperationCompletionTime = processor.operationStartTime + ((processor.operationDuration * 1000) * (processor.totalOperations - processor.completedOperations));
         }
 
         if (processor.selectedRecipe > -1) {
             try  {
                 processor.progressText.textContent = Objects.lookupName(processor._recipes[processor.selectedRecipe].resultants[0].id) + ' (' + processor.completedOperations + '/' + processor.totalOperations + ')';
+                processor.sidebarJobText.textContent = Objects.lookupName(processor._recipes[processor.selectedRecipe].resultants[0].id) + ' (' + processor.completedOperations + '/' + processor.totalOperations + ')';
             } catch (err) {
                 console.log("invalid processor recipe " + processor.selectedRecipe);
             }
         } else {
             processor.progressText.textContent = '';
+            processor.sidebarProgressText.textContent = '';
         }
     }
     Crafting.updateProcessor = updateProcessor;
@@ -1675,11 +1810,19 @@ var Crafting;
                 var timeToFinish = processor.operationCompletionTime - Date.now();
                 timeToFinish /= 1000;
 
+                var totalTimeToFinish = processor.totalOperationCompletionTime - Date.now();
+                var totalCompletionPerc = totalTimeToFinish / (processor.operationDuration * processor.totalOperations);
+                totalCompletionPerc = (100 - totalCompletionPerc / 10);
+
                 var completionPerc = timeToFinish / processor.operationDuration;
                 completionPerc *= 100;
                 completionPerc = 100 - completionPerc;
 
                 processor.progressBar.style.width = completionPerc + '%';
+                processor.sidebarJobBar.style.width = completionPerc + '%';
+
+                processor.sidebarProgressBar.style.width = totalCompletionPerc + '%';
+                processor.sidebarProgressText.textContent = Utils.formatTime(totalTimeToFinish / 1000);
             }
         });
     }
@@ -1703,6 +1846,49 @@ var Crafting;
         });
     }
     Crafting.update = update;
+
+    function drawProcessorSidebar(processor) {
+        if (!processorSidebar) {
+            processorSidebar = document.createElement('div');
+            sidebar.appendChild(processorSidebar);
+        }
+
+        var container = document.createElement('div');
+        container.classList.add('processor-sidebar');
+        processor.sidebarContainer = container;
+
+        var header = document.createElement('div');
+        header.classList.add('buff-header');
+        header.textContent = processor.name;
+        container.appendChild(header);
+
+        var totalTime = document.createElement('div');
+        totalTime.classList.add('processor-sidebar-progress-bar-container');
+        var totalTimeBar = document.createElement('div');
+        totalTimeBar.classList.add('processor-sidebar-progress-bar');
+        processor.sidebarProgressBar = totalTimeBar;
+        var totalTimeText = document.createElement('div');
+        totalTimeText.classList.add('processor-sidebar-progress-text');
+        processor.sidebarProgressText = totalTimeText;
+        totalTime.appendChild(totalTimeText);
+        totalTime.appendChild(totalTimeBar);
+        container.appendChild(totalTime);
+
+        var jobTime = document.createElement('div');
+        jobTime.classList.add('processor-sidebar-progress-bar-container');
+        var jobTimeBar = document.createElement('div');
+        jobTimeBar.classList.add('processor-sidebar-progress-bar');
+        processor.sidebarJobBar = jobTimeBar;
+        var jobTimeText = document.createElement('div');
+        jobTimeText.classList.add('processor-sidebar-progress-text');
+        processor.sidebarJobText = jobTimeText;
+        jobTime.appendChild(jobTimeText);
+        jobTime.appendChild(jobTimeBar);
+        container.appendChild(jobTime);
+        container.style.display = 'none';
+
+        processorSidebar.appendChild(container);
+    }
 
     function drawRecipe(recipe, isItem) {
         var pointOfInsertion = craftingTable.rows.length;
@@ -1924,6 +2110,9 @@ var Account;
     var userSpan;
     var contextMenu;
 
+    var registrationErrors;
+    var loginErrors;
+
     var mouseTimeout;
 
     function draw() {
@@ -2036,6 +2225,9 @@ var Account;
         formControlsContainer.appendChild(passwordContainer);
         formControlsContainer.appendChild(rememberMeContainer);
 
+        loginErrors = document.createElement('div');
+        loginModal.addElement(loginErrors);
+
         loginModal.title = 'Log in';
         loginModal.addElement(formControlsContainer);
 
@@ -2046,7 +2238,9 @@ var Account;
         var yes = loginModal.addAffirmativeOption("Submit");
         yes.addEventListener("click", function () {
             login(username.value, password.value, rememberMe.checked);
-            modal.close();
+            while (loginErrors.firstChild) {
+                loginErrors.removeChild(loginErrors.firstChild);
+            }
         }, false);
         loginModal.show();
     }
@@ -2100,6 +2294,8 @@ var Account;
         formControlsContainer.appendChild(confpassContainer);
 
         registerModal.addElement(formControlsContainer);
+        registrationErrors = document.createElement('div');
+        registerModal.addElement(registrationErrors);
 
         registerModal.title = "Register";
 
@@ -2110,8 +2306,11 @@ var Account;
         var yes = registerModal.addAffirmativeOption("Submit");
         yes.addEventListener("click", function () {
             create(email.value, username.value, password.value, confirmPassword.value);
-            modal.close();
+            while (registrationErrors.firstChild) {
+                registrationErrors.removeChild(registrationErrors.firstChild);
+            }
         }, false);
+
         registerModal.show();
     }
 
@@ -2122,9 +2321,21 @@ var Account;
             data: $.param({ Email: email, UserName: username, Password: password, ConfirmPassword: passwordConfirmation }),
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             success: function (request) {
-                console.log(request.responseText);
-                Connection.restart();
-                info();
+                request = JSON.parse(request);
+                if (request.Succeeded) {
+                    Connection.restart();
+                    info();
+                    modal.close();
+                } else {
+                    while (registrationErrors.firstChild) {
+                        registrationErrors.removeChild(registrationErrors.firstChild);
+                    }
+                    for (var i = 0; i < request.Errors.length; i++) {
+                        var errorElm = document.createElement('div');
+                        errorElm.textContent = request.Errors[i];
+                        registrationErrors.appendChild(errorElm);
+                    }
+                }
             }
         });
     }
@@ -2136,9 +2347,22 @@ var Account;
             data: $.param({ UserName: email, Password: password, RememberMe: rememberMe }),
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             success: function (request) {
-                console.log(request);
-                Connection.restart();
-                info();
+                request = JSON.parse(request);
+
+                if (request.Succeeded) {
+                    Connection.restart();
+                    info();
+                    modal.close();
+                } else {
+                    while (loginErrors.firstChild) {
+                        loginErrors.removeChild(loginErrors.firstChild);
+                    }
+                    for (var i = 0; i < request.Errors.length; i++) {
+                        var errorElm = document.createElement('div');
+                        errorElm.textContent = request.Errors[i];
+                        loginErrors.appendChild(errorElm);
+                    }
+                }
             }
         });
     }

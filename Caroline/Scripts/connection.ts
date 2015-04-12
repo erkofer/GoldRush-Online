@@ -4,6 +4,21 @@
 module Connection {
     declare var Komodo: { connection: any; ClientActions: any; decode: any; send: any; restart: any };
     var conInterval;
+    var disconInterval;
+    var networkErrorElm;
+
+    function init() {
+        networkErrorElm = document.createElement('div');
+        networkErrorElm.classList.add('network-error');
+        var networkErrorText = document.createElement('div');
+        networkErrorText.classList.add('network-error-text');
+        networkErrorText.textContent = 'No connection';
+        networkErrorElm.appendChild(networkErrorText);
+        var game = document.getElementById('game');
+        game.insertBefore(networkErrorElm, game.childNodes[0]);
+    }
+    init();
+
     Komodo.connection.received(function (msg) {
         Chat.log("Recieved " + roughSizeOfObject(msg) + " bytes from komodo.");
         Chat.log("Encoded: ");
@@ -59,13 +74,19 @@ module Connection {
     Komodo.connection.stateChanged(function (change) {
         if (change.newState === (<any>$).signalR.connectionState.connected) {
             connected();
+            networkErrorElm.style.marginTop = '-21px';
         }
         if (change.newState === (<any>$).signalR.connectionState.disconnected) {
             clearInterval(conInterval);
+            networkErrorElm.style.marginTop = '0px';
+        }
+        if (change.newState === (<any>$).signalR.connectionState.reconnecting) {
+            networkErrorElm.style.marginTop = '0px';
         }
     });
 
     function connected() {
+        networkErrorElm.style.top = '-21px';
         console.log('Connection opened');
         var encoded = actions.encode64();
         send(encoded);
@@ -81,6 +102,13 @@ module Connection {
         }, 1000);
     }
 
+    function disconnected() {
+        console.log('Connection lost')
+        networkErrorElm.style.top = '0px';
+        disconInterval = setTimeout(function () {
+            Komodo.restart();
+        }, 5000);
+    }
 
 
     function loadSchema(schema: any) {
@@ -113,12 +141,18 @@ module Connection {
                 Crafting.addRecipe(item.Id, item.Ingredients, item.Resultants, item.IsItem);
             }
         }
+        if (schema.Buffs) {
+            for (var i = 0; i < schema.Buffs.length; i++) {
+                var buff = schema.Buffs[i];
+                Buffs.register(buff.Id, buff.Name, buff.Description, buff.Duration);
+            }
+        }
     }
 
     function updateBuffs(buffs: any) {
         for (var i = 0; i < buffs.length; i++){
             var buff = buffs[i];
-            console.log(buff);
+            Buffs.update(buff.Id, buff.TimeActive);
         }
     }
 

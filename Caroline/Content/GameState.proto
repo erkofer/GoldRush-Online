@@ -88,6 +88,14 @@ message GameState {
 			optional string Name=3;
 		}
 		repeated SchemaProcessor Processors = 4;
+
+		message SchemaBuff {
+			optional int32 Id=1;
+			optional string Name=2;
+			optional double Duration=3;
+			optional string Description=4;
+		}
+		repeated SchemaBuff Buffs = 5;
 	}
 	optional Schematic GameSchema = 4; 
 

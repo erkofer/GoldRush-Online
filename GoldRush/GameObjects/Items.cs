@@ -269,11 +269,12 @@ namespace GoldRush
             public void Consume()
             {
                 if (Quantity <= 0) return;
-                Effect.Activate();
+                if(Buff == null) throw new NotImplementedException(Name + " has no effect assigned to it.");
+                Buff.TimeActive = 1;
                 Quantity--;
             }
 
-            public Upgrades.Upgrade Effect;
+            public Upgrades.Buff Buff;
         }
 
        
