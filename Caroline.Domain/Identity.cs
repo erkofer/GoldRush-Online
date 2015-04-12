@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 using Caroline.Domain.Models;
 using Caroline.Persistence;
 using Caroline.Persistence.Models;
+using Caroline.Persistence.Redis.Extensions;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
 using Microsoft.Owin.Security;
+using StackExchange.Redis;
 
 namespace Caroline.Domain
 {
@@ -35,6 +37,7 @@ namespace Caroline.Domain
             if (ulock == null)
                 throw new TimeoutException();
             return new UserDto(ulock, _db, id);
+            
         }
 
         public async Task<IdentityResult> SetPassword(User user, string password)
@@ -51,6 +54,21 @@ namespace Caroline.Domain
             await UpdateSecurityStampAsync(user.Id);
             await Store.UpdateAsync(user);
             return IdentityResult.Success;
+        }
+
+        public Task<ScoreEntry[]> GetLeaderboardEntries(long start = 0, long end = long.MaxValue)
+        {
+            return _db.HighScores.Range("lb", start, end, Order.Descending);
+        }
+
+        public Task SetLeaderboardEntry(long userId, long value)
+        {
+            return _db.HighScores.Add(new ScoreEntry {ListName = "lb", UserId = userId, Score = value});
+        }
+
+        public Task<string> GetUsername(long userid)
+        {
+            return _db.UserIds.Get(userid.ToStringInvariant());
         }
 
         public static UserManager Create(IdentityFactoryOptions<UserManager> options, IOwinContext context)

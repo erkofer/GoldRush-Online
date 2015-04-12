@@ -108,17 +108,17 @@ namespace Caroline.Persistence.Redis
         }
     }
 
-    public interface ISortedSetTable<T, T1>
+    public interface ISortedSetTable<TEntity, TId>
     {
-        Task<bool> Add(T entity);
-        Task<long> CombineAndStore(SetOperation operation, T1 destination, T1[] keys, double[] weights, Aggregate aggregate = Aggregate.Sum);
-        Task<double> Increment(T entity, double value = 1);
-        Task<long> Length(T1 key, double min = double.NegativeInfinity, double max = double.PositiveInfinity, Exclude exclude = Exclude.None);
-        Task<T[]> Range(T1 id, long start = 0, long stop = -1, Order order = Order.Ascending);
-        Task<long?> Rank(T entity, Order order = Order.Ascending);
-        Task<bool> Remove(T entity);
-        Task<long> RemoveRangeByRank(T1 id, long start, long stop);
-        Task<long> RemoveRangeByScore(T1 id, double start, double stop);
-        Task<double?> Score(T entity);
+        Task<bool> Add(TEntity entity);
+        Task<long> CombineAndStore(SetOperation operation, TId destination, TId[] keys, double[] weights, Aggregate aggregate = Aggregate.Sum);
+        Task<double> Increment(TEntity entity, double value = 1);
+        Task<long> Length(TId key, double min = double.NegativeInfinity, double max = double.PositiveInfinity, Exclude exclude = Exclude.None);
+        Task<TEntity[]> Range(TId id, long start = 0, long stop = -1, Order order = Order.Ascending);
+        Task<long?> Rank(TEntity entity, Order order = Order.Ascending);
+        Task<bool> Remove(TEntity entity);
+        Task<long> RemoveRangeByRank(TId id, long start, long stop);
+        Task<long> RemoveRangeByScore(TId id, double start, double stop);
+        Task<double?> Score(TEntity entity);
     }
 }

@@ -7,7 +7,6 @@ using Caroline.Persistence.Models;
 using Caroline.Persistence.Redis;
 using Caroline.Persistence.Redis.Extensions;
 using Microsoft.AspNet.Identity;
-using StackExchange.Redis;
 
 namespace Caroline.Persistence
 {
@@ -16,6 +15,7 @@ namespace Caroline.Persistence
         readonly IStringTable _userNameLookup;
         readonly IStringTable _emailsLookup;
         readonly IStringTable _loginsLookup;
+        readonly IStringTable _userIdLookup;
         readonly IEntityTable<User, long> _users;
         readonly IIdManager<User> _userIds; 
         bool _disposed;
@@ -26,6 +26,7 @@ namespace Caroline.Persistence
             _userIds = db.UserIdIncrement;
             _userNameLookup = db.UserNames;
             _loginsLookup = db.Logins;
+            _userIdLookup = db.UserIds;
             _emailsLookup = db.Emails;
         }
 
@@ -44,6 +45,7 @@ namespace Caroline.Persistence
             var userId = user.Id.ToStringInvariant();
 
             await _userNameLookup.Set(user.UserName, userId);
+            await _userIdLookup.Set(userId, user.UserName);
             if (!string.IsNullOrEmpty(user.Email))
                 await _emailsLookup.Set(user.Email, userId);
             foreach (var login in user.Logins)
