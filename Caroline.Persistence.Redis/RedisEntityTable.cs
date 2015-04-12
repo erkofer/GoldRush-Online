@@ -56,16 +56,15 @@ namespace Caroline.Persistence.Redis
         }
     }
 
-    public abstract class RedisEntityTableBase<TEntity, TId>
+    public abstract class RedisEntityTableBase<TEntity, TId> : RedisEntityTableBase<TId>
     {
-        public ISerializer<TEntity> Serializer { get; private set; }
-        public ISerializer<TId> KeySerializer { get; private set; }
-        public IIdentifier<TEntity, TId> Identifier { get; private set; }
+        protected ISerializer<TEntity> Serializer { get; private set; }
+        protected IIdentifier<TEntity, TId> Identifier { get; private set; }
 
-        public RedisEntityTableBase(ISerializer<TEntity> serializer, ISerializer<TId> keySerializer, IIdentifier<TEntity, TId> identifier)
+        protected RedisEntityTableBase(ISerializer<TEntity> serializer, ISerializer<TId> keySerializer, IIdentifier<TEntity, TId> identifier)
+            : base(keySerializer)
         {
             Serializer = serializer;
-            KeySerializer = keySerializer;
             Identifier = identifier;
         }
 
@@ -77,5 +76,16 @@ namespace Caroline.Persistence.Redis
             Identifier.SetId(previous, id);
             return previous;
         }
+    }
+
+    public abstract class RedisEntityTableBase<TId>
+    {
+        protected RedisEntityTableBase(ISerializer<TId> keySerializer)
+        {
+            KeySerializer = keySerializer;
+        }
+
+        protected ISerializer<TId> KeySerializer { get; private set; }
+        
     }
 }

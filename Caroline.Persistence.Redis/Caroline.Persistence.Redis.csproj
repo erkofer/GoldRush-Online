@@ -76,6 +76,7 @@
     <Compile Include="ProtoBufHelpers.cs" />
     <Compile Include="ProtoBufSerializer.cs" />
     <Compile Include="RandomSingleton.cs" />
+    <Compile Include="RedisRateLimitTable.cs" />
     <Compile Include="ReadOnlyTypeSafeDictionary.cs" />
     <Compile Include="RedisEntityListTable.cs" />
     <Compile Include="RedisEntityTable.cs" />

@@ -87,6 +87,17 @@ namespace Caroline.Persistence.Redis.Extensions
             return SetList(area, id, Objects<TEntity>.Serializer, Objects<TId>.Serializer, Objects<TEntity, TId>.Identifier);
         }
 
+        public static IRateLimitTable<TId> SetRateLimit<TId>(this IDatabaseArea area, RedisKey id, TimeSpan duration, int maxRequests, ISerializer<TId> keySerializer)
+        {
+            var db = area.CreateSubArea(id);
+            return new RedisRateLimitTable<TId>(db, keySerializer, maxRequests, duration);
+        }
+
+        public static IRateLimitTable<long> SetRateLimit(this IDatabaseArea area, RedisKey id, TimeSpan duration, int maxRequests)
+        {
+            return SetRateLimit(area, id, duration, maxRequests, Objects.LongSerializer);
+        }
+
         static class Objects
         {
             public static readonly ISerializer<byte[]> ByteSerializer = new ByteSerializer();
