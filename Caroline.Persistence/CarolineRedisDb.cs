@@ -64,7 +64,7 @@ namespace Caroline.Persistence
                 Users = db.SetLong<User>("u"),
                 UserIdIncrement = db.IdManager<User>("u-id"),
                 UserLocks = db.LockLong("u-l", TimeSpan.FromSeconds(10)),
-                GameSessions = db.Set<GameSessionWrapper, GameSessionEndpoint>("s", TimeSpan.FromMinutes(2)),
+                GameSessions = db.Set<GameSession, GameSessionEndpoint>("s", TimeSpan.FromMinutes(2)),
                 UserNames = db.String("uu"),
                 Logins = db.String("ul"),
                 Emails = db.String("ue")
@@ -80,7 +80,7 @@ namespace Caroline.Persistence
 
         public IEntityTable<User, long> Users { get; private set; }
 
-        public IEntityTable<GameSessionWrapper, GameSessionEndpoint> GameSessions { get; private set; }
+        public IEntityTable<GameSession, GameSessionEndpoint> GameSessions { get; private set; }
 
         public IStringTable UserNames { get; private set; }
         public IStringTable Logins { get; private set; }

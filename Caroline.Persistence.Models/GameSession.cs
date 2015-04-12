@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
 using Caroline.Persistence.Redis;
 using JetBrains.Annotations;
 
@@ -14,33 +12,6 @@ namespace Caroline.Persistence.Models
         }
 
         public GameSessionEndpoint Id { get; set; }
-    }
-
-    public partial class GameSessionWrapper : IIdentifiableEntity<GameSessionEndpoint>
-    {
-        public GameSessionWrapper(GameSessionEndpoint endpoint)
-        {
-            Id = endpoint;
-        }
-
-        public GameSessionEndpoint Id
-        {
-            get { return GameSession != null ? GameSession.Id : null; }
-            set
-            {
-                if (value != null)
-                {
-                    if (GameSession == null)
-                        GameSession = new GameSession(value);
-                    else GameSession.Id = value;
-                }
-                else
-                {
-                    if (GameSession != null)
-                        GameSession.Id = null;
-                }
-            }
-        }
     }
 
     public partial class RateLimit

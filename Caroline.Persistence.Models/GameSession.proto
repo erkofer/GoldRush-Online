@@ -6,7 +6,7 @@ option (google.protobuf.csharp_file_options).namespace = "Caroline.Persistence.M
 
 option optimize_for = SPEED;
 
-message GameSessionWrapper
+message GameSession
 {
 	// Add session specific fields here.
 	// Sessions are transient and expire after not being updated.
@@ -14,17 +14,12 @@ message GameSessionWrapper
 	// Sessions are uniquely identified by a layer 4 connection:
 	// SourceIp:SourcePort:DestinationIp:DestinationPort:GameId
 
-	optional GameSession GameSession = 1;
-	optional RateLimit RateLimit = 2;
-}
-
-message GameSession
-{
 	optional GameState CachedGameState = 1;
+	optional RateLimit RateLimit = 2;
 }
 
 message RateLimit
 {
 	optional int64 InitialRequestDate = 1;
-	optional int32 Requests = 3;
+	optional int32 Requests = 2;
 }

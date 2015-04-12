@@ -19,8 +19,6 @@ namespace Caroline.Connections
         protected override async Task OnConnected(IRequest request, string connectionId)
         {
             await AnonymousProfileApi.GenerateAnonymousProfileIfNotAuthenticated(request.GetHttpContext());
-
-            await Update(request, connectionId);
         }
 
         protected override async Task OnReceived(IRequest request, string connectionId, string data)
