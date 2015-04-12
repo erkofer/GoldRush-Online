@@ -56,11 +56,13 @@
   <ItemGroup>
     <Compile Include="CarolineScriptsRepo.cs" />
     <Compile Include="DatabaseWrapper.cs" />
+    <Compile Include="DoubleSerializer.cs" />
     <Compile Include="EmbeddedResourcesDictionary.cs" />
     <Compile Include="EntityIdentifier.cs" />
     <Compile Include="Extensions\ArrayEx.cs" />
     <Compile Include="Extensions\CarolineScriptsRepoEx.cs" />
     <Compile Include="Extensions\DatabaseAreaEx.cs" />
+    <Compile Include="Extensions\DoubleEx.cs" />
     <Compile Include="Extensions\IntEx.cs" />
     <Compile Include="Extensions\LongEx.cs" />
     <Compile Include="IAsyncDisposable.cs" />
@@ -83,6 +85,7 @@
     <Compile Include="RedisIdManager.cs" />
     <Compile Include="RedisPessimisticLockTable.cs" />
     <Compile Include="RedisScripts\TryLockResult.cs" />
+    <Compile Include="RedisSortedSetTable.cs" />
     <Compile Include="RedisStringTable.cs" />
     <Compile Include="RootDatabaseArea.cs" />
     <Compile Include="RedisDbMultiplexer.cs" />

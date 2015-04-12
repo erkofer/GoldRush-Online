@@ -87,6 +87,19 @@ namespace Caroline.Persistence.Redis.Extensions
             return SetList(area, id, Objects<TEntity>.Serializer, Objects<TId>.Serializer, Objects<TEntity, TId>.Identifier);
         }
 
+        public static ISortedSetTable<TEntity, TId> SetSortedList<TEntity, TId>(this IDatabaseArea area, RedisKey id, ISerializer<TEntity> serializer, ISerializer<TId> keySerializer, IIdentifier<TEntity, TId> identifier, IIdentifier<TEntity, double> scoreIdentifier)
+        {
+            var db = area.CreateSubArea(id);
+            return new RedisSortedSetTable<TEntity, TId>(db, serializer, keySerializer, identifier, scoreIdentifier);
+        }
+
+        public static ISortedSetTable<TEntity, TId> SetSortedList<TEntity, TId>(this IDatabaseArea area, RedisKey id)
+            where TId : IIdentifiableEntity<string>, new()
+            where TEntity : IIdentifiableEntity<TId>, IIdentifiableEntity<double>
+        {
+            return SetSortedList<TEntity, TId>(area, id, Objects<TEntity>.Serializer, ObjectsString<TId>.StringSerializer, Objects<TEntity, TId>.Identifier, Objects<TEntity, double>.Identifier)
+        } 
+
         public static IRateLimitTable<TId> SetRateLimit<TId>(this IDatabaseArea area, RedisKey id, TimeSpan duration, int maxRequests, ISerializer<TId> keySerializer)
         {
             var db = area.CreateSubArea(id);

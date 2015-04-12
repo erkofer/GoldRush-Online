@@ -11,7 +11,7 @@ using StackExchange.Redis;
 
 namespace Caroline.Persistence
 {
-    public class RedisUserStore : IUserLoginStore<User, long>, IUserPasswordStore<User, long>, IUserSecurityStampStore<User, long>, IUserEmailStore<User, long>
+    public class RedisUserStore : IUserLoginStore<User, long>, IUserPasswordStore<User, long>, IUserSecurityStampStore<User, long>, IUserEmailStore<User, long>, IUserLockoutStore<User, long>
     {
         readonly IStringTable _userNameLookup;
         readonly IStringTable _emailsLookup;
@@ -238,5 +238,40 @@ namespace Caroline.Persistence
         }
 
         #endregion
+
+        public Task<DateTimeOffset> GetLockoutEndDateAsync(User user)
+        {
+            return Task.FromResult(DateTimeOffset.UtcNow);
+        }
+
+        public Task SetLockoutEndDateAsync(User user, DateTimeOffset lockoutEnd)
+        {
+            return Task.FromResult(0);
+        }
+
+        public Task<int> IncrementAccessFailedCountAsync(User user)
+        {
+            return Task.FromResult(0);
+        }
+
+        public Task ResetAccessFailedCountAsync(User user)
+        {
+            return Task.FromResult(0);
+        }
+
+        public Task<int> GetAccessFailedCountAsync(User user)
+        {
+            return Task.FromResult(0);
+        }
+
+        public Task<bool> GetLockoutEnabledAsync(User user)
+        {
+            return Task.FromResult(false);
+        }
+
+        public Task SetLockoutEnabledAsync(User user, bool enabled)
+        {
+            return Task.FromResult(0);
+        }
     }
 }
