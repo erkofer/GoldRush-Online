@@ -43,12 +43,12 @@ namespace Caroline.Domain.Models
             return _db.Games.Set(game);
         }
 
-        public async Task<GameSession> GetSession(IpEndpoint id)
+        public async Task<GameSessionWrapper> GetSession(IpEndpoint id)
         {
-            return await _db.GameSessions.Get(new GameSessionEndpoint(id, _id)) ?? new GameSession(new GameSessionEndpoint(id, _id));
+            return await _db.GameSessions.Get(new GameSessionEndpoint(id, _id)) ?? new GameSessionWrapper(new GameSessionEndpoint(id, _id));
         }
 
-        public Task<bool> SetSession(GameSession entity)
+        public Task<bool> SetSession(GameSessionWrapper entity)
         {
             Check(entity);
             if (entity.Id.GameId != _id)

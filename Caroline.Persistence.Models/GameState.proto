@@ -126,5 +126,7 @@ message GameState {
 		optional int32 Y = 2 [default = -100];
 	}
 	optional AntiCheat AntiCheatCoordinates=9;
+
+	optional bool IsRateLimited = 10;
 } 
 

@@ -17,18 +17,24 @@ namespace Caroline.App
             var manager = await UserManager.CreateAsync();
             var userDto = await manager.GetUser(userId);
 
-            // get game save and connection session
+            // get connection session, check for rate limiting
+            var session = await userDto.GetSession(endpoint.EndPoint);
+            if (IsRateLimited(session))
+            {
+                return new GameState {IsError = true, IsRateLimited = true};
+            }
+
+            // get game save
             var save = await userDto.GetGame();
             var saveData = save.SaveData;
             var saveObject = saveData != null ? ProtoBufHelpers.Deserialize<SaveState>(saveData) : null;
-            var session = await userDto.GetSession(endpoint.EndPoint);
 
             // load game save into an game instance
             var game = _sessionFactory.Create();
             game.Load(new LoadArgs { SaveState = saveObject });
 
             // update save with new input
-            var updateDto = game.Update(new UpdateArgs { ClientActions = input, Session = session });
+            var updateDto = game.Update(new UpdateArgs { ClientActions = input, Session = session.GameSession });
 
             // save to the database
             // session gets modified by update
@@ -47,6 +53,16 @@ namespace Caroline.App
             await userDto.DisposeAsync();
 
             return updateDto != null ? updateDto.GameState : null;
+        }
+
+        static bool IsRateLimited(GameSessionWrapper session)
+        {
+            if (session == null)
+                session = new GameSessionWrapper();
+            RateLimit limit;
+            if((limit = session.RateLimit) == null)
+                limit = session.RateLimit = new RateLimit();
+            return !limit.TryRequest();
         }
     }
 
