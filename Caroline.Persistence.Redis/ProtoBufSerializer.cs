@@ -31,10 +31,7 @@ namespace Caroline.Persistence.Redis
         where TEntity : IIdentifiableEntity<string>, new()
     {
         public StringSerializer()
-            : base(e => (RedisKey)e.Id, id =>
-            {
-                return new TEntity { Id = (RedisKey)id };
-            })
+            : base(e => (RedisKey)e.Id, id => new TEntity { Id = (RedisKey)id })
         {
         }
     }
@@ -57,7 +54,7 @@ namespace Caroline.Persistence.Redis
         }
     }
 
-    class Serializer<TEntity> : ISerializer<TEntity>
+    public class Serializer<TEntity> : ISerializer<TEntity>
     {
         readonly Func<TEntity, byte[]> _serialize;
         readonly Func<byte[], TEntity> _deserialize;

@@ -94,7 +94,7 @@ message GameState {
 			optional string Name=2;
 			optional double Duration=3;
 			optional string Description=4;
-		}
+	}
 		repeated SchemaBuff Buffs = 5;
 	}
 	optional Schematic GameSchema = 4; 
@@ -141,5 +141,6 @@ message GameState {
 		optional double TimeActive=2[default=-100];
 	}
 	repeated Buff Buffs = 10;
+	optional bool IsRateLimited = 11;
 } 
 

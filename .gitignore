@@ -4,6 +4,7 @@
 /GoldRushTesting/obj
 /packages
 /TestResults
+/Caroline/game.js
 *.user
 *.suo
 /GoldRush.sln.ide

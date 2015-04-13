@@ -7,14 +7,13 @@
         // private GameState cachedGameState;
         public UpdateDto Update(UpdateArgs args)
         {
-            var cachedGameState = args != null && args.Session != null ? args.Session.CachedGameState : null;
-            var fullGameState = _game.Update(args != null && args.ClientActions != null ? args.ClientActions : null);
+            var cachedGameState = args.Session.CachedGameState;
+            var fullGameState = _game.Update(args.ClientActions);
 
-            if (args != null && args.Session != null)
                 args.Session.CachedGameState = fullGameState;
 
             // if we have a cached game state compress our game state against it.
-            var sendState = cachedGameState != null && fullGameState != null
+            var sendState = cachedGameState != null
                 ? fullGameState.Compress(cachedGameState)
                 : fullGameState;
 

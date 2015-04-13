@@ -87,7 +87,30 @@ namespace Caroline.Persistence.Redis.Extensions
             return SetList(area, id, Objects<TEntity>.Serializer, Objects<TId>.Serializer, Objects<TEntity, TId>.Identifier);
         }
 
-        static class Objects
+        public static ISortedSetTable<TEntity, TId> SetSortedList<TEntity, TId>(this IDatabaseArea area, RedisKey id, ISerializer<TEntity> serializer, ISerializer<TId> keySerializer, IIdentifier<TEntity, TId> identifier, IIdentifier<TEntity, double> scoreIdentifier)
+        {
+            var db = area.CreateSubArea(id);
+            return new RedisSortedSetTable<TEntity, TId>(db, serializer, keySerializer, identifier, scoreIdentifier);
+        }
+
+        public static ISortedSetTable<TEntity, string> SetSortedList<TEntity>(this IDatabaseArea area, RedisKey id)
+            where TEntity : IIdentifiableEntity<string>, IIdentifiableEntity<double>
+        {
+            return SetSortedList(area, id, Objects<TEntity>.Serializer, Objects.StringSerializer, Objects<TEntity, string>.Identifier, Objects<TEntity, double>.Identifier);
+        } 
+
+        public static IRateLimitTable<TId> SetRateLimit<TId>(this IDatabaseArea area, RedisKey id, TimeSpan duration, int maxRequests, ISerializer<TId> keySerializer)
+        {
+            var db = area.CreateSubArea(id);
+            return new RedisRateLimitTable<TId>(db, keySerializer, maxRequests, duration);
+        }
+
+        public static IRateLimitTable<long> SetRateLimit(this IDatabaseArea area, RedisKey id, TimeSpan duration, int maxRequests)
+        {
+            return SetRateLimit(area, id, duration, maxRequests, Objects.LongSerializer);
+        }
+
+        public static class Objects
         {
             public static readonly ISerializer<byte[]> ByteSerializer = new ByteSerializer();
             public static readonly ISerializer<long> LongSerializer = new LongSerializer();
@@ -105,7 +128,7 @@ namespace Caroline.Persistence.Redis.Extensions
             public static readonly ISerializer<TEntity> StringSerializer = new StringSerializer<TEntity>();
         }
 
-        static class Objects<TEntity, TId> where TEntity : IIdentifiableEntity<TId>
+        public static class Objects<TEntity, TId> where TEntity : IIdentifiableEntity<TId>
         {
             public static readonly IIdentifier<TEntity, TId> Identifier = new EntityIdentifier<TEntity, TId>();
         }

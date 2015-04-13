@@ -14,6 +14,12 @@ message GameSession
 	// Sessions are uniquely identified by a layer 4 connection:
 	// SourceIp:SourcePort:DestinationIp:DestinationPort:GameId
 
-	
 	optional GameState CachedGameState = 1;
+	optional RateLimit RateLimit = 2;
+}
+
+message RateLimit
+{
+	optional int64 InitialRequestDate = 1;
+	optional int32 Requests = 2;
 }

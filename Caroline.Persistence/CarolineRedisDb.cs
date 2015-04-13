@@ -66,11 +66,18 @@ namespace Caroline.Persistence
                 UserLocks = db.LockLong("u-l", TimeSpan.FromSeconds(10)),
                 GameSessions = db.Set<GameSession, GameSessionEndpoint>("s", TimeSpan.FromMinutes(2)),
                 UserNames = db.String("uu"),
+                UserIds = db.String("ui"),
                 Logins = db.String("ul"),
-                Emails = db.String("ue")
+                Emails = db.String("ue"),
+                HighScores = db.SetSortedList<ScoreEntry, string>("lb",
+                    ScoreSerializer,
+                    DatabaseAreaEx.Objects.StringSerializer,
+                    DatabaseAreaEx.Objects<ScoreEntry, string>.Identifier, DatabaseAreaEx.Objects<ScoreEntry,double>.Identifier)
             };
             return ret;
         }
+
+        public ISortedSetTable<ScoreEntry, string> HighScores { get; set; }
 
         public IPessimisticLockTable<long> UserLocks { get; private set; }
 
@@ -83,7 +90,21 @@ namespace Caroline.Persistence
         public IEntityTable<GameSession, GameSessionEndpoint> GameSessions { get; private set; }
 
         public IStringTable UserNames { get; private set; }
+        public IStringTable UserIds { get; set; }
         public IStringTable Logins { get; private set; }
         public IStringTable Emails { get; private set; }
+
+        static readonly ScoreEntrySerializer ScoreSerializer = new ScoreEntrySerializer();
+        class ScoreEntrySerializer : ISerializer<ScoreEntry> {
+            public byte[] Serialize(ScoreEntry entity)
+            {
+                return entity.ListName.GetBytesNoEncoding();
+            }
+
+            public ScoreEntry Deserialize(byte[] data)
+            {
+                return new ScoreEntry {ListName = data.GetStringNoEncoding()};
+            }
+        }
     }
 }

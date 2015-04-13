@@ -7,15 +7,15 @@ using Caroline.Persistence.Models;
 using Caroline.Persistence.Redis;
 using Caroline.Persistence.Redis.Extensions;
 using Microsoft.AspNet.Identity;
-using StackExchange.Redis;
 
 namespace Caroline.Persistence
 {
-    public class RedisUserStore : IUserLoginStore<User, long>, IUserPasswordStore<User, long>, IUserSecurityStampStore<User, long>, IUserEmailStore<User, long>
+    public class RedisUserStore : IUserLoginStore<User, long>, IUserPasswordStore<User, long>, IUserSecurityStampStore<User, long>, IUserEmailStore<User, long>, IUserLockoutStore<User, long>
     {
         readonly IStringTable _userNameLookup;
         readonly IStringTable _emailsLookup;
         readonly IStringTable _loginsLookup;
+        readonly IStringTable _userIdLookup;
         readonly IEntityTable<User, long> _users;
         readonly IIdManager<User> _userIds; 
         bool _disposed;
@@ -26,6 +26,7 @@ namespace Caroline.Persistence
             _userIds = db.UserIdIncrement;
             _userNameLookup = db.UserNames;
             _loginsLookup = db.Logins;
+            _userIdLookup = db.UserIds;
             _emailsLookup = db.Emails;
         }
 
@@ -44,6 +45,7 @@ namespace Caroline.Persistence
             var userId = user.Id.ToStringInvariant();
 
             await _userNameLookup.Set(user.UserName, userId);
+            await _userIdLookup.Set(userId, user.UserName);
             if (!string.IsNullOrEmpty(user.Email))
                 await _emailsLookup.Set(user.Email, userId);
             foreach (var login in user.Logins)
@@ -238,5 +240,40 @@ namespace Caroline.Persistence
         }
 
         #endregion
+
+        public Task<DateTimeOffset> GetLockoutEndDateAsync(User user)
+        {
+            return Task.FromResult(DateTimeOffset.UtcNow);
+        }
+
+        public Task SetLockoutEndDateAsync(User user, DateTimeOffset lockoutEnd)
+        {
+            return Task.FromResult(0);
+        }
+
+        public Task<int> IncrementAccessFailedCountAsync(User user)
+        {
+            return Task.FromResult(0);
+        }
+
+        public Task ResetAccessFailedCountAsync(User user)
+        {
+            return Task.FromResult(0);
+        }
+
+        public Task<int> GetAccessFailedCountAsync(User user)
+        {
+            return Task.FromResult(0);
+        }
+
+        public Task<bool> GetLockoutEnabledAsync(User user)
+        {
+            return Task.FromResult(false);
+        }
+
+        public Task SetLockoutEnabledAsync(User user, bool enabled)
+        {
+            return Task.FromResult(0);
+        }
     }
 }
