@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Caroline.Persistence.Models;
 
 namespace GoldRush
 {
@@ -29,8 +30,7 @@ namespace GoldRush
                 {
                     if (LowestId > 300)
                     {
-                        LowestId = 0;
-
+                        LowestId = 1;
                         Id = 1;
                     }
                 }
@@ -96,7 +96,7 @@ namespace GoldRush
                 {
                     if (LowestId < 600 || LowestId > 900)
                     {
-                        LowestId = 600;
+                        LowestId = 601;
                         Id = 601;
                     }
                 }
@@ -123,7 +123,7 @@ namespace GoldRush
                 {
                     if (LowestId < 900 || LowestId > 1200)
                     {
-                        LowestId = 900;
+                        LowestId = 901;
                         Id = 901;
                     }
                 }
@@ -152,28 +152,40 @@ namespace GoldRush
                 public double Factor = 1;
             }
 
-            public static StoreItemConfig EmptyVial = new StoreItemConfig() { BasePrice = 1000, Category = Store.Category.ITEMS};
-            public static StoreItemConfig Gunpowder = new StoreItemConfig() { BasePrice = 2500, Category = Store.Category.ITEMS};
-            public static StoreItemConfig Researcher = new StoreItemConfig() { BasePrice = 1000000, Category = Store.Category.GATHERING };
+            public static StoreItemConfig EmptyVial = new StoreItemConfig() { BasePrice = 1000, Category = Store.Category.ITEMS, MaxQuantity = 0};
+            public static StoreItemConfig Gunpowder = new StoreItemConfig() { BasePrice = 2500, Category = Store.Category.ITEMS, MaxQuantity = 0 };
+            public static StoreItemConfig Researcher = new StoreItemConfig() { BasePrice = 1000*1000, Category = Store.Category.GATHERING };
             public static StoreItemConfig Foreman = new StoreItemConfig() { BasePrice = 250000, Category = Store.Category.GATHERING };
-            public static StoreItemConfig Botanist = new StoreItemConfig() { BasePrice = 100000000, Category = Store.Category.GATHERING };
+            public static StoreItemConfig Botanist = new StoreItemConfig() { BasePrice = 1000*1000*100, Category = Store.Category.GATHERING };
 
             public static StoreItemConfig Miner = new StoreItemConfig() { BasePrice = 1000, Category = Store.Category.MACHINES, MaxQuantity = 10, Factor = 1.15 };
             public static StoreItemConfig Lumberjack = new StoreItemConfig() { BasePrice = 20000, Category = Store.Category.MACHINES, MaxQuantity = 10, Factor = 1.15 };
-            public static StoreItemConfig Drill = new StoreItemConfig() { BasePrice = 1000000, Category = Store.Category.MACHINES, MaxQuantity = 10, Factor = 1.15 };
-            public static StoreItemConfig Crusher = new StoreItemConfig() { BasePrice = 5000000, Category = Store.Category.MACHINES, MaxQuantity = 10, Factor = 1.15 };
-            public static StoreItemConfig Excavator = new StoreItemConfig() { BasePrice = 500000000, Category = Store.Category.MACHINES, MaxQuantity = 10, Factor = 1.15 };
+            public static StoreItemConfig Drill = new StoreItemConfig() { BasePrice = 1000*1000, Category = Store.Category.MACHINES, MaxQuantity = 10, Factor = 1.15 };
+            public static StoreItemConfig Crusher = new StoreItemConfig() { BasePrice = 1000*1000*5, Category = Store.Category.MACHINES, MaxQuantity = 10, Factor = 1.15 };
+            public static StoreItemConfig Excavator = new StoreItemConfig() { BasePrice = 1000*1000*500, Category = Store.Category.MACHINES, MaxQuantity = 10, Factor = 1.15 };
             public static StoreItemConfig Pumpjack = new StoreItemConfig() { BasePrice = 100000, Category = Store.Category.MACHINES, MaxQuantity = 100, Factor = 1.15 };
             public static StoreItemConfig BigTexan = new StoreItemConfig() { BasePrice = 2500000, Category = Store.Category.MACHINES, MaxQuantity = 100, Factor = 1.15 };
 
             public static StoreItemConfig ChainsawsT1 = new StoreItemConfig() { BasePrice = 0, Category = Store.Category.CRAFTING };
             public static StoreItemConfig ChainsawsT2 = new StoreItemConfig() { BasePrice = 0, Category = Store.Category.CRAFTING };
             public static StoreItemConfig ChainsawsT3 = new StoreItemConfig() { BasePrice = 0, Category = Store.Category.CRAFTING };
+            public static StoreItemConfig ChainsawsT4 = new StoreItemConfig() { BasePrice = 0, Category = Store.Category.CRAFTING };
+            public static StoreItemConfig Backpack = new StoreItemConfig() { BasePrice = 0, Category = Store.Category.CRAFTING };
+
 
             public static StoreItemConfig ClickUpgradeT1 = new StoreItemConfig() { BasePrice = 1000, Category = Store.Category.MINING };
             public static StoreItemConfig ClickUpgradeT2 = new StoreItemConfig() { BasePrice = 100000, Category = Store.Category.MINING };
             public static StoreItemConfig ClickUpgradeT3 = new StoreItemConfig() { BasePrice = 1000000, Category = Store.Category.MINING };
 
+            public static StoreItemConfig ReinforcedFurnace = new StoreItemConfig() { BasePrice = 0, Category = Store.Category.CRAFTING };
+            public static StoreItemConfig LargerCauldron = new StoreItemConfig() { BasePrice = 0, Category = Store.Category.CRAFTING };
+
+            public static StoreItemConfig DeeperTunnels = new StoreItemConfig() { BasePrice = 0, Category = Store.Category.CRAFTING };
+
+            public static StoreItemConfig IronPickaxe = new StoreItemConfig() { BasePrice = 1000, Category = Store.Category.MINING };
+            public static StoreItemConfig SteelPickaxe = new StoreItemConfig() { BasePrice = 20000, Category = Store.Category.MINING };
+            public static StoreItemConfig GoldPickaxe = new StoreItemConfig() { BasePrice = 100000, Category = Store.Category.MINING };
+            public static StoreItemConfig DiamondPickaxe = new StoreItemConfig() { BasePrice = 1000*1000, Category = Store.Category.MINING };
         }
         // 300-600
         public static class Upgrades
@@ -190,24 +202,42 @@ namespace GoldRush
                 {
                     if (LowestId < 300 || LowestId > 600)
                     {
-                        LowestId = 300;
+                        LowestId = 301;
                         Id = 301;
                     }
                 }
                 public int Duration;
             }
 
-            public static BuffConfig SpeechBuff = new BuffConfig() { Name = "Speech Buff", Duration = 45 };
+            public static BuffConfig SpeechBuff = new BuffConfig() { Name = "Speech Potion", Duration = 30 };
+
             public static UpgradeConfig Backpack = new UpgradeConfig() { Name = "Backpack" };
             public static UpgradeConfig Researcher = new UpgradeConfig() { Name = "Researcher" };
             public static UpgradeConfig Botanist = new UpgradeConfig() { Name = "Botanist" };
             public static UpgradeConfig Foreman = new UpgradeConfig() { Name = "Foreman" };
+
             public static UpgradeConfig ChainsawsT1 = new UpgradeConfig() { Name = "Chainsaws" };
             public static UpgradeConfig ChainsawsT2 = new UpgradeConfig() { Name = "Steel Chainsaws" };
 
             public static UpgradeConfig ClickUpgradeT1 = new UpgradeConfig() { Name = "Stone Cursor" };
             public static UpgradeConfig ClickUpgradeT2 = new UpgradeConfig() { Name = "Copper Cursor" };
             public static UpgradeConfig ClickUpgradeT3 = new UpgradeConfig() { Name = "Iron Cursor" };
+
+            public static UpgradeConfig ChainsawsT3 = new UpgradeConfig() { Name = "Titanium Chainsaws" };
+            public static UpgradeConfig ChainsawsT4 = new UpgradeConfig() { Name = "Diamond Chainsaws" };
+
+            public static UpgradeConfig ReinforcedFurnace = new UpgradeConfig() { Name = "Reinforced Furnace" };
+            public static UpgradeConfig LargerCauldron = new UpgradeConfig() { Name = "Larger Cauldron" };
+
+            public static BuffConfig ClickingBuff = new BuffConfig() { Name = "Clicking Potion", Duration = 45 };
+            public static BuffConfig SmeltingBuff = new BuffConfig() {Name = "Smelting Potion", Duration = 60*5};
+            public static BuffConfig AlchemyBuff = new BuffConfig() {Name = "Alchemy Potion", Duration = 60*3};
+
+            public static UpgradeConfig DeeperTunnels = new UpgradeConfig() {Name = "Deeper Tunnels"};
+            public static UpgradeConfig IronPickaxe = new UpgradeConfig() {Name = "Iron Pickaxe"};
+            public static UpgradeConfig SteelPickaxe = new UpgradeConfig() { Name = "Steel Pickaxe" };
+            public static UpgradeConfig GoldPickaxe = new UpgradeConfig() { Name = "Gold Pickaxe" };
+            public static UpgradeConfig DiamondPickaxe = new UpgradeConfig() { Name = "Diamond Pickaxe" };
         }
     }
 }

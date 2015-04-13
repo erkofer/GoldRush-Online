@@ -12,6 +12,7 @@ namespace GoldRush.APIs
     public class UpdateDto
     {
         public GameState GameState { get; set; }
+        public long Score { get; set; }
     }
 
     public class SaveDto

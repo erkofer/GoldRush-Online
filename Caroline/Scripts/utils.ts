@@ -63,6 +63,18 @@
         }
     }
 
+    export function formatTime(n: number) {
+        var hours = Math.floor(n / 3600);
+        var minutes = Math.floor((n % 3600) / 60);
+        var seconds = Math.floor(n % 60);
+
+        var hoursString = (hours < 10 ? (hours < 1 ? "" : "0" + hours + ":") : hours + ":");
+        var minutesString = (minutes < 10 ? "0" + minutes + ":" : minutes + ":");
+        var secondsString = (seconds < 10 ? "0" + seconds : seconds + "");
+
+        return hoursString + minutesString + secondsString;
+    }
+
     export function convertServerTimeToLocal(time: string): string {
         var hours = +time.split(':')[0];
         var minutes = +(time.split(':')[1]).split(' ')[0];

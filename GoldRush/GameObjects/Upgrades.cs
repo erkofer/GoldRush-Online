@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
+using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,7 +16,7 @@ namespace GoldRush
         {
             var oreMiningMachines = new []{ game.Gatherers.Player, game.Gatherers.Miner, game.Gatherers.Drill, game.Gatherers.Excavator, game.Gatherers.Crusher };
 
-            //TODO: Create configurations for upgrades and buffs.-
+            //TODO: Create configurations for upgrades and buffs.
             this.game = game;
             #region Upgrades
             Foreman = new Upgrade(new EfficiencyMagnitudeUpgradeEffect(game,
@@ -23,14 +24,14 @@ namespace GoldRush
                     game.Gatherers.Lumberjack},
                 1.15),GameConfig.Upgrades.Foreman);
             All.Add(Foreman.Id,Foreman);
-            /*
+            
             Backpack = new Upgrade(new ResourceUpgradeEffect(game,
                 new []{game.Gatherers.Lumberjack},
                 new[]{game.Items.Cubicula,
                     game.Items.BitterRoot,
                     game.Items.Thornberries,
                     game.Items.Transfruit}), GameConfig.Upgrades.Backpack);
-            All.Add(Backpack.Id, Backpack);*/
+            All.Add(Backpack.Id, Backpack);
 
             Botanist = new Upgrade(new ResourceUpgradeEffect(game,
                 new []{game.Gatherers.Lumberjack},
@@ -69,11 +70,80 @@ namespace GoldRush
                 0.5), GameConfig.Upgrades.ChainsawsT2);
             ChainsawsT2.Requires = ChainsawsT1;
             All.Add(ChainsawsT2.Id, ChainsawsT2);
+
+            ChainsawsT3 = new Upgrade(new EfficiencyUpgradeEffect(game,
+                new[] { game.Gatherers.Lumberjack },
+                1), GameConfig.Upgrades.ChainsawsT3);
+            ChainsawsT3.Requires = ChainsawsT2;
+            All.Add(ChainsawsT3.Id, ChainsawsT3);
+
+            ChainsawsT4 = new Upgrade(new EfficiencyUpgradeEffect(game,
+                new[] { game.Gatherers.Lumberjack },
+                1), GameConfig.Upgrades.ChainsawsT4);
+            ChainsawsT4.Requires = ChainsawsT3;
+            All.Add(ChainsawsT4.Id, ChainsawsT4);
+
+            ReinforcedFurnace = new Upgrade(new ProcessorCapacityUpgradeEffect(game,
+                new[] {game.Processing.Furnace},
+                150), GameConfig.Upgrades.ReinforcedFurnace);
+            All.Add(ReinforcedFurnace.Id, ReinforcedFurnace);
+
+            LargerCauldron = new Upgrade(new ProcessorCapacityUpgradeEffect(game,
+                new[] { game.Processing.Cauldron },
+                9), GameConfig.Upgrades.LargerCauldron);
+            All.Add(LargerCauldron.Id, LargerCauldron);
+
+            DeeperTunnels = new Upgrade(new ResourceUpgradeEffect(game,
+                oreMiningMachines,
+                new []{game.Items.Uranium,game.Items.Titanium}),GameConfig.Upgrades.DeeperTunnels);
+            All.Add(DeeperTunnels.Id,DeeperTunnels);
+
+           IronPickaxe = new Upgrade(new ProbabilityUpgradeEffect(game,
+               new []{game.Gatherers.Player},
+               1.05), GameConfig.Upgrades.IronPickaxe);
+            All.Add(IronPickaxe.Id,IronPickaxe);
+
+            SteelPickaxe = new Upgrade(new ProbabilityUpgradeEffect(game,
+               new[] { game.Gatherers.Player },
+               1.1), GameConfig.Upgrades.SteelPickaxe);
+            All.Add(SteelPickaxe.Id, SteelPickaxe);
+
+            GoldPickaxe = new Upgrade(new ProbabilityUpgradeEffect(game,
+               new[] { game.Gatherers.Player },
+               1.15), GameConfig.Upgrades.GoldPickaxe);
+            All.Add(GoldPickaxe.Id, GoldPickaxe);
+
+            DiamondPickaxe = new Upgrade(new ProbabilityUpgradeEffect(game,
+               new[] { game.Gatherers.Player },
+               1.25), GameConfig.Upgrades.DiamondPickaxe);
+            All.Add(DiamondPickaxe.Id, DiamondPickaxe);
+
+
             #endregion
 
             #region Buffs
-            SpeechBuff = new Buff(new ItemValueUpgradeEffect(game, 0.2),GameConfig.Upgrades.SpeechBuff);
-            game.Items.SpeechPotion.Effect = SpeechBuff;
+            SpeechBuff = new Buff(new ItemValueUpgradeEffect(game, 1.2),GameConfig.Upgrades.SpeechBuff);
+            game.Items.SpeechPotion.Buff = SpeechBuff;
+            Buffs.Add(SpeechBuff.Id, SpeechBuff);
+
+            ClickingBuff = new Buff(new EfficiencyMagnitudeUpgradeEffect(game,
+                new[] {game.Gatherers.Player},
+                2),GameConfig.Upgrades.ClickingBuff);
+            game.Items.ClickingPotion.Buff = ClickingBuff;
+            Buffs.Add(ClickingBuff.Id, ClickingBuff);
+
+            SmeltingBuff = new Buff(new ProcessorEfficiencyUpgradeEffect(game,
+                new [] {game.Processing.Furnace},
+                1.25),GameConfig.Upgrades.SmeltingBuff);
+            game.Items.SmeltingPotion.Buff = SmeltingBuff;
+            Buffs.Add(SmeltingBuff.Id, SmeltingBuff);
+
+            AlchemyBuff = new Buff(new ProcessorRecipeEfficiencyUpgradeEffect(game,
+                new[] {game.Processing.Furnace},
+                2),GameConfig.Upgrades.AlchemyBuff);
+            game.Items.AlchemyPotion.Buff = AlchemyBuff;
+            Buffs.Add(AlchemyBuff.Id,AlchemyBuff);
+
             #endregion
         }
 
@@ -92,11 +162,31 @@ namespace GoldRush
                 if (upgrade.Quantity == 0)
                     upgrade.Deactivate();
             }
+
+            foreach (var buffPair in Buffs)
+            {
+                var buff = buffPair.Value;
+
+                if (buff.TimeActive > 0 && buff.TimeActive < buff.Duration)
+                    buff.Activate();
+                else
+                {
+                    buff.Deactivate();
+                    buff.TimeActive = 0;
+                }
+
+                buff.Update(ms);
+            }
         }
 
         public Dictionary<int, Upgrade> All = new Dictionary<int, Upgrade>();
+        public Dictionary<int, Buff> Buffs = new Dictionary<int, Buff>();
 
         public Buff SpeechBuff;
+        public Buff ClickingBuff;
+        public Buff SmeltingBuff;
+        public Buff AlchemyBuff;
+
         public Upgrade Backpack;
         public Upgrade Botanist;
         public Upgrade Researcher;
@@ -109,6 +199,16 @@ namespace GoldRush
         public Upgrade ClickUpgradeT1;
         public Upgrade ClickUpgradeT2;
         public Upgrade ClickUpgradeT3;
+
+        public Upgrade ReinforcedFurnace;
+        public Upgrade LargerCauldron;
+
+        public Upgrade DeeperTunnels;
+
+        public Upgrade IronPickaxe;
+        public Upgrade SteelPickaxe;
+        public Upgrade GoldPickaxe;
+        public Upgrade DiamondPickaxe;
 
         internal class Upgrade : GameObjects.GameObject
         {
@@ -136,6 +236,8 @@ namespace GoldRush
                 }
             }
 
+            public string Tooltip { get { return Effect.Tooltip; } }
+
             public UpgradeEffect Effect { get; set; }
         }
 
@@ -149,23 +251,10 @@ namespace GoldRush
                 _config = config;
             }
 
-            public override void Activate()
-            {
-                TimeActive = 0;
-                base.Activate();
-            }
-
-            public override void Deactivate()
-            {
-                TimeActive = 0;
-                base.Deactivate();
-            }
-
             public void Update(double ms)
             {
-                TimeActive += (ms/1000);
-                if(TimeActive>Duration)
-                    Deactivate();
+                if(Active)
+                    TimeActive += (ms/1000);
             }
 
             /// <summary>
@@ -176,8 +265,7 @@ namespace GoldRush
             /// <summary>
             /// The time the buff has been active for.
             /// </summary>
-            private double TimeActive;
-
+            public double TimeActive;
         }
 
         #region UpgradeEffects
@@ -192,6 +280,8 @@ namespace GoldRush
 
             public abstract void Activate();
             public abstract void Deactivate();
+
+            public abstract string Tooltip { get; }
         }
 
         /// <summary>
@@ -209,12 +299,17 @@ namespace GoldRush
 
             public override void Activate()
             {
-                Game.Items.WorthModifier += value;
+                Game.Items.WorthModifier *= value;
             }
 
             public override void Deactivate()
             {
-                Game.Items.WorthModifier -= value;
+                Game.Items.WorthModifier /= value;
+            }
+
+            public override string Tooltip
+            {
+                get { return "Increases the value of items by " + ((value * 100)-100) + "%."; }
             }
         }
 
@@ -251,7 +346,20 @@ namespace GoldRush
 
                     gatherer.RecalculateMiningStuff();
                 }
-                
+            }
+            public override string Tooltip
+            {
+                get 
+                {
+                    List<string> names = new List<string>();
+                    
+                    foreach (var resource in resources)
+                        names.Add(resource.Name);
+
+                    string concatenatedNames = String.Join(",", names);
+
+                    return "Discovers " + concatenatedNames + "."; 
+                }
             }
         }
 
@@ -283,6 +391,21 @@ namespace GoldRush
                     gatherer.ResourcesPerSecondBaseIncrease -= efficiency;
                    
             }
+
+            public override string Tooltip
+            {
+                get
+                {
+                    List<string> names = new List<string>();
+                    
+                    foreach (var gatherer in gatherers)
+                        names.Add(gatherer.Name);
+
+                    string concatenatedNames = String.Join(",", names);
+
+                    return "Increases the resources gathered per tick by "+efficiency+" for "+concatenatedNames+".";
+                }
+            }
         }
 
         /// <summary>
@@ -310,7 +433,22 @@ namespace GoldRush
             {
                 foreach (var gatherer in gatherers)
                     gatherer.ResourcesPerSecondEfficiency /= magnitude;
-                    
+
+            }
+
+            public override string Tooltip
+            {
+                get
+                {
+                    List<string> names = new List<string>();
+
+                    foreach (var gatherer in gatherers)
+                        names.Add(gatherer.Name);
+
+                    string concatenatedNames = String.Join(",", names);
+
+                    return "Increases the resources gathered per tick by " + ((magnitude * 100)-100) + "% for " + concatenatedNames + ".";
+                }
             }
         }
 
@@ -334,15 +472,30 @@ namespace GoldRush
             public override void Activate()
             {
                 foreach (var gatherer in gatherers)
-                    gatherer.ProbabilityModifier += probability;
+                    gatherer.ProbabilityModifier *= probability;
                    
             }
 
             public override void Deactivate()
             {
                 foreach (var gatherer in gatherers)
-                    gatherer.ProbabilityModifier -= probability;
+                    gatherer.ProbabilityModifier /= probability;
                   
+            }
+
+            public override string Tooltip
+            {
+                get
+                {
+                    List<string> names = new List<string>();
+
+                    foreach (var gatherer in gatherers)
+                        names.Add(gatherer.Name);
+
+                    string concatenatedNames = String.Join(",", names);
+
+                    return "Increases the chance of gathering rare resources by " + ((probability * 100)-100) + "% for " + concatenatedNames + ".";
+                }
             }
         }
 
@@ -370,6 +523,150 @@ namespace GoldRush
                 foreach (var gatherer in gatherers)
                     gatherer.ResourcesPerSecondBaseIncrease -= efficiencyIncrease;
 
+            }
+
+            public override string Tooltip
+            {
+                get
+                {
+                    List<string> names = new List<string>();
+
+                    foreach (var gatherer in gatherers)
+                        names.Add(gatherer.Name);
+
+                    string concatenatedNames = String.Join(",", names);
+
+                    return "Increases the resources gathered per tick by " + efficiencyIncrease + " for " + concatenatedNames + ".";
+                }
+            }
+        }
+
+        class ProcessorCapacityUpgradeEffect : UpgradeEffect
+        {
+            Processing.Processor[] processors;
+            int capacity;
+
+            public ProcessorCapacityUpgradeEffect(GameObjects game, Processing.Processor[] processors, int capacity)
+                :base(game)
+            {
+                this.processors = processors;
+                this.capacity = capacity;
+            }
+            public override void Activate()
+            {
+                foreach (var processor in processors)
+                {
+                    processor.ExtraCapacity += capacity;
+                }
+            }
+
+            public override void Deactivate()
+            {
+                foreach (var processor in processors)
+                {
+                    processor.ExtraCapacity -= capacity;
+                }
+            }
+
+            public override string Tooltip
+            {
+
+                get
+                {
+                    List<string> names = new List<string>();
+
+                    foreach (var processor in processors)
+                        names.Add(processor.Name);
+
+                    string concatenatedNames = String.Join(",", names); 
+
+                    return "Increases capacity of "+concatenatedNames+" by "+ capacity+".";
+                }
+            }
+        }
+
+        class ProcessorEfficiencyUpgradeEffect : UpgradeEffect
+        {
+            Processing.Processor[] processors;
+            double efficiency;
+
+            public ProcessorEfficiencyUpgradeEffect(GameObjects game, Processing.Processor[] processors, double efficiency)
+                :base(game)
+            {
+                this.processors = processors;
+                this.efficiency = efficiency;
+            }
+            public override void Activate()
+            {
+                foreach (var processor in processors)
+                {
+                    processor.Speed *= efficiency;
+                }
+            }
+
+            public override void Deactivate()
+            {
+                foreach (var processor in processors)
+                {
+                    processor.Speed /= efficiency;
+                }
+            }
+
+            public override string Tooltip
+            {
+                get
+                {
+                    List<string> names = new List<string>();
+
+                    foreach (var processor in processors)
+                        names.Add(processor.Name);
+
+                    string concatenatedNames = String.Join(",", names);
+
+                    return "Increases efficiency of " + concatenatedNames + " by " + ((efficiency*100)-100) + "%.";
+                }
+            }
+        }
+
+        class ProcessorRecipeEfficiencyUpgradeEffect : UpgradeEffect
+        {
+            Processing.Processor[] processors;
+            int increase;
+            public ProcessorRecipeEfficiencyUpgradeEffect(GameObjects game, Processing.Processor[] processors, int increase)
+                :base(game)
+            {
+                this.processors = processors;
+                this.increase = increase;
+            }
+            public override void Activate()
+            {
+                foreach (var processor in processors)
+                {
+                    processor.RecipesCraftedPerIteration += increase;
+                }
+            }
+
+            public override void Deactivate()
+            {
+                foreach (var processor in processors)
+                {
+                    processor.RecipesCraftedPerIteration -= increase;
+                }
+            }
+
+            public override string Tooltip
+            {
+                get
+                {
+                    List<string> names = new List<string>();
+
+                    foreach (var processor in processors)
+                        names.Add(processor.Name);
+
+                    string concatenatedNames = String.Join(",", names);
+
+                    return concatenatedNames + " craft an additional " + increase +" recipes per iteration.";
+                }
             }
         }
         #endregion

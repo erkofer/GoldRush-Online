@@ -13,11 +13,10 @@ module Inventory {
     //var configDiv;
     var configTableBody: HTMLElement;
     var configTableContainer: HTMLElement;
+    var drinkButton;
 
     var configNames = new Array<HTMLElement>();
     var configImages = new Array<HTMLElement>();
-
-    console.log("Typescript is still compiling. WTF?");
 
     export class Item {
         id: number;
@@ -58,6 +57,11 @@ module Inventory {
             }
             selectedItem = items[id];
             selectedItemImage.classList.add(Utils.cssifyName(selectedItem.name));
+            if (selectedItem.category == Category.POTION) {
+                drinkButton.style.display = 'inline-block';
+            } else {
+                drinkButton.style.display = 'none';
+            }
             limitTextQuantity();
         }
         else {
@@ -128,6 +132,13 @@ module Inventory {
             limitTextQuantity();
         });
 
+        drinkButton = <HTMLInputElement>Utils.createButton('Drink', ''); 
+        drinkButton.classList.add('selected-item-quantity');
+        drinkButton.addEventListener('click', function () {
+            Connection.drink(selectedItem.id);
+            limitTextQuantity();
+        });
+
         var sellItems = <HTMLInputElement>Utils.createButton('Sell', '');
         sellItems.classList.add('selected-item-quantity');
         sellItems.addEventListener('click', function () {
@@ -151,6 +162,7 @@ module Inventory {
         selectedItemPane.appendChild(sellAllItems);
 
         selectedItemPane.appendChild(sellItems);
+        selectedItemPane.appendChild(drinkButton);
         selectedItemPane.appendChild(selectedItemQuantity);
         inventoryPane.appendChild(selectedItemPane);
         // CONFIG CONTROLS
@@ -235,6 +247,7 @@ module Inventory {
         var itemImage = document.createElement('DIV');
         itemImage.style.width = '32px';
         itemImage.style.height = '32px';
+        itemImage.style.display = 'inline-block';
         itemImage.style.position = 'relative';
         itemImage.style.margin = '0 auto';
         var image = document.createElement('DIV');
@@ -246,6 +259,9 @@ module Inventory {
         item.quantityElm = itemQuantity;
         itemQuantity.classList.add("item-text");
         itemQuantity.textContent = Utils.formatNumber(0);
+        itemQuantity.style.verticalAlign = 'top';
+        itemQuantity.style.marginTop = '8px';
+        itemQuantity.style.display = 'inline-block'
         itemElement.appendChild(itemQuantity);
 
         var itemValue = document.createElement('DIV');
@@ -373,6 +389,14 @@ module Inventory {
     export function addItem(id: number, name: string, worth: number, category: number) {
         if(!items[id]) // If we haven't already added this item.
             add(new Item(id, name, worth,category));
+    }
+
+    export function changePrice(id: number, price: number) {
+        Utils.ifNotDefault(price, function () {
+            var item = items[id];
+            item.worth = price;
+            item.worthElm.textContent = Utils.formatNumber(price);
+        });
     }
 
     export function changeQuantity(id: number, quantity: number) {

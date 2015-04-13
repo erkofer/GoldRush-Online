@@ -4,6 +4,21 @@
 module Connection {
     declare var Komodo: { connection: any; ClientActions: any; decode: any; send: any; restart: any };
     var conInterval;
+    var disconInterval;
+    var networkErrorElm;
+
+    function init() {
+        networkErrorElm = document.createElement('div');
+        networkErrorElm.classList.add('network-error');
+        var networkErrorText = document.createElement('div');
+        networkErrorText.classList.add('network-error-text');
+        networkErrorText.textContent = 'No connection';
+        networkErrorElm.appendChild(networkErrorText);
+        var game = document.getElementById('game');
+        game.insertBefore(networkErrorElm, game.childNodes[0]);
+    }
+    init();
+
     Komodo.connection.received(function (msg) {
         Chat.log("Recieved " + roughSizeOfObject(msg) + " bytes from komodo.");
         Chat.log("Encoded: ");
@@ -43,6 +58,10 @@ module Connection {
         if (msg.AntiCheatCoordinates != null) {
             antiCheat(msg.AntiCheatCoordinates);
         }
+        // Buffs
+        if(msg.Buffs != null){
+            updateBuffs(msg.Buffs);
+        }
     });
 
     export function restart() {
@@ -55,29 +74,42 @@ module Connection {
     Komodo.connection.stateChanged(function (change) {
         if (change.newState === (<any>$).signalR.connectionState.connected) {
             connected();
+            networkErrorElm.style.marginTop = '-21px';
         }
         if (change.newState === (<any>$).signalR.connectionState.disconnected) {
             clearInterval(conInterval);
+            networkErrorElm.style.marginTop = '0px';
         }
-   });
+        if (change.newState === (<any>$).signalR.connectionState.reconnecting) {
+            networkErrorElm.style.marginTop = '0px';
+        }
+    });
 
-   function connected() {
-       console.log('Connection opened');
-       var encoded = actions.encode64();
-       send(encoded);
-       actions = new Komodo.ClientActions();
+    function connected() {
+        networkErrorElm.style.top = '-21px';
+        console.log('Connection opened');
+        var encoded = actions.encode64();
+        send(encoded);
+        actions = new Komodo.ClientActions();
 
-       conInterval = setInterval(function () {
-           var encoded = actions.encode64();
-           // if (encoded!='') {
-           send(encoded);
-           //}
+        conInterval = setInterval(function () {
+            var encoded = actions.encode64();
+            // if (encoded!='') {
+            send(encoded);
+            //}
 
-           actions = new Komodo.ClientActions();
-       }, 1000);
+            actions = new Komodo.ClientActions();
+        }, 1000);
     }
 
-    
+    function disconnected() {
+        console.log('Connection lost')
+        networkErrorElm.style.top = '0px';
+        disconInterval = setTimeout(function () {
+            Komodo.restart();
+        }, 5000);
+    }
+
 
     function loadSchema(schema: any) {
         if (schema.Items) {
@@ -109,6 +141,19 @@ module Connection {
                 Crafting.addRecipe(item.Id, item.Ingredients, item.Resultants, item.IsItem);
             }
         }
+        if (schema.Buffs) {
+            for (var i = 0; i < schema.Buffs.length; i++) {
+                var buff = schema.Buffs[i];
+                Buffs.register(buff.Id, buff.Name, buff.Description, buff.Duration);
+            }
+        }
+    }
+
+    function updateBuffs(buffs: any) {
+        for (var i = 0; i < buffs.length; i++){
+            var buff = buffs[i];
+            Buffs.update(buff.Id, buff.TimeActive);
+        }
     }
 
     function receiveGlobalMessages(messages: any) {
@@ -121,7 +166,7 @@ module Connection {
     function updateProcessors(processors: any) {
         for (var i = 0; i < processors.length; i++) {
             var processor = processors[i];
-            Crafting.updateProcessor(processor.Id, processor.SelectedRecipe, processor.OperationDuration, processor.CompletedOperations, processor.TotalOperations,processor.Capacity);
+            Crafting.updateProcessor(processor.Id, processor.SelectedRecipe, processor.OperationDuration, processor.CompletedOperations, processor.TotalOperations, processor.Capacity);
         }
     }
 
@@ -136,8 +181,10 @@ module Connection {
     }
 
     function updateInventory(items: any) {
-        for (var i = 0; i < items.length; i++)
+        for (var i = 0; i < items.length; i++) {
             Inventory.changeQuantity(items[i].Id, items[i].Quantity);
+            Inventory.changePrice(items[i].Id, items[i].Worth);
+        }
     }
 
     function updateInventoryConfigurations(items: any) {
@@ -147,7 +194,13 @@ module Connection {
 
     function updateStore(items: any) {
         for (var i = 0; i < items.length; i++)
-            Store.changeQuantity(items[i].Id, items[i].Quantity,items[i].MaxQuantity,items[i].Price);
+            Store.changeQuantity(items[i].Id, items[i].Quantity, items[i].MaxQuantity, items[i].Price);
+    }
+
+    export function drink(id: number) {
+        var potionAction = new Komodo.ClientActions.PotionAction();
+        potionAction.Id = id;
+        actions.PotionActions.push(potionAction);
     }
 
     export function mine(x: number, y: number) {

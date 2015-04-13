@@ -5,6 +5,9 @@ module Account {
     var userSpan;
     var contextMenu;
 
+    var registrationErrors;
+    var loginErrors;
+
     var mouseTimeout;
    
     function draw() {
@@ -120,6 +123,10 @@ module Account {
         formControlsContainer.appendChild(passwordContainer);
         formControlsContainer.appendChild(rememberMeContainer);
 
+        loginErrors = document.createElement('div');
+        loginModal.addElement(loginErrors);
+
+
         loginModal.title = 'Log in';
         loginModal.addElement(formControlsContainer);
 
@@ -130,7 +137,9 @@ module Account {
         var yes = loginModal.addAffirmativeOption("Submit");
         yes.addEventListener("click", function () {
             login(username.value, password.value, rememberMe.checked);
-            modal.close();
+            while (loginErrors.firstChild) {
+                loginErrors.removeChild(loginErrors.firstChild);
+            }
         }, false);
         loginModal.show();
     }
@@ -184,6 +193,8 @@ module Account {
         formControlsContainer.appendChild(confpassContainer);
 
         registerModal.addElement(formControlsContainer);
+        registrationErrors = document.createElement('div');
+        registerModal.addElement(registrationErrors);
         
         registerModal.title = "Register";
 
@@ -194,8 +205,11 @@ module Account {
         var yes = registerModal.addAffirmativeOption("Submit");
         yes.addEventListener("click", function () {
             create(email.value, username.value, password.value, confirmPassword.value);
-            modal.close();
+            while (registrationErrors.firstChild) {
+                registrationErrors.removeChild(registrationErrors.firstChild);
+            }
         }, false);
+
         registerModal.show();
     }
 
@@ -207,9 +221,21 @@ module Account {
             data: $.param({ Email: email, UserName: username, Password: password, ConfirmPassword: passwordConfirmation }),
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             success: function (request) {
-                console.log(request.responseText);
-                Connection.restart();
-                info();
+                request = JSON.parse(request);
+                if (request.Succeeded) {
+                    Connection.restart();
+                    info();
+                    modal.close();
+                } else {
+                    while (registrationErrors.firstChild) {
+                        registrationErrors.removeChild(registrationErrors.firstChild);
+                    }
+                    for (var i = 0; i < request.Errors.length; i++) {
+                        var errorElm = document.createElement('div');
+                        errorElm.textContent = request.Errors[i];
+                        registrationErrors.appendChild(errorElm);
+                    }
+                }
             }
         });
     }
@@ -221,9 +247,23 @@ module Account {
             data: $.param({ UserName: email, Password: password, RememberMe: rememberMe }),
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             success: function (request) {
-                console.log(request);
-                Connection.restart();
-                info();
+                request = JSON.parse(request);
+
+                if (request.Succeeded) {
+                    Connection.restart();
+                    info();
+                    modal.close();
+                }
+                else {
+                    while (loginErrors.firstChild) {
+                        loginErrors.removeChild(loginErrors.firstChild);
+                    }
+                    for (var i = 0; i < request.Errors.length; i++) {
+                        var errorElm = document.createElement('div');
+                        errorElm.textContent = request.Errors[i];
+                        loginErrors.appendChild(errorElm);
+                    }
+                }
             }
         });
     }

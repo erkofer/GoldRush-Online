@@ -21,15 +21,17 @@ namespace GoldRush
             Gunpowder = new StoreItem(game.Items.Gunpowder, GameConfig.StoreItems.Gunpowder);
             All.Add(Gunpowder.Item.Id, Gunpowder);
 
-
             // Upgrades
 
-            // ENABLE AFTER BACKPACK CRAFTING.
-            Botanist = new StoreItem(game.Upgrades.Botanist, GameConfig.StoreItems.Botanist);
-            //All.Add(Botanist.Item.Id, Botanist);
+            Backpack = new StoreItem(game.Upgrades.Backpack, GameConfig.StoreItems.Backpack);
+            All.Add(Backpack.Item.Id, Backpack);
 
             Researcher = new StoreItem(game.Upgrades.Researcher, GameConfig.StoreItems.Researcher);
             All.Add(Researcher.Item.Id, Researcher);
+
+            // ENABLE AFTER BACKPACK CRAFTING.
+            Botanist = new StoreItem(game.Upgrades.Botanist, GameConfig.StoreItems.Botanist);
+            All.Add(Botanist.Item.Id, Botanist);
 
             Foreman = new StoreItem(game.Upgrades.Foreman, GameConfig.StoreItems.Foreman);
             All.Add(Foreman.Item.Id, Foreman);
@@ -39,7 +41,7 @@ namespace GoldRush
 
             ChainsawsT2 = new StoreItem(game.Upgrades.ChainsawsT2, GameConfig.StoreItems.ChainsawsT2);
             All.Add(ChainsawsT2.Item.Id, ChainsawsT2);
-
+            
             ClickUpgradeT1 = new StoreItem(game.Upgrades.ClickUpgradeT1, GameConfig.StoreItems.ClickUpgradeT1);
             All.Add(ClickUpgradeT1.Item.Id, ClickUpgradeT1);
 
@@ -49,7 +51,33 @@ namespace GoldRush
             ClickUpgradeT3 = new StoreItem(game.Upgrades.ClickUpgradeT3, GameConfig.StoreItems.ClickUpgradeT3);
             All.Add(ClickUpgradeT3.Item.Id, ClickUpgradeT3);
 
-            
+            ChainsawsT3 = new StoreItem(game.Upgrades.ChainsawsT3, GameConfig.StoreItems.ChainsawsT3);
+            All.Add(ChainsawsT3.Item.Id, ChainsawsT3);
+
+            ChainsawsT4 = new StoreItem(game.Upgrades.ChainsawsT4, GameConfig.StoreItems.ChainsawsT4);
+            All.Add(ChainsawsT4.Item.Id, ChainsawsT4);
+
+            ReinforcedFurnace = new StoreItem(game.Upgrades.ReinforcedFurnace,GameConfig.StoreItems.ReinforcedFurnace);
+            All.Add(ReinforcedFurnace.Item.Id, ReinforcedFurnace);
+
+            LargerCauldron = new StoreItem(game.Upgrades.LargerCauldron,GameConfig.StoreItems.LargerCauldron);
+            All.Add(LargerCauldron.Item.Id, LargerCauldron);
+
+            DeeperTunnels = new StoreItem(game.Upgrades.DeeperTunnels,GameConfig.StoreItems.DeeperTunnels);
+            All.Add(DeeperTunnels.Item.Id,DeeperTunnels);
+
+            IronPickaxe = new StoreItem(game.Upgrades.IronPickaxe,GameConfig.StoreItems.IronPickaxe);
+            All.Add(IronPickaxe.Item.Id,IronPickaxe);
+
+            SteelPickaxe = new StoreItem(game.Upgrades.SteelPickaxe, GameConfig.StoreItems.SteelPickaxe);
+            All.Add(SteelPickaxe.Item.Id, SteelPickaxe);
+
+            GoldPickaxe = new StoreItem(game.Upgrades.GoldPickaxe, GameConfig.StoreItems.GoldPickaxe);
+            All.Add(GoldPickaxe.Item.Id, GoldPickaxe);
+
+            DiamondPickaxe = new StoreItem(game.Upgrades.DiamondPickaxe, GameConfig.StoreItems.DiamondPickaxe);
+            All.Add(DiamondPickaxe.Item.Id, DiamondPickaxe);
+
             // Gatherers
 
             Miner = new StoreItem(game.Gatherers.Miner, GameConfig.StoreItems.Miner);
@@ -73,7 +101,6 @@ namespace GoldRush
             BigTexan = new StoreItem(game.Gatherers.BigTexan, GameConfig.StoreItems.BigTexan);
             All.Add(BigTexan.Item.Id, BigTexan);
 
-           
 
             // If you want an item to be purchased with a different currency define it above.
             foreach (var storeItem in All)
@@ -89,6 +116,7 @@ namespace GoldRush
         StoreItem Gunpowder;
         StoreItem Researcher;
         StoreItem Botanist;
+        private StoreItem Backpack;
         StoreItem Foreman;
 
         StoreItem Miner;
@@ -105,6 +133,18 @@ namespace GoldRush
 
         StoreItem ChainsawsT1;
         StoreItem ChainsawsT2;
+        StoreItem ChainsawsT3;
+        StoreItem ChainsawsT4;
+
+        StoreItem ReinforcedFurnace;
+        StoreItem LargerCauldron;
+
+        private StoreItem DeeperTunnels;
+
+        private StoreItem IronPickaxe;
+        private StoreItem SteelPickaxe;
+        private StoreItem GoldPickaxe;
+        private StoreItem DiamondPickaxe;
 
         internal class StoreItem
         {

@@ -1,4 +1,6 @@
-﻿namespace Caroline.Persistence.Models
+﻿using System.Data.Odbc;
+
+namespace Caroline.Persistence.Models
 {
     public partial class GameState : ICompressable<GameState>
     {
@@ -14,7 +16,7 @@
             }
 
             // ITEMS
-            CompressableHelpers.CompressList(Items, oldState.Items, newState.Items);
+            CompressableHelpers.CompressList(_Items, oldState._Items, newState._Items);
 
             // MESSAGE
             //TODO: Messages are a list now. Opps. Shouldn't ever need to be compressed anyways tho.
@@ -34,6 +36,23 @@
                     }
                 }
             }*/
+
+            if (_AntiCheatCoordinates != null)
+            {
+                var oldAC = oldState._AntiCheatCoordinates;
+                if (oldAC == null)
+                {
+                    newState._AntiCheatCoordinates = _AntiCheatCoordinates;
+                }
+                else
+                {
+                    var ac = _AntiCheatCoordinates.Compress(oldAC);
+                    if (ac != null)
+                    {
+                        newState._AntiCheatCoordinates = ac;
+                    }
+                }
+            }
 
             // GAMESCHEMA
             if (_GameSchema != null)
@@ -67,6 +86,8 @@
             // PROCESSORS
             CompressableHelpers.CompressList(_Processors, oldState._Processors, newState._Processors);
 
+            CompressableHelpers.CompressList(_Buffs, oldState._Buffs, newState._Buffs);
+
             return newState;
         }
 
@@ -74,9 +95,30 @@
         {
             public Item Compress(Item oldItem)
             {
-                if (Quantity != oldItem.Quantity)
+                Item item = null;
+                if (_Quantity != oldItem._Quantity)
                 {
-                    return new Item { Id = Id, Quantity = Quantity };
+                    if(item == null)
+                        item = new Item { _Id = _Id };
+                    item._Quantity = _Quantity;
+                }
+                if (_Worth != oldItem._Worth)
+                {
+                    if (item == null)
+                        item = new Item { _Id = _Id };
+                    item._Worth = _Worth;
+                }
+                return item;
+            }
+        }
+
+        public partial class AntiCheat : ICompressable<AntiCheat>
+        {
+            public AntiCheat Compress(AntiCheat oldObject)
+            {
+                if (oldObject._X != _X || oldObject._Y != _Y)
+                {
+                    return new AntiCheat() { _X = _X, _Y = _Y };
                 }
                 return null;
             }
@@ -237,8 +279,25 @@
         {
             public StoreItem Compress(StoreItem oldItem)
             {
+                StoreItem storeItem = null;
                 if (Quantity != oldItem.Quantity)
-                    return new StoreItem { _Id = _Id, Quantity = Quantity };
+                {
+                    if (storeItem == null)
+                        storeItem = new StoreItem() {_Id = _Id};
+                    storeItem._Quantity = _Quantity;
+                }
+                if (_MaxQuantity != oldItem._MaxQuantity)
+                {
+                    if (storeItem == null)
+                        storeItem = new StoreItem() { _Id = _Id };
+                    storeItem._MaxQuantity = _MaxQuantity;
+                }
+                if (_Price != oldItem._Price)
+                {
+                    if (storeItem == null)
+                        storeItem = new StoreItem() {_Id = _Id};
+                    storeItem._Price = _Price;
+                }
                 return null;
             }
         }
@@ -270,6 +329,16 @@
             {
                 if (_Enabled != oldObject._Enabled)
                     return new ConfigItem { _Id = _Id, _Enabled = _Enabled };
+                return null;
+            }
+        }
+
+        public partial class Buff : ICompressable<Buff>, IIdentifiableObject
+        {
+            public Buff Compress(Buff oldObject)
+            {
+                if (_TimeActive != oldObject._TimeActive)
+                    return new Buff {_Id = _Id, _TimeActive = _TimeActive};
                 return null;
             }
         }

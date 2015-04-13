@@ -10,14 +10,14 @@
             var cachedGameState = args.Session.CachedGameState;
             var fullGameState = _game.Update(args.ClientActions);
 
-            args.Session.CachedGameState = fullGameState;
+                args.Session.CachedGameState = fullGameState;
 
             // if we have a cached game state compress our game state against it.
             var sendState = cachedGameState != null
                 ? fullGameState.Compress(cachedGameState)
                 : fullGameState;
 
-            return new UpdateDto { GameState = sendState, };
+            return new UpdateDto { GameState = sendState, Score = _game.Score };
         }
 
         public SaveDto Save()
