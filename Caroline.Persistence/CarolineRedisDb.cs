@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Configuration;
+using System.Globalization;
 using System.Threading.Tasks;
 using Caroline.Persistence.Models;
 using Caroline.Persistence.Redis;
@@ -60,7 +61,7 @@ namespace Caroline.Persistence
             var db = _redisConnection.Connect();
             var ret = new CarolineRedisDb
             {
-                Games = db.SetLong<Game>("g"),
+                Games = db.SetLong<SaveState>("g"),
                 Users = db.SetLong<User>("u"),
                 UserIdIncrement = db.IdManager<User>("u-id"),
                 UserLocks = db.LockLong("u-l", TimeSpan.FromSeconds(10)),
@@ -70,9 +71,9 @@ namespace Caroline.Persistence
                 Logins = db.String("ul"),
                 Emails = db.String("ue"),
                 HighScores = db.SetSortedList<ScoreEntry, string>("lb",
-                    ScoreSerializer,
+                    ScoreIdSerializer,
                     DatabaseAreaEx.Objects.StringSerializer,
-                    DatabaseAreaEx.Objects<ScoreEntry, string>.Identifier, DatabaseAreaEx.Objects<ScoreEntry,double>.Identifier)
+                    DatabaseAreaEx.Objects<ScoreEntry, string>.Identifier, DatabaseAreaEx.Objects<ScoreEntry, double>.Identifier)
             };
             return ret;
         }
@@ -83,7 +84,7 @@ namespace Caroline.Persistence
 
         public IIdManager<User> UserIdIncrement { get; private set; }
 
-        public IEntityTable<Game, long> Games { get; private set; }
+        public IEntityTable<SaveState, long> Games { get; private set; }
 
         public IEntityTable<User, long> Users { get; private set; }
 
@@ -94,16 +95,17 @@ namespace Caroline.Persistence
         public IStringTable Logins { get; private set; }
         public IStringTable Emails { get; private set; }
 
-        static readonly ScoreEntrySerializer ScoreSerializer = new ScoreEntrySerializer();
-        class ScoreEntrySerializer : ISerializer<ScoreEntry> {
+        static readonly ScoreUserIdSerializer ScoreIdSerializer = new ScoreUserIdSerializer();
+        class ScoreUserIdSerializer : ISerializer<ScoreEntry>
+        {
             public byte[] Serialize(ScoreEntry entity)
             {
-                return entity.ListName.GetBytesNoEncoding();
+                return (RedisKey)entity.UserId.ToStringInvariant();
             }
 
             public ScoreEntry Deserialize(byte[] data)
             {
-                return new ScoreEntry {ListName = data.GetStringNoEncoding()};
+                return new ScoreEntry { UserId = long.Parse((RedisKey)data, CultureInfo.InvariantCulture) };
             }
         }
     }

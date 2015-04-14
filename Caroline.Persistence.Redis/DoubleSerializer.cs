@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using Caroline.Persistence.Redis.Extensions;
+using StackExchange.Redis;
 
 namespace Caroline.Persistence.Redis
 {
@@ -7,12 +8,12 @@ namespace Caroline.Persistence.Redis
     {
         public byte[] Serialize(double entity)
         {
-            return entity.ToStringInvariant().GetBytesNoEncoding();
+            return (RedisKey)entity.ToStringInvariant();
         }
 
         public double Deserialize(byte[] data)
         {
-            return double.Parse(data.GetStringNoEncoding(), CultureInfo.InvariantCulture);
+            return double.Parse((RedisKey)data, CultureInfo.InvariantCulture);
         }
     }
 }

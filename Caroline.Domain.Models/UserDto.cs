@@ -30,14 +30,14 @@ namespace Caroline.Domain.Models
             return _db.Users.Set(entity);
         }
 
-        public async Task<Game> GetGame()
+        public async Task<SaveState> GetGame()
         {
             Check();
-            return await _db.Games.Get(_id) ?? new Game { Id = _id };
+            return await _db.Games.Get(_id) ?? new SaveState { Id = _id };
         }
         // When we retire games, have a RetireGame(Game newGame = null) method that saves old games statistics and then deletes it.
 
-        public Task SetGame(Game game)
+        public Task SetGame(SaveState game)
         {
             CheckEqual(_id, game);
             return _db.Games.Set(game);

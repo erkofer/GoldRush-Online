@@ -10,8 +10,8 @@ namespace GoldRush.APIs
         /// <param name="args">The input to process</param>
         /// <param name="flags">The flags</param>
         /// <returns>An OutputState. Can be null if no state was modified.</returns>
-        [CanBeNull]
-        UpdateDto Update([CanBeNull]UpdateArgs args);
+        [NotNull]
+        UpdateDto Update([NotNull]UpdateArgs args);
         /// <summary>
         /// Returns all state required to resume a args at a later date.
         /// </summary>

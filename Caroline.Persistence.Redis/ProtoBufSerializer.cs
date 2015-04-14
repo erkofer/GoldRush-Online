@@ -48,7 +48,7 @@ namespace Caroline.Persistence.Redis
     class LongSerializer : Serializer<long>
     {
         public LongSerializer()
-            : base(l => l.ToStringInvariant().GetBytesNoEncoding(), bytes => long.Parse(bytes.GetStringNoEncoding()))
+            : base(l => (RedisKey)l.ToStringInvariant(), bytes => long.Parse((RedisKey)bytes))
         {
 
         }

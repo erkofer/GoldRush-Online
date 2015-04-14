@@ -52,7 +52,6 @@
   <ItemGroup>
     <ProtoBuf Include="Common.proto" />
     <ProtoBuf Include="ClientActions.proto" />
-    <ProtoBuf Include="SaveState.proto" />
     <ProtoBuf Include="csharp_options.proto" />
     <ProtoBuf Include="descriptor.proto" />
     <None Include="packages.config" />
