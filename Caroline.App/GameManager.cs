@@ -48,6 +48,8 @@ namespace Caroline.App
                 await userDto.SetGame(save);
             }
 
+            await manager.SetLeaderboardEntry(userId, updateDto.Score);
+
             // dispose lock on user, no more reading/saving
             await userDto.DisposeAsync();
 

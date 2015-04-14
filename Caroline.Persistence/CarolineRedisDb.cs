@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Configuration;
+using System.Globalization;
 using System.Threading.Tasks;
 using Caroline.Persistence.Models;
 using Caroline.Persistence.Redis;
@@ -70,9 +71,9 @@ namespace Caroline.Persistence
                 Logins = db.String("ul"),
                 Emails = db.String("ue"),
                 HighScores = db.SetSortedList<ScoreEntry, string>("lb",
-                    ScoreSerializer,
+                    ScoreIdSerializer,
                     DatabaseAreaEx.Objects.StringSerializer,
-                    DatabaseAreaEx.Objects<ScoreEntry, string>.Identifier, DatabaseAreaEx.Objects<ScoreEntry,double>.Identifier)
+                    DatabaseAreaEx.Objects<ScoreEntry, string>.Identifier, DatabaseAreaEx.Objects<ScoreEntry, double>.Identifier)
             };
             return ret;
         }
@@ -94,16 +95,17 @@ namespace Caroline.Persistence
         public IStringTable Logins { get; private set; }
         public IStringTable Emails { get; private set; }
 
-        static readonly ScoreEntrySerializer ScoreSerializer = new ScoreEntrySerializer();
-        class ScoreEntrySerializer : ISerializer<ScoreEntry> {
+        static readonly ScoreUserIdSerializer ScoreIdSerializer = new ScoreUserIdSerializer();
+        class ScoreUserIdSerializer : ISerializer<ScoreEntry>
+        {
             public byte[] Serialize(ScoreEntry entity)
             {
-                return entity.ListName.GetBytesNoEncoding();
+                return (RedisKey)entity.UserId.ToStringInvariant();
             }
 
             public ScoreEntry Deserialize(byte[] data)
             {
-                return new ScoreEntry {ListName = data.GetStringNoEncoding()};
+                return new ScoreEntry { UserId = long.Parse((RedisKey)data, CultureInfo.InvariantCulture) };
             }
         }
     }
