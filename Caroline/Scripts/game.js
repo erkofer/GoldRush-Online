@@ -810,42 +810,38 @@ var Chat;
     function initialize() {
         if (!chatWindow) {
             chatWindow = document.createElement('DIV');
-            chatWindow.style.transition = 'all 0.2s';
+            chatWindow.classList.add('chat-window');
+            chatWindow.classList.add('social');
             chatWindow.id = 'chatWindow';
-            chatWindow.style.position = 'fixed';
-            chatWindow.style.bottom = '0px';
-            chatWindow.style.left = '0px';
-            chatWindow.style.minWidth = '400px';
-            chatWindow.style.width = '40%';
+
             chatWindow.style.backgroundColor = '#ebebeb';
             chatWindow.style.border = '1px solid #adadad';
-            chatWindow.style.height = '280px';
-            chatWindow.style.boxShadow = '1px -1px 2px rgb(200,200,200)';
 
             var chatHeader = document.createElement('DIV');
-            chatHeader.style.position = 'relative';
-            chatHeader.style.height = '30px';
+            chatHeader.classList.add('chat-header');
+
             chatHeader.style.backgroundColor = 'rgb(160, 160, 160)';
             chatWindow.appendChild(chatHeader);
 
             var chatCloser = document.createElement('DIV');
-            chatCloser.textContent = 'Collapse';
+            chatCloser.textContent = '_';
             chatCloser.style.position = 'absolute';
             chatCloser.style.top = '0';
             chatCloser.style.right = '0';
             chatCloser.addEventListener('click', function () {
-                var window = document.getElementById('chatWindow');
-                window.style.bottom = (window.style.bottom == '0px') ? '-251px' : '0px';
+                if (chatWindow.classList.contains('closed')) {
+                    chatWindow.classList.remove('closed');
+                    chatCloser.textContent = '_';
+                } else {
+                    chatWindow.classList.add('closed');
+                    chatCloser.textContent = '+';
+                }
             });
             chatHeader.appendChild(chatCloser);
 
             var chatRoomTab = document.createElement('DIV');
-            chatRoomTab.style.color = 'white';
-            chatRoomTab.style.fontSize = '18px';
-            chatRoomTab.style.height = '30px';
-            chatRoomTab.style.display = 'inline-block';
+            chatRoomTab.classList.add('chat-room-tab');
             chatRoomTab.textContent = 'General';
-            chatRoomTab.style.padding = '3px 10px';
             chatRoomTab.addEventListener('click', function () {
                 document.getElementById('debugpane').style.display = 'none';
                 document.getElementById('chatpane').style.display = 'block';
@@ -853,13 +849,8 @@ var Chat;
             chatHeader.appendChild(chatRoomTab);
 
             var debugTab = document.createElement('DIV');
-            debugTab.style.color = 'white';
-            debugTab.id = 'debugtab';
-            debugTab.style.fontSize = '18px';
-            debugTab.style.height = '30px';
-            debugTab.style.display = 'inline-block';
+            debugTab.classList.add('chat-room-tab');
             debugTab.textContent = '>Dev';
-            debugTab.style.padding = '3px 10px';
             debugTab.addEventListener('click', function () {
                 document.getElementById('debugpane').style.display = 'block';
                 document.getElementById('chatpane').style.display = 'none';
@@ -869,45 +860,34 @@ var Chat;
 
             debugLogContainer = document.createElement('DIV');
             debugLogContainer.id = 'debugpane';
-            debugLogContainer.style.width = '100%';
-            debugLogContainer.style.height = '230px';
+            debugLogContainer.classList.add('chat-room');
             debugLogContainer.style.display = 'none';
-            debugLogContainer.style.position = 'relative';
             chatWindow.appendChild(debugLogContainer);
 
             chatLogContainer = document.createElement('DIV');
             chatLogContainer.id = 'chatpane';
-            chatLogContainer.style.width = '100%';
-            chatLogContainer.style.height = '230px';
-            chatLogContainer.style.position = 'relative';
+            chatLogContainer.classList.add('chat-room');
             chatWindow.appendChild(chatLogContainer);
 
             var debugLog = document.createElement('DIV');
             debugLog.id = 'debuglog';
-            debugLog.style.position = 'absolute';
-            debugLog.style.bottom = '0px';
-            debugLog.style.maxHeight = '230px';
-            debugLog.style.width = '100%';
-            debugLog.style.overflow = 'auto';
+            debugLog.classList.add('chat-room-content');
             debugLogContainer.appendChild(debugLog);
 
             var chatLog = document.createElement('DIV');
             chatLog.id = 'chatlog';
-            chatLog.style.position = 'absolute';
-            chatLog.style.bottom = '0px';
-            chatLog.style.maxHeight = '230px';
-            chatLog.style.width = '100%';
-            chatLog.style.overflow = 'auto';
+            chatLog.classList.add('chat-room-content');
             chatLogContainer.appendChild(chatLog);
+
+            var chatSendingContainer = document.createElement('DIV');
+
+            var chatInputContainer = document.createElement('DIV');
+            chatInputContainer.classList.add('chat-textbox-container');
 
             var chatInput = document.createElement('INPUT');
             chatInput.setAttribute('TYPE', 'TEXT');
-            chatInput.style.width = '100%';
-            chatInput.style.maxWidth = 'none';
-            chatInput.style.height = '20px';
-            chatInput.style.border = 'none';
+            chatInput.classList.add('chat-textbox');
             chatInput.style.borderTop = '1px solid #adadad';
-            chatInput.style.width = '85%';
             chatInput.setAttribute('maxlength', '220');
             chatInput.addEventListener('keydown', function (e) {
                 if (e.keyCode == 13)
@@ -917,21 +897,24 @@ var Chat;
                     document.getElementById('debugtab').style.display = 'inline-block';
             });
             chatInput.id = 'chattext';
-            chatWindow.appendChild(chatInput);
+            chatInputContainer.appendChild(chatInput);
+            chatSendingContainer.appendChild(chatInputContainer);
+
+            var chatSendContainer = document.createElement('DIV');
+            chatSendContainer.classList.add('chat-submit-container');
 
             var chatSend = document.createElement('INPUT');
             chatSend.setAttribute('TYPE', 'BUTTON');
             chatSend.setAttribute('VALUE', 'SEND');
-            chatSend.style.height = '20px';
-            chatSend.style.width = '15%';
-            chatSend.style.fontSize = '13px';
-            chatSend.style.border = 'none';
+            chatSend.classList.add('chat-submit');
             chatSend.style.borderTop = '1px solid #adadad';
             chatSend.style.borderLeft = '1px solid #adadad';
             chatSend.addEventListener('click', function () {
                 sendGlobalMessagePress();
             });
-            chatWindow.appendChild(chatSend);
+            chatSendContainer.appendChild(chatSend);
+            chatSendingContainer.appendChild(chatSendContainer);
+            chatWindow.appendChild(chatSendingContainer);
 
             document.body.appendChild(chatWindow);
         }
@@ -954,6 +937,10 @@ var Chat;
 
     function receiveGlobalMessage(sender, message, time, perms) {
         var chatLog = document.getElementById('chatlog');
+
+        var difference = chatLog.scrollTop - (chatLog.scrollHeight - chatLog.offsetHeight);
+        var scrolledDown = Math.abs(difference) < 5;
+
         var chatItem = document.createElement('DIV');
         chatItem.classList.add('chat-msg');
         if (perms && perms != '')
@@ -974,6 +961,9 @@ var Chat;
         chatItem.appendChild(messageSpan);
 
         chatLog.appendChild(chatItem);
+
+        if (scrolledDown)
+            chatLog.scrollTop = chatLog.scrollHeight;
     }
     Chat.receiveGlobalMessage = receiveGlobalMessage;
 })(Chat || (Chat = {}));
