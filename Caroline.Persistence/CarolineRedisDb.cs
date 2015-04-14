@@ -61,7 +61,7 @@ namespace Caroline.Persistence
             var db = _redisConnection.Connect();
             var ret = new CarolineRedisDb
             {
-                Games = db.SetLong<Game>("g"),
+                Games = db.SetLong<SaveState>("g"),
                 Users = db.SetLong<User>("u"),
                 UserIdIncrement = db.IdManager<User>("u-id"),
                 UserLocks = db.LockLong("u-l", TimeSpan.FromSeconds(10)),
@@ -84,7 +84,7 @@ namespace Caroline.Persistence
 
         public IIdManager<User> UserIdIncrement { get; private set; }
 
-        public IEntityTable<Game, long> Games { get; private set; }
+        public IEntityTable<SaveState, long> Games { get; private set; }
 
         public IEntityTable<User, long> Users { get; private set; }
 

@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Caroline.Domain;
 using Caroline.Persistence.Models;
-using Caroline.Persistence.Redis;
 using GoldRush.APIs;
 using Caroline.App.Models;
 
@@ -21,39 +20,29 @@ namespace Caroline.App
             var session = await userDto.GetSession(endpoint.EndPoint);
             if (IsRateLimited(session))
                 return new GameState { IsError = true, IsRateLimited = true };
-            
-            
+
+
             // get game save
             var save = await userDto.GetGame();
-            var saveData = save.SaveData;
-            var saveObject = saveData != null ? ProtoBufHelpers.Deserialize<SaveState>(saveData) : null;
 
             // load game save into an game instance
             var game = _sessionFactory.Create();
-            game.Load(new LoadArgs { SaveState = saveObject });
+            game.Load(new LoadArgs { SaveState = save });
 
             // update save with new input
             var updateDto = game.Update(new UpdateArgs { ClientActions = input, Session = session });
-            
+
             // save to the database
+            var saveDto = game.Save();
             // session gets modified by update
             await userDto.SetSession(session);
-
-            var saveDto = game.Save();
-            var saveState = saveDto.SaveState;
-            if (saveState != null)
-            {
-                // TODO: dont serialize twice
-                save.SaveData = ProtoBufHelpers.SerializeToString(saveState);
-                await userDto.SetGame(save);
-            }
-
+            await userDto.SetGame(saveDto.SaveState);
             await manager.SetLeaderboardEntry(userId, updateDto.Score);
 
             // dispose lock on user, no more reading/saving
             await userDto.DisposeAsync();
 
-            return updateDto != null ? updateDto.GameState : null;
+            return updateDto.GameState;
         }
 
         static bool IsRateLimited(GameSession session)

@@ -64,17 +64,17 @@
     <Compile Include="ICompressable.cs" />
     <Compile Include="IIdentifiableObject.cs" />
     <Compile Include="IpEndpoint.cs" />
-    <Compile Include="Game.cs" />
     <Compile Include="GameSession.cs" />
     <Compile Include="Pair.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SaveState.cs" />
     <Compile Include="ScoreEntry.cs" />
     <Compile Include="User.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProtoBuf Include="SaveState.proto" />
     <ProtoBuf Include="csharp_options.proto" />
     <ProtoBuf Include="descriptor.proto" />
-    <ProtoBuf Include="Game.proto" />
     <ProtoBuf Include="User.proto" />
     <ProtoBuf Include="GameSession.proto" />
     <ProtoBuf Include="GameState.proto" />
