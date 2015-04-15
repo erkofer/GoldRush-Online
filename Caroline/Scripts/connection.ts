@@ -5,9 +5,12 @@ module Connection {
     declare var Komodo: { connection: any; ClientActions: any; decode: any; send: any; restart: any };
     var conInterval;
     var disconInterval;
+    var notificationElm;
     var networkErrorElm;
 
     function init() {
+        notificationElm = document.createElement('div');
+
         networkErrorElm = document.createElement('div');
         networkErrorElm.classList.add('network-error');
         var networkErrorText = document.createElement('div');

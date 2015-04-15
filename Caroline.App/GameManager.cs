@@ -3,6 +3,7 @@ using Caroline.Domain;
 using Caroline.Persistence.Models;
 using GoldRush.APIs;
 using Caroline.App.Models;
+using Caroline.Domain.Models;
 
 namespace Caroline.App
 {
@@ -34,6 +35,7 @@ namespace Caroline.App
 
             // save to the database
             var saveDto = game.Save();
+            saveDto.SaveState.Id = save.Id;
             // session gets modified by update
             await userDto.SetSession(session);
             await userDto.SetGame(saveDto.SaveState);
