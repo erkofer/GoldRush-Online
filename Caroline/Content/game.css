@@ -788,16 +788,25 @@ td {
     width:130px;
 }
 
+.error-notification-tray {
+    height: auto;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    width: 100%;
+}
 
 .network-error {
-    transition: all 0.2s ease;
     height:20px;
-    margin-top:-21px;
     width:100%;
 }
 
 .network-error-text {
     text-align:center;
+}
+
+.rate-limited {
+    height:20px;
+    width:100%;
 }
 
 .chat-window {

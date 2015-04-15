@@ -36,6 +36,11 @@ namespace Caroline.Persistence.Models
                     }
                 }
             }*/
+            if (_IsRateLimited != oldState._IsRateLimited)
+            {
+                newState._IsRateLimited = _IsRateLimited;
+            }
+
 
             if (_AntiCheatCoordinates != null)
             {
@@ -111,6 +116,7 @@ namespace Caroline.Persistence.Models
                 return item;
             }
         }
+
 
         public partial class AntiCheat : ICompressable<AntiCheat>
         {

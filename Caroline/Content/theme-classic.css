@@ -313,6 +313,28 @@ background-image: -webkit-linear-gradient(top, #D63333 0%, #A30000 100%);
 background-image: linear-gradient(to bottom, #D63333 0%, #A30000 100%);
 }
 
+.rate-limited {
+    /* Note: This gradient may render differently in browsers that don't support the unprefixed gradient syntax */
+
+/* IE10 Consumer Preview */ 
+background-image: -ms-linear-gradient(top left, #CFCF00 0%, #B8B800 100%);
+
+/* Mozilla Firefox */ 
+background-image: -moz-linear-gradient(top left, #CFCF00 0%, #B8B800 100%);
+
+/* Opera */ 
+background-image: -o-linear-gradient(top left, #CFCF00 0%, #B8B800 100%);
+
+/* Webkit (Safari/Chrome 10) */ 
+background-image: -webkit-gradient(linear, left top, right bottom, color-stop(0, #CFCF00), color-stop(1, #B8B800));
+
+/* Webkit (Chrome 11+) */ 
+background-image: -webkit-linear-gradient(top left, #CFCF00 0%, #B8B800 100%);
+
+/* W3C Markup, IE10 Release Preview */ 
+background-image: linear-gradient(to bottom right, #CFCF00 0%, #B8B800 100%);
+}
+
 .network-error-text{
     color: white;
 }

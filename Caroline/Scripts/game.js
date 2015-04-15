@@ -1593,17 +1593,31 @@ var Connection;
 (function (Connection) {
     var conInterval;
     var disconInterval;
+    var notificationElm;
     var networkErrorElm;
+    var rateLimitedElm;
 
     function init() {
+        notificationElm = document.createElement('div');
+
         networkErrorElm = document.createElement('div');
         networkErrorElm.classList.add('network-error');
         var networkErrorText = document.createElement('div');
         networkErrorText.classList.add('network-error-text');
         networkErrorText.textContent = 'No connection';
         networkErrorElm.appendChild(networkErrorText);
+
+        rateLimitedElm = document.createElement('div');
+        rateLimitedElm.classList.add('rate-limited');
+        var rateLimitText = document.createElement('div');
+        rateLimitText.classList.add('network-error-text');
+        rateLimitText.textContent = 'You have exceeded your allotted requests';
+        rateLimitedElm.appendChild(networkErrorText);
+
         var game = document.getElementById('game');
-        game.insertBefore(networkErrorElm, game.childNodes[0]);
+        notificationElm.appendChild(networkErrorElm);
+        notificationElm.appendChild(rateLimitedElm);
+        game.insertBefore(notificationElm, game.childNodes[0]);
     }
     init();
 
@@ -1656,6 +1670,9 @@ var Connection;
         if (msg.Buffs != null) {
             updateBuffs(msg.Buffs);
         }
+        if (msg.IsRateLimited != null) {
+            rateLimit(msg.IsRateLimited);
+        }
     });
 
     function restart() {
@@ -1668,14 +1685,14 @@ var Connection;
     Komodo.connection.stateChanged(function (change) {
         if (change.newState === $.signalR.connectionState.connected) {
             connected();
-            networkErrorElm.style.marginTop = '-21px';
+            networkErrorElm.style.display = 'none';
         }
         if (change.newState === $.signalR.connectionState.disconnected) {
             clearInterval(conInterval);
-            networkErrorElm.style.marginTop = '0px';
+            networkErrorElm.style.display = 'block';
         }
         if (change.newState === $.signalR.connectionState.reconnecting) {
-            networkErrorElm.style.marginTop = '0px';
+            networkErrorElm.style.display = 'block';
         }
     });
 
@@ -1694,7 +1711,7 @@ var Connection;
 
             //}
             actions = new Komodo.ClientActions();
-        }, 1000);
+        }, 100);
     }
 
     function disconnected() {
@@ -1741,6 +1758,10 @@ var Connection;
                 Buffs.register(buff.Id, buff.Name, buff.Description, buff.Duration);
             }
         }
+    }
+
+    function rateLimit(limited) {
+        rateLimitedElm.style.display = limited ? 'block' : 'none';
     }
 
     function updateBuffs(buffs) {
