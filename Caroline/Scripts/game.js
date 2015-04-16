@@ -57,9 +57,13 @@
     }
     Utils.isNumber = isNumber;
 
-    function formatNumber(n) {
+    function formatNumber(n, detailed) {
+        if (typeof detailed === "undefined") { detailed = false; }
         if (!n)
             return '0';
+
+        if (detailed)
+            return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
         if (n > 999999999999999) {
             return (n / 1000000000000000).toFixed(3) + "Qa";
@@ -308,6 +312,98 @@ var Account;
 
     var mouseTimeout;
 
+    var LeaderboardAjaxService = (function () {
+        function LeaderboardAjaxService() {
+        }
+        LeaderboardAjaxService.prototype.failed = function (request) {
+            this.resultsElement.textContent = 'Loading failed...';
+        };
+
+        LeaderboardAjaxService.prototype.succeeded = function (request) {
+            while (this.resultsElement.firstChild)
+                this.resultsElement.removeChild(this.resultsElement.firstChild);
+
+            var leaderboardTable = document.createElement('table');
+            var thead = leaderboardTable.createTHead();
+            var subheader = thead.insertRow(0);
+            subheader.classList.add('table-subheader');
+
+            var score = subheader.insertCell(0);
+            score.textContent = 'Score';
+            score.style.width = '65%';
+            var player = subheader.insertCell(0);
+            player.textContent = 'Name';
+            player.style.width = '25%';
+            var rank = subheader.insertCell(0);
+            rank.textContent = 'Rank';
+            rank.style.width = '10%';
+
+            var tbody = leaderboardTable.createTBody();
+
+            for (var i = 0; i < request.length; i++) {
+                var leaderboardEntry = request[i];
+                console.log(leaderboardEntry);
+
+                var row = tbody.insertRow(tbody.rows.length);
+                row.classList.add('table-row');
+
+                var rScore = row.insertCell(0);
+                rScore.textContent = Utils.formatNumber(leaderboardEntry.Score);
+                rScore.style.width = '65%';
+                rScore.addEventListener('click', function (event) {
+                    var score;
+                    var cell = event.target;
+
+                    if (cell.dataset) {
+                        score = cell.dataset['tooltip'];
+                    } else {
+                        score = cell.getAttribute('data-tooltip');
+                    }
+
+                    if (cell.textContent.indexOf(',') > 0) {
+                        cell.textContent = Utils.formatNumber(score);
+                    } else {
+                        cell.textContent = Utils.formatNumber(score, true);
+                    }
+                });
+
+                if (rScore.dataset) {
+                    rScore.dataset['tooltip'] = leaderboardEntry.Score;
+                } else {
+                    rScore.setAttribute('data-tooltip', leaderboardEntry.Score.toString());
+                }
+
+                var rPlayer = row.insertCell(0);
+                rPlayer.textContent = leaderboardEntry.UserId;
+                player.style.width = '25%';
+                var rRank = row.insertCell(0);
+                rRank.textContent = Utils.formatNumber(leaderboardEntry.Rank);
+                rRank.style.width = '10%';
+            }
+            this.resultsElement.appendChild(leaderboardTable);
+        };
+
+        LeaderboardAjaxService.prototype.sendRequest = function (lowerbound, upperbound) {
+            var self = this;
+
+            var request = $.ajax({
+                asyn: true,
+                type: 'POST',
+                url: '/Api/Stats/LeaderBoard/',
+                data: $.param({ Lower: lowerbound, Upper: upperbound }),
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                success: function (request) {
+                    request = JSON.parse(request);
+                    self.succeeded(request);
+                },
+                failure: function (request) {
+                    self.failed(request);
+                }
+            });
+        };
+        return LeaderboardAjaxService;
+    })();
+
     function draw() {
         container = document.createElement('DIV');
         container.classList.add('account-manager');
@@ -367,6 +463,13 @@ var Account;
             toggleMenu();
         });
 
+        var highscoresLink = document.createElement('SPAN');
+        highscoresLink.textContent = 'Leaderboards';
+        highscoresLink.addEventListener('click', function () {
+            leaderboardsModal();
+        });
+        document.getElementsByClassName('header-links')[0].appendChild(highscoresLink);
+
         info();
     }
     draw();
@@ -387,6 +490,21 @@ var Account;
 
         // styles the container depending on the status of the account.
         Utils.cssSwap(container, isAnon ? 'registered' : 'anonymous', isAnon ? 'anonymous' : 'registered');
+    }
+
+    function leaderboardsModal() {
+        var leaderboardModal = new modal.Window();
+        leaderboardModal.title = 'Leaderboards';
+        var leaderboardList = document.createElement('DIV');
+        leaderboardList.style.width = '400px';
+        leaderboardList.textContent = 'Loading...';
+        leaderboardModal.addElement(leaderboardList);
+
+        var leaderboardService = new LeaderboardAjaxService();
+        leaderboardService.resultsElement = leaderboardList;
+        leaderboardService.sendRequest(0, 19);
+
+        leaderboardModal.show();
     }
 
     function loginModal() {
@@ -583,7 +701,6 @@ var Account;
             url: '/Api/Account/Info',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             success: function (request) {
-                console.log(request);
                 request = JSON.parse(request);
                 updateUser(request.UserName, request.Anonymous);
             }
@@ -1599,6 +1716,8 @@ var Connection;
 
     function init() {
         notificationElm = document.createElement('div');
+        notificationElm.classList.add('error-notification-tray');
+        notificationElm.style.display = 'none';
 
         networkErrorElm = document.createElement('div');
         networkErrorElm.classList.add('network-error');
@@ -1612,7 +1731,7 @@ var Connection;
         var rateLimitText = document.createElement('div');
         rateLimitText.classList.add('network-error-text');
         rateLimitText.textContent = 'You have exceeded your allotted requests';
-        rateLimitedElm.appendChild(networkErrorText);
+        rateLimitedElm.appendChild(rateLimitText);
 
         var game = document.getElementById('game');
         notificationElm.appendChild(networkErrorElm);

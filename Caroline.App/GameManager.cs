@@ -4,6 +4,7 @@ using Caroline.Persistence.Models;
 using GoldRush.APIs;
 using Caroline.App.Models;
 using Caroline.Domain.Models;
+using ProtoBuf;
 
 namespace Caroline.App
 {
@@ -39,6 +40,8 @@ namespace Caroline.App
             // session gets modified by update
             await userDto.SetSession(session);
             await userDto.SetGame(saveDto.SaveState);
+
+            //TODO:Do not save if user is anonymous.
             await manager.SetLeaderboardEntry(userId, updateDto.Score);
 
             // dispose lock on user, no more reading/saving

@@ -46,9 +46,12 @@
 
     export function isNumber(obj) { return !isNaN(parseFloat(obj)) }
 
-    export function formatNumber(n: number): string {
+    export function formatNumber(n: number, detailed: boolean = false): string {
         if (!n)
             return '0';
+
+        if (detailed)
+            return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
         if (n > 999999999999999) {
             return (n / 1000000000000000).toFixed(3) + "Qa";

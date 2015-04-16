@@ -1,6 +1,6 @@
 ﻿/// <reference path="typings/jquery/jquery.d.ts"/>
 module Account {
-    var container
+    var container;
     var userButton;
     var userSpan;
     var contextMenu;
@@ -9,7 +9,109 @@ module Account {
     var loginErrors;
 
     var mouseTimeout;
-   
+
+    interface ILeaderboardEntry {
+        Score: number;
+        Rank: number;
+        UserId: string;
+    }
+
+    class LeaderboardAjaxService {
+        constructor() {
+            
+        }
+
+        private failed(request) {
+            this.resultsElement.textContent = 'Loading failed...';
+        }
+
+        private succeeded(request) {
+            while (this.resultsElement.firstChild)
+                this.resultsElement.removeChild(this.resultsElement.firstChild);
+
+            var leaderboardTable: HTMLTableElement = document.createElement('table');
+            var thead:HTMLTableElement = <HTMLTableElement>leaderboardTable.createTHead();
+            var subheader = <HTMLTableRowElement>thead.insertRow(0);
+            subheader.classList.add('table-subheader');
+
+            var score = subheader.insertCell(0);
+            score.textContent = 'Score';
+            score.style.width = '65%';
+            var player = subheader.insertCell(0);
+            player.textContent = 'Name';
+            player.style.width = '25%';
+            var rank = subheader.insertCell(0);
+            rank.textContent = 'Rank';
+            rank.style.width = '10%';
+            
+            var tbody: HTMLTableElement = <HTMLTableElement>leaderboardTable.createTBody();
+
+
+            for (var i = 0; i < request.length; i++) {
+                var leaderboardEntry: ILeaderboardEntry = request[i];
+                console.log(leaderboardEntry);
+
+                var row = <HTMLTableRowElement>tbody.insertRow(tbody.rows.length);
+                row.classList.add('table-row');
+
+                var rScore = row.insertCell(0);
+                rScore.textContent = Utils.formatNumber(leaderboardEntry.Score);
+                rScore.style.width = '65%';
+                rScore.addEventListener('click', function(event) {
+                    var score;
+                    var cell = <HTMLElement>event.target;
+
+                    if (cell.dataset) {
+                        score = cell.dataset['tooltip'];
+                    } else {
+                        score = cell.getAttribute('data-tooltip');
+                    }
+
+                    if (cell.textContent.indexOf(',') > 0) { // this number is detailed and filled with commas.
+                        cell.textContent = Utils.formatNumber(score);
+                    } else {
+                        cell.textContent = Utils.formatNumber(score, true);
+                    }
+                });
+
+                if (rScore.dataset) {
+                    rScore.dataset['tooltip'] = leaderboardEntry.Score;
+                } else {
+                    rScore.setAttribute('data-tooltip', leaderboardEntry.Score.toString());
+                }
+
+                var rPlayer = row.insertCell(0);
+                rPlayer.textContent = leaderboardEntry.UserId;
+                player.style.width = '25%';
+                var rRank = row.insertCell(0);
+                rRank.textContent = Utils.formatNumber(leaderboardEntry.Rank);
+                rRank.style.width = '10%';
+            }
+            this.resultsElement.appendChild(leaderboardTable);
+        }
+
+        resultsElement: HTMLElement;
+        
+        sendRequest(lowerbound: number, upperbound: number) {
+            var self = this;
+
+            var request = $.ajax({
+                asyn: true,
+                type: 'POST',
+                url: '/Api/Stats/LeaderBoard/',
+                data: $.param({ Lower: lowerbound, Upper: upperbound }),
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                success: function (request) {
+                    request = JSON.parse(request);
+                    self.succeeded(request);
+                },
+                failure: function(request) {
+                    self.failed(request);
+                }
+            });
+        }
+    }
+
     function draw() {
         container = document.createElement('DIV');
         container.classList.add('account-manager');
@@ -68,6 +170,13 @@ module Account {
             toggleMenu();
         });
 
+        var highscoresLink = document.createElement('SPAN');
+        highscoresLink.textContent = 'Leaderboards';
+        highscoresLink.addEventListener('click', function () {
+            leaderboardsModal();
+        });
+        document.getElementsByClassName('header-links')[0].appendChild(highscoresLink);
+
         info();
     }
     draw();
@@ -89,6 +198,22 @@ module Account {
         Utils.cssSwap(container,
             isAnon ? 'registered' : 'anonymous',
             isAnon ? 'anonymous' : 'registered');
+    }
+
+    function leaderboardsModal() {
+        var leaderboardModal = new modal.Window();
+        leaderboardModal.title = 'Leaderboards';
+        var leaderboardList = document.createElement('DIV');
+        leaderboardList.style.width = '400px';
+        leaderboardList.textContent = 'Loading...';
+        leaderboardModal.addElement(leaderboardList);
+
+
+        var leaderboardService = new LeaderboardAjaxService();
+        leaderboardService.resultsElement = leaderboardList;
+        leaderboardService.sendRequest(0, 19);
+
+        leaderboardModal.show();
     }
 
     function loginModal() {
@@ -288,7 +413,6 @@ module Account {
             url: '/Api/Account/Info',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             success: function (request) {
-                console.log(request);
                 request = JSON.parse(request);
                 updateUser(request.UserName, request.Anonymous);
             }

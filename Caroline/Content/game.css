@@ -882,3 +882,10 @@ td {
     float:right;
     width:75px;
 }
+
+.header-links {
+    position: absolute;
+    left: 5px;
+    bottom: 0px;
+    color: white;
+}

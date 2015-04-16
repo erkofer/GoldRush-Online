@@ -11,7 +11,8 @@ module Connection {
     
     function init() {
         notificationElm = document.createElement('div');
-
+        notificationElm.classList.add('error-notification-tray');
+        notificationElm.style.display = 'none';
 
         networkErrorElm = document.createElement('div');
         networkErrorElm.classList.add('network-error');
@@ -25,7 +26,7 @@ module Connection {
         var rateLimitText = document.createElement('div');
         rateLimitText.classList.add('network-error-text');
         rateLimitText.textContent = 'You have exceeded your allotted requests';
-        rateLimitedElm.appendChild(networkErrorText);
+        rateLimitedElm.appendChild(rateLimitText);
 
         var game = document.getElementById('game');
         notificationElm.appendChild(networkErrorElm);
