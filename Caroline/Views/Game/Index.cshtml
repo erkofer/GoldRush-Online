@@ -14,7 +14,8 @@
     <div>
         <div class="sidebar-area">
             <div class="rock-container">
-                <canvas id="rock" height="250" width="250"></canvas>
+                <canvas style="position: absolute; z-index: 1;" id="rock" height="250" width="250"></canvas>
+                <canvas style="position: absolute; z-index: 2; pointer-events: none" id="particles" height="250" width="250"></canvas>
             </div>
             <div id="sidebarInformation">
 

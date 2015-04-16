@@ -66,6 +66,10 @@
         }
     }
 
+    export function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
     export function formatTime(n: number) {
         var hours = Math.floor(n / 3600);
         var minutes = Math.floor((n % 3600) / 60);

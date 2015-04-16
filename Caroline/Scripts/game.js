@@ -79,6 +79,11 @@
     }
     Utils.formatNumber = formatNumber;
 
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    Utils.getRandomInt = getRandomInt;
+
     function formatTime(n) {
         var hours = Math.floor(n / 3600);
         var minutes = Math.floor((n % 3600) / 60);
@@ -711,7 +716,9 @@ var Account;
 var Rock;
 (function (Rock) {
     var canvas = document.getElementById('rock');
+    var particleCanvas = document.getElementById('particles');
     var context = canvas.getContext('2d');
+    var particleContext = particleCanvas.getContext('2d');
     var relativeRockURL = '/Content/Rock.png';
     var relativeStoneURL = '/Content/Stone.png';
     var rockImage = new Image();
@@ -723,6 +730,40 @@ var Rock;
     var rockGrowth = 4;
     var rockIsBig = false;
     var mouseDown = false;
+    Rock.particles = new Array();
+
+    var Particle = (function () {
+        function Particle(x, y) {
+            this.width = 5;
+            this.height = 5;
+            this.dispose = false;
+            this.x = x;
+            this.y = y;
+            this.verticalVelocity = Utils.getRandomInt(-100, -155);
+            this.horizonalVelocity = Utils.getRandomInt(-50, 50);
+            this.width = Utils.getRandomInt(3, 6);
+            this.height = Utils.getRandomInt(3, 6);
+
+            //this.rotation = Utils.getRandomInt(0, 180);
+            //this.rotationalVelocity = Utils.getRandomInt(-20, 20);
+            this.lastTick = Date.now();
+        }
+        Particle.prototype.update = function () {
+            var timeSinceLastTick = Date.now() - this.lastTick;
+            this.lastTick = Date.now();
+            timeSinceLastTick /= 1000;
+
+            //this.rotation += (this.rotationalVelocity * timeSinceLastTick);
+            this.y += (this.verticalVelocity * timeSinceLastTick);
+            this.x += (this.horizonalVelocity * timeSinceLastTick);
+            this.verticalVelocity += (200 * timeSinceLastTick);
+            if (this.y > 270) {
+                this.dispose = true;
+            }
+        };
+        return Particle;
+    })();
+    Rock.Particle = Particle;
 
     function initialize() {
         rockImage.onload = function () {
@@ -771,8 +812,10 @@ var Rock;
         if (x > lastX && x < (lastX + rockSize) && y > lastY && y < (lastY + rockSize)) {
             if (!mouseDown)
                 drawRock(lastX - (rockGrowth / 2), lastY - (rockGrowth / 2), rockSize + rockGrowth, rockSize + rockGrowth);
-            else
+            else {
                 drawRock(lastX + (rockGrowth / 2), lastY + (rockGrowth / 2), rockSize - rockGrowth, rockSize - rockGrowth);
+                addParticles(x, y);
+            }
 
             rockIsBig = true;
         } else if (rockIsBig) {
@@ -802,6 +845,38 @@ var Rock;
     function drawBackground() {
         context.drawImage(rockImage, 0, 0);
     }
+
+    function addParticles(x, y) {
+        var rand = Utils.getRandomInt(1, 3);
+        for (var i = 0; i < rand; i++) {
+            var xOffset = Utils.getRandomInt(-5, 5);
+            var yOffset = Utils.getRandomInt(-2, 2);
+            Rock.particles.push(new Particle(x + xOffset, y + yOffset));
+        }
+    }
+
+    function drawParticle(particle) {
+        particleContext.beginPath();
+        particleContext.fillStyle = 'gray';
+        particleContext.rect(particle.x, particle.y, particle.width, particle.height);
+        particleContext.fill();
+        particleContext.stroke();
+    }
+
+    function updateParticles() {
+        particleContext.clearRect(0, 0, 250, 250);
+
+        for (var i = 0; i < Rock.particles.length; i++) {
+            var particle = Rock.particles[i];
+            particle.update();
+            drawParticle(particle);
+
+            if (particle.dispose) {
+                Rock.particles.splice(i, 1);
+            }
+        }
+    }
+    setInterval(updateParticles, 10);
 
     function drawRock(x, y, xScale, yScale) {
         clearCanvas();
