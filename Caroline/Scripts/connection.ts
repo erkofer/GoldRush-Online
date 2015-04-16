@@ -104,7 +104,6 @@ module Connection {
     });
 
     function connected() {
-        networkErrorElm.style.top = '-21px';
         console.log('Connection opened');
         var encoded = actions.encode64();
         send(encoded);

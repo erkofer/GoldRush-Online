@@ -71,7 +71,7 @@ namespace GoldRush
             /// A user facing identifier.
             /// </summary>
             public virtual string Name { get { return _config.Name; } }
-            public virtual int Quantity { get; set; }
+            public virtual long Quantity { get; set; }
             public virtual bool Active { get; set; }
         }
     }

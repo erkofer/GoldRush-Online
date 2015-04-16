@@ -1697,7 +1697,6 @@ var Connection;
     });
 
     function connected() {
-        networkErrorElm.style.top = '-21px';
         console.log('Connection opened');
         var encoded = actions.encode64();
         send(encoded);
@@ -1711,7 +1710,7 @@ var Connection;
 
             //}
             actions = new Komodo.ClientActions();
-        }, 100);
+        }, 1000);
     }
 
     function disconnected() {

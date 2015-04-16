@@ -9,9 +9,9 @@ message SaveState
 {
 	message Item {
 		optional int32 Id=1;
-		optional int32 Quantity=2;
-		optional int32 PrestigeQuantity=3;
-		optional int32 AlltimeQuantity=4;
+		optional int64 Quantity=2;
+		optional int64 PrestigeQuantity=3;
+		optional int64 AlltimeQuantity=4;
 	}
 	repeated Item Items=1;
 
@@ -23,7 +23,7 @@ message SaveState
 
 	message Gatherer {
 		optional int32 Id=1;
-		optional int32 Quantity=2;
+		optional int64 Quantity=2;
 		optional double ResourceBuffer=3;
 	}
 	repeated Gatherer Gatherers=3;
@@ -48,7 +48,7 @@ message SaveState
 
 	message StoreItem {
 		optional int32 Id=1;
-		optional int32 Quantity=2;
+		optional int64 Quantity=2;
 	}
 	repeated StoreItem StoreItems=7;
 
