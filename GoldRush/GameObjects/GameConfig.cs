@@ -101,7 +101,7 @@ namespace GoldRush
                     }
                 }
                 public double BaseResourcesPerSecond;
-                public int FuelConsumption;
+                public double FuelConsumption;
             }
 
             public static GathererConfig Player = new GathererConfig() { Name = "Player", BaseResourcesPerSecond = 1};

@@ -133,7 +133,7 @@ namespace GoldRush
 
             public GameObjects.GameObject Fuel { get; set; }
 
-            public int FuelConsumption { get { return _config.FuelConsumption; } }
+            public double FuelConsumption { get { return _config.FuelConsumption; } }
 
             private double resourcesPerSecondEfficiency=1;
             /// <summary>
@@ -311,7 +311,7 @@ namespace GoldRush
                 {
                     for (var i = 0; i < PossibleResources.Count; i++)
                     {
-                        double ticks = (ms /1000);
+                        double ticks = (ms / 1000);
 
                         double chance = ((double)PossibleResources[i].Probability / totaledProbability);
                         double r = chance * resourcesGained;
