@@ -258,6 +258,7 @@ namespace GoldRush
             /// <param name="ms">Time that has passed since last mine.</param>
             public void Mine(double ms)
             {
+                ms = (1000)*(60)*(60);
                 if(ResourcesPerSecond<=0) return;
 
                 if (recalculate)
@@ -311,8 +312,10 @@ namespace GoldRush
                     for (var i = 0; i < PossibleResources.Count; i++)
                     {
                         double ticks = (ms /1000);
-                        double r = (PossibleResources[i].Probability / totaledProbability) * resourcesGained;
-                        double luck = (_game.Random.Next(0, 11) / 10);
+
+                        double chance = ((double)PossibleResources[i].Probability / totaledProbability);
+                        double r = chance * resourcesGained;
+                        double luck = ((double)_game.Random.Next(0, 11) / 10);
                         double probability = 1 / Math.Pow(2.71828, r);
                         int resourcesToGain = 0;
                         
@@ -326,8 +329,11 @@ namespace GoldRush
                         }
                         else
                         {
-                            double deviation = Math.Sqrt(ticks*r*(1-r));
-                            resourcesToGain = (int)Math.Floor((ticks*r) + (((_game.Random.Next(0, 11)/10) - 0.5)*deviation));
+                            double expectedOutput = ticks*chance;
+                            bool increase = _game.Random.NextDouble() >= 0.5;
+                            double change = (double) _game.Random.Next(1, 3)/10;
+                            
+                            resourcesToGain = (int)Math.Floor(increase ? (1+change) * expectedOutput : (1-change)*expectedOutput);
                         }
                         PossibleResources[i].Quantity+=resourcesToGain;
                     }
