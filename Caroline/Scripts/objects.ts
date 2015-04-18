@@ -10,6 +10,7 @@
         quantity: number;
         maxQuantity: number;
         lifeTimeTotal: number;
+        tooltip: string;
     }
 
     export function register(id: number, name: string) {
@@ -47,5 +48,12 @@
 
     export function getLifeTimeTotal(id: number) {
         return gameobjects[id].lifeTimeTotal;
+    }
+
+    export function setTooltip(id: number, tooltip:string) {
+        gameobjects[id].tooltip = tooltip;
+    }
+    export function getTooltip(id: number) {
+        return gameobjects[id].tooltip;
     }
 }

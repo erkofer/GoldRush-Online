@@ -143,7 +143,7 @@ module Connection {
         if (schema.StoreItems) {
             for (var i = 0; i < schema.StoreItems.length; i++) {
                 var item = schema.StoreItems[i];
-                Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.MaxQuantity);
+                Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.MaxQuantity,item.Tooltip);
             }
         }
 

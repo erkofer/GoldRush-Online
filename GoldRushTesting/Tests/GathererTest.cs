@@ -50,7 +50,7 @@ namespace GoldRushTesting
             game.objs.Gatherers.Miner.Quantity = 1;
             game.objs.Gatherers.Miner.Mine(10000);
 
-            var resourceCount = 0;
+            long resourceCount = 0;
             foreach (var resource in baseResources)
                 resourceCount += resource.Quantity;
 

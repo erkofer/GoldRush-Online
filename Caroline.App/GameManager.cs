@@ -23,7 +23,7 @@ namespace Caroline.App
             if (IsRateLimited(session))
                 return new GameState { IsError = true, IsRateLimited = true };
 
-
+            var user = await userDto.GetUser();
             // get game save
             var save = await userDto.GetGame();
 
@@ -42,7 +42,8 @@ namespace Caroline.App
             await userDto.SetGame(saveDto.SaveState);
 
             //TODO:Do not save if user is anonymous.
-            await manager.SetLeaderboardEntry(userId, updateDto.Score);
+            if (!user.IsAnonymous)
+                await manager.SetLeaderboardEntry(userId, updateDto.Score);
 
             // dispose lock on user, no more reading/saving
             await userDto.DisposeAsync();

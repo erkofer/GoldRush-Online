@@ -313,6 +313,15 @@ var Objects;
         return gameobjects[id].lifeTimeTotal;
     }
     Objects.getLifeTimeTotal = getLifeTimeTotal;
+
+    function setTooltip(id, tooltip) {
+        gameobjects[id].tooltip = tooltip;
+    }
+    Objects.setTooltip = setTooltip;
+    function getTooltip(id) {
+        return gameobjects[id].tooltip;
+    }
+    Objects.getTooltip = getTooltip;
 })(Objects || (Objects = {}));
 /// <reference path="typings/jquery/jquery.d.ts"/>
 var Account;
@@ -1971,7 +1980,7 @@ var Connection;
         if (schema.StoreItems) {
             for (var i = 0; i < schema.StoreItems.length; i++) {
                 var item = schema.StoreItems[i];
-                Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.MaxQuantity);
+                Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.MaxQuantity, item.Tooltip);
             }
         }
 
@@ -2372,7 +2381,7 @@ var Store;
     }
     Store.tempFix = tempFix;
 
-    function addItem(id, category, price, factor, name, maxQuantity) {
+    function addItem(id, category, price, factor, name, maxQuantity, tooltip) {
         if (!storePane)
             draw();
 
@@ -2385,9 +2394,11 @@ var Store;
             item.price = price;
             item.factor = factor;
             item.name = name;
+            item.tooltip = tooltip;
             item.maxQuantity = maxQuantity ? maxQuantity : 0;
 
             Objects.register(item.id, item.name);
+            Objects.setTooltip(item.id, item.tooltip);
 
             if (item.category == 2 /* MACHINES */) {
                 Equipment.registerGatherer(item.id);
@@ -2448,6 +2459,9 @@ var Store;
 
     function drawItem(item) {
         var itemContainer = document.createElement('div');
+        if (item.tooltip != "undefined") {
+            tooltip.create(itemContainer, item.tooltip);
+        }
         itemContainer.classList.add('store-item');
         item.container = itemContainer;
         var header = document.createElement('div');
@@ -3163,7 +3177,7 @@ var Crafting;
                 for (var x = 0; x < recipe.ingredients.length; x++) {
                     var ingredientBox = document.createElement('DIV');
                     ingredientBox.classList.add('item-text');
-                    ingredientBox.style.height = '22px';
+                    ingredientBox.style.height = 'auto';
                     var ingredientImage = document.createElement('DIV');
                     ingredientImage.style.display = 'inline-block';
                     var ingredientQuantity = document.createElement('DIV');
@@ -3179,11 +3193,15 @@ var Crafting;
                 }
             }
 
+            if (cellDescriptions[i] == "Description") {
+                cell.textContent = Objects.getTooltip(recipe.resultants[0].id);
+            }
+
             if (cellDescriptions[i] == "Output") {
                 for (var x = 0; x < recipe.resultants.length; x++) {
                     var ingredientBox = document.createElement('DIV');
                     ingredientBox.classList.add('item-text');
-                    ingredientBox.style.height = '22px';
+                    ingredientBox.style.height = 'auto';
                     var ingredientImage = document.createElement('DIV');
                     ingredientImage.style.display = 'inline-block';
                     var ingredientQuantity = document.createElement('DIV');

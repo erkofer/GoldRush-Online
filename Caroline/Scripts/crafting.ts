@@ -556,7 +556,7 @@
                 for (var x = 0; x < recipe.ingredients.length; x++) {
                     var ingredientBox = document.createElement('DIV');
                     ingredientBox.classList.add('item-text');
-                    ingredientBox.style.height = '22px';
+                    ingredientBox.style.height = 'auto';
                     var ingredientImage = document.createElement('DIV');
                     ingredientImage.style.display = 'inline-block';
                     var ingredientQuantity = document.createElement('DIV');
@@ -572,11 +572,15 @@
                 }
             }
 
+            if (cellDescriptions[i] == "Description") {
+                cell.textContent = Objects.getTooltip(recipe.resultants[0].id);
+            }
+
             if (cellDescriptions[i] == "Output") {
                 for (var x = 0; x < recipe.resultants.length; x++) {
                     var ingredientBox = document.createElement('DIV');
                     ingredientBox.classList.add('item-text');
-                    ingredientBox.style.height = '22px';
+                    ingredientBox.style.height = 'auto';
                     var ingredientImage = document.createElement('DIV');
                     ingredientImage.style.display = 'inline-block';
                     var ingredientQuantity = document.createElement('DIV');

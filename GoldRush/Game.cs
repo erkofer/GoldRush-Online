@@ -147,6 +147,7 @@ namespace GoldRush
                     schemaItem.Factor = item.Value.Factor;
                     schemaItem.MaxQuantity = item.Value.MaxQuantity;
                     schemaItem.Category = (GameState.Schematic.SchemaStoreItem.Section)item.Value.Category;
+                    schemaItem.Tooltip = item.Value.Item.Tooltip;
 
                     schema.StoreItems.Add(schemaItem);
                 }

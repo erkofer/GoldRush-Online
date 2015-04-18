@@ -56,6 +56,7 @@ message GameState {
 			optional double Factor=4 [default = -100];
 			optional int32 Id=5 [default = -100];
 			optional int32 MaxQuantity=6 [default = -100];
+			optional string Tooltip=7;
 		}
 		repeated SchemaStoreItem StoreItems=2;
 
