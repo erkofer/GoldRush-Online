@@ -50,5 +50,6 @@ namespace Caroline.Persistence.Redis
         public byte[] StringGetSetExpiry { get; set; }
         public byte[] IncrementExpiry { get; set; }
         public byte[] TryLock { get; set; }
+        public byte[] PopMany { get; set; }
     }
 }

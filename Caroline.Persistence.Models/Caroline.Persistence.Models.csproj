@@ -58,6 +58,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Chat.cs" />
     <Compile Include="CompressableHelpers.cs" />
     <Compile Include="GameSessionEndpoint.cs" />
     <Compile Include="GameState.cs" />
@@ -78,6 +79,7 @@
     <ProtoBuf Include="User.proto" />
     <ProtoBuf Include="GameSession.proto" />
     <ProtoBuf Include="GameState.proto" />
+    <ProtoBuf Include="Chat.proto" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>

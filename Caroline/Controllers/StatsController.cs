@@ -1,13 +1,14 @@
 ﻿using System.Threading.Tasks;
-using System.Web.Http;
+using System.Web.Mvc;
 using Caroline.Domain;
 using Caroline.Models;
+using Newtonsoft.Json;
 
 namespace Caroline.Controllers
 {
-    public class StatsController : ApiController
+    public class StatsController : Controller
     {
-        public async Task<LeaderboardEntry[]> LeaderBoard(long start, long end)
+        public async Task<string> LeaderBoard(int start, int end)
         {
             if (start < 1)
                 start = 1;
@@ -28,7 +29,7 @@ namespace Caroline.Controllers
                     Score = (long) entries[i].Score,
                     UserId = await db.GetUsername(entries[i].UserId) // TODO: log(count) round trips, batch db.GetUsername calls
                 };
-            return ret;
+            return JsonConvert.SerializeObject(ret);
         }
     }
 }

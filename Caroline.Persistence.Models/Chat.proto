@@ -1,0 +1,42 @@
+package Caroline.Persistence.Models;
+
+import "csharp_options.proto";
+option (google.protobuf.csharp_file_options).namespace = "Caroline.Persistence.Models";
+
+option optimize_for = SPEED;
+
+message ChatroomMessage {
+	optional string Message = 1;
+	optional int64 UserId = 2;
+} 
+
+message ChatroomSubscriber {
+}
+
+message ChatroomInvitation {
+	optional int64 InviterUserId = 1;
+}
+
+message ChatroomOptions {
+	optional bool IsPrivate = 1;
+	optional ChatroomVisibility  Visibility = 2;
+	enum ChatroomVisibility {
+		Public = 1;
+		Private = 2;
+	}
+	optional InvitePrivilege Invites = 3;
+	enum InvitePrivilege {
+		Open = 1;
+		Members = 2;
+		Locked = 3;
+	}
+}
+
+message ChatroomSubscription {
+}
+
+message ChatroomNotification {
+	optional string ChatroomId = 1;
+	optional string Message = 2;
+	optional int64 SenderUserId = 3;
+}

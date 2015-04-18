@@ -1,17 +1,20 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Caroline.Persistence.Redis.Extensions;
 using StackExchange.Redis;
 
 namespace Caroline.Persistence.Redis
 {
     class RedisEntityListTable<TEntity, TId> : RedisEntityTableBase<TEntity, TId>, IEntityListTable<TEntity, TId>
     {
-        private readonly IDatabase _db;
+        readonly IDatabase _db;
+        readonly CarolineScriptsRepo _scripts;
 
-        public RedisEntityListTable(IDatabase db, ISerializer<TEntity> serializer, ISerializer<TId> keySerializer, IIdentifier<TEntity, TId> identifier)
+        public RedisEntityListTable(IDatabaseArea db, ISerializer<TEntity> serializer, ISerializer<TId> keySerializer, IIdentifier<TEntity, TId> identifier)
             : base(serializer, keySerializer, identifier)
         {
             _db = db;
+            _scripts = db.Scripts;
         }
 
         public async Task<TEntity> GetByIndex(TId id, long index)
@@ -51,6 +54,20 @@ namespace Caroline.Persistence.Redis
                     throw new ArgumentOutOfRangeException("side");
             }
             return Deserialize(result, id);
+        }
+
+        public async Task<TEntity[]> Pop(TId id, IndexSide side, long count)
+        {
+            if(count < 0)
+                throw new ArgumentException("count must be greater than or equal to 0.", "count");
+
+            var key = KeySerializer.Serialize(id);
+            var result = await _db.ListPopManyAsync(_scripts, key, count, side);
+            
+            var ret = new TEntity[result.Length];
+            for (var i = 0; i < ret.Length; i++)
+                ret[i] = Deserialize(result[i], id);
+            return ret;
         }
 
         public Task<long> Push(TEntity entity, IndexSide side)
@@ -128,6 +145,7 @@ namespace Caroline.Persistence.Redis
         Task<TEntity> GetByIndex(TId id, long index);
         Task<long> InsertAt(TId id, RedisValue pivot, RedisValue value, IndexSide side);
         Task<TEntity> Pop(TId id, IndexSide side);
+        Task<TEntity[]> Pop(TId id, IndexSide side, long count);
         Task<long> Push(TEntity entity, IndexSide side);
         Task<long> Length(TId id);
         Task<TEntity[]> Range(TId id, long start = 0, long stop = -1);
