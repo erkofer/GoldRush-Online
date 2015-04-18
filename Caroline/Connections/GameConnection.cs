@@ -50,6 +50,7 @@ namespace Caroline.Connections
             var gameEndpoint = new GameSessionEndpoint(endpoint, userId);
 
             var state = await _gameManager.Update(gameEndpoint, actions);
+            state.ConnectedUsers = UserIdList.Count;
             if (state != null)
                 await Connection.Send(connectionId, ProtoBufHelpers.SerializeToString(state));
 
@@ -88,8 +89,8 @@ namespace Caroline.Connections
 
         private void SendGlobalChatMessage(string sender, string text, string time)
         {
-            string[] developers = new string[] { "Developer", "Hunter" };
-            string[] moderators = new string[] { "scrublord" };
+            string[] developers = new string[] { "Tristyn", "Hunter" };
+            string[] moderators = new string[] { "Ell dubs" };
             string[] server = new string[] { "Server" };
             var maxMessageLength = 220;
 

@@ -64,4 +64,10 @@ message ClientActions
 		optional int32 Id=1;
 	}
 	repeated PotionAction PotionActions = 7;
+
+	message GathererAction {
+		optional int32 Id=1;
+		optional bool Enabled=2;
+	}
+	repeated GathererAction GathererActions = 8;
 }

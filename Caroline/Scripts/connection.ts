@@ -81,6 +81,9 @@ module Connection {
         if (msg.IsRateLimited != null) {
             rateLimit(msg.IsRateLimited);
         }
+        if (msg.Gatherers != null) {
+            updateGatherers(msg.Gatherers);
+        }
     });
 
     export function restart() {
@@ -169,6 +172,20 @@ module Connection {
 
     function rateLimit(limited: any) {
         rateLimitedElm.style.display = limited ? 'block' : 'none';
+    }
+
+    export function toggleGatherer(id: number, enabled: boolean) {
+        var gathererAction = new Komodo.ClientActions.GathererAction();
+        gathererAction.Id = id;
+        gathererAction.Enabled = enabled;
+        actions.GathererActions.push(gathererAction);
+    }
+
+    function updateGatherers(gatherers: any) {
+        for (var i = 0; i < gatherers.length; i++) {
+            var gatherer = gatherers[i];
+            Equipment.toggleGatherer(gatherer.Id, gatherer.Enabled);
+        }
     }
 
     function updateBuffs(buffs: any) {

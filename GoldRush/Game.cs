@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.Remoting.Messaging;
 using Caroline.Persistence.Models;
 using Caroline.App.Models;
 
@@ -102,6 +103,15 @@ namespace GoldRush
                     for (var i = 0; i < message.PotionActions.Count; i++)
                     {
                         objs.Items.Drink(message.PotionActions[i].Id);
+                    }
+                }
+                if (message.GathererActions.Count > 0)
+                {
+                    for (var i = 0; i < message.GathererActions.Count; i++)
+                    {
+                        GoldRush.Gatherers.Gatherer gatherer;
+                        if (objs.Gatherers.All.TryGetValue(message.GathererActions[i].Id, out gatherer))
+                            gatherer.Enabled = message.GathererActions[i].Enabled;
                     }
                 }
             }
@@ -289,6 +299,15 @@ namespace GoldRush
                 stateBuff.TimeActive = buff.TimeActive;
                 state.Buffs.Add(stateBuff);
             }
+            foreach (var gathererPair in objs.Gatherers.All)
+            {
+                var gatherer = gathererPair.Value;
+                var stateGatherer = new GameState.Gatherer();
+
+                stateGatherer.Id = gatherer.Id;
+                stateGatherer.Enabled = gatherer.Enabled;
+                state.Gatherers.Add(stateGatherer);
+            }
 
             return state;
         }
@@ -325,6 +344,7 @@ namespace GoldRush
                 saveStateGatherer.Id = toSaveGatherer.Id;
                 saveStateGatherer.Quantity = toSaveGatherer.Quantity;
                 saveStateGatherer.ResourceBuffer = toSaveGatherer.ResourceBuffer;
+                saveStateGatherer.Enabled = toSaveGatherer.Enabled;
 
                 saveState.Gatherers.Add(saveStateGatherer);
             }
@@ -384,9 +404,9 @@ namespace GoldRush
                     foreach (var item in save.Items)
                     {
                         var toLoadItem = objs.Items.All[item.Id];
-                        toLoadItem.Quantity = item.Quantity;
-                        toLoadItem.PrestigeTimeTotal = item.PrestigeQuantity;
-                        toLoadItem.LifeTimeTotal = item.AlltimeQuantity;
+                        if (item.Quantity != null) toLoadItem.Quantity = item.Quantity;
+                        if (item.PrestigeQuantity != null) toLoadItem.PrestigeTimeTotal = item.PrestigeQuantity;
+                        if (item.AlltimeQuantity != null) toLoadItem.LifeTimeTotal = item.AlltimeQuantity;
                     }
                 }
                 if (save.ItemConfigs != null)
@@ -394,7 +414,7 @@ namespace GoldRush
                     foreach (var item in save.ItemConfigs)
                     {
                         var toLoadItem = objs.Items.All[item.Id];
-                        toLoadItem.IncludeInSellAll = item.Enabled;
+                        if (item.Enabled != null) toLoadItem.IncludeInSellAll = item.Enabled;
                     }
                 }
                 if (save.Gatherers != null)
@@ -402,23 +422,24 @@ namespace GoldRush
                     foreach (var gatherer in save.Gatherers)
                     {
                         var toLoadGatherer = objs.Gatherers.All[gatherer.Id];
-                        toLoadGatherer.Quantity = gatherer.Quantity;
-                        toLoadGatherer.ResourceBuffer = gatherer.ResourceBuffer;
+                        if (gatherer.Quantity != null) toLoadGatherer.Quantity = gatherer.Quantity;
+                        if (gatherer.ResourceBuffer != null) toLoadGatherer.ResourceBuffer = gatherer.ResourceBuffer;
+                        if (gatherer.Enabled != null) toLoadGatherer.Enabled = gatherer.Enabled;
                     }
                 }
                 if (save.LastUpdate != null)
                 {
-                    lastUpdate = save.LastUpdate;
+                    if(save.LastUpdate != null) lastUpdate = save.LastUpdate;
                 }
                 if (save.Processors != null)
                 {
                     foreach (var processor in save.Processors)
                     {
                         var toLoadProcessor = objs.Processing.Processors[processor.Id];
-                        toLoadProcessor.SelectedRecipeIndex = processor.SelectedRecipe;
-                        toLoadProcessor.RecipeProgress = processor.Progress;
-                        toLoadProcessor.RecipesCrafted = processor.RecipesCrafted;
-                        toLoadProcessor.RecipesToCraft = processor.RecipesToCraft;
+                        if(processor.SelectedRecipe != null) toLoadProcessor.SelectedRecipeIndex = processor.SelectedRecipe;
+                        if (processor.Progress != null) toLoadProcessor.RecipeProgress = processor.Progress;
+                        if (processor.RecipesCrafted != null) toLoadProcessor.RecipesCrafted = processor.RecipesCrafted;
+                        if (processor.RecipesToCraft != null) toLoadProcessor.RecipesToCraft = processor.RecipesToCraft;
                     }
                 }
                 if (save.AntiCheatCoordinates != null)

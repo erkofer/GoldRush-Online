@@ -56,6 +56,7 @@ message GameState {
 			optional double Factor=4 [default = -100];
 			optional int32 Id=5 [default = -100];
 			optional int32 MaxQuantity=6 [default = -100];
+			optional string Tooltip =7;
 		}
 		repeated SchemaStoreItem StoreItems=2;
 
@@ -142,5 +143,13 @@ message GameState {
 	}
 	repeated Buff Buffs = 10;
 	optional bool IsRateLimited = 11;
+
+	optional int32 ConnectedUsers=12[default = -100];
+
+	message Gatherer {
+		optional int32 Id=1;
+		optional bool Enabled=2;
+	}
+	repeated Gatherer Gatherers = 13;
 } 
 

@@ -80,6 +80,10 @@
 
             Objects.register(item.id, item.name);
 
+            if (item.category == Category.MACHINES) {
+                Equipment.registerGatherer(item.id);
+            }
+
             var categoryContainer = categories[Category[category]];
             if (categoryContainer == null) {
                 categoryContainer = categories["MINING"];

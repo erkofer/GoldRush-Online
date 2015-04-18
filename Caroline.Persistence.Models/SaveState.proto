@@ -25,6 +25,7 @@ message SaveState
 		optional int32 Id=1;
 		optional int64 Quantity=2;
 		optional double ResourceBuffer=3;
+		optional bool Enabled=4;
 	}
 	repeated Gatherer Gatherers=3;
 

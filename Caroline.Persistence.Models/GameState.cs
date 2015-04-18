@@ -15,6 +15,11 @@ namespace Caroline.Persistence.Models
                 newState._IsError = _IsError;
             }
 
+            if (_ConnectedUsers != oldState._ConnectedUsers)
+            {
+                newState._ConnectedUsers = _ConnectedUsers;
+            }
+
             // ITEMS
             CompressableHelpers.CompressList(_Items, oldState._Items, newState._Items);
 
@@ -93,6 +98,8 @@ namespace Caroline.Persistence.Models
 
             CompressableHelpers.CompressList(_Buffs, oldState._Buffs, newState._Buffs);
 
+            CompressableHelpers.CompressList(_Gatherers, oldState._Gatherers, newState._Gatherers);
+
             return newState;
         }
 
@@ -115,6 +122,18 @@ namespace Caroline.Persistence.Models
                 }
                 return item;
             }
+        }
+
+        public partial class Gatherer : ICompressable<Gatherer>, IIdentifiableObject
+        {
+            public Gatherer Compress(Gatherer oldItem)
+            {
+                if (_Enabled != oldItem._Enabled)
+                {
+                    return new Gatherer() {_Id = _Id, _Enabled = _Enabled};
+                }
+                return null;
+            } 
         }
 
 

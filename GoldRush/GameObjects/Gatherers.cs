@@ -11,7 +11,7 @@ namespace GoldRush
     class Gatherers
     {
         public GameObjects Game;
-
+        private Random acRandom = new Random();
         public Gatherers(GameObjects game)
         {
             ScrambleAntiCheat();
@@ -92,8 +92,8 @@ namespace GoldRush
 
         private void ScrambleAntiCheat()
         {
-            AntiCheatX = Game.Random.Next(5, 195);
-            AntiCheatY = Game.Random.Next(5, 195);
+            AntiCheatX = acRandom.Next(5, 195);
+            AntiCheatY = acRandom.Next(5, 195);
             AntiCheatNextChange = 25;
         }
 

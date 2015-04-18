@@ -294,6 +294,16 @@ var Objects;
     }
     Objects.getQuantity = getQuantity;
 
+    function setMaxQuantity(id, maxQuantity) {
+        gameobjects[id].maxQuantity = maxQuantity;
+    }
+    Objects.setMaxQuantity = setMaxQuantity;
+
+    function getMaxQuantity(id) {
+        return gameobjects[id].maxQuantity;
+    }
+    Objects.getMaxQuantity = getMaxQuantity;
+
     function setLifeTimeTotal(id, quantity) {
         gameobjects[id].lifeTimeTotal = quantity;
     }
@@ -1597,6 +1607,7 @@ var Inventory;
         inventoryPane.appendChild(inventory);
 
         Tabs.registerGameTab(inventoryPane, 'Inventory');
+        Equipment.draw();
     }
 
     function modifyConfig(id, enabled) {
@@ -1898,6 +1909,9 @@ var Connection;
         if (msg.IsRateLimited != null) {
             rateLimit(msg.IsRateLimited);
         }
+        if (msg.Gatherers != null) {
+            updateGatherers(msg.Gatherers);
+        }
     });
 
     function restart() {
@@ -1986,6 +2000,21 @@ var Connection;
 
     function rateLimit(limited) {
         rateLimitedElm.style.display = limited ? 'block' : 'none';
+    }
+
+    function toggleGatherer(id, enabled) {
+        var gathererAction = new Komodo.ClientActions.GathererAction();
+        gathererAction.Id = id;
+        gathererAction.Enabled = enabled;
+        actions.GathererActions.push(gathererAction);
+    }
+    Connection.toggleGatherer = toggleGatherer;
+
+    function updateGatherers(gatherers) {
+        for (var i = 0; i < gatherers.length; i++) {
+            var gatherer = gatherers[i];
+            Equipment.toggleGatherer(gatherer.Id, gatherer.Enabled);
+        }
     }
 
     function updateBuffs(buffs) {
@@ -2230,6 +2259,64 @@ var Buffs;
     Buffs.update = update;
     init();
 })(Buffs || (Buffs = {}));
+var Equipment;
+(function (Equipment) {
+    var gatherers = new Array();
+    var equipmentPane;
+
+    var Gatherer = (function () {
+        function Gatherer() {
+        }
+        return Gatherer;
+    })();
+
+    function draw() {
+        if (equipmentPane)
+            return;
+
+        equipmentPane = document.createElement('div');
+        document.getElementById('paneContainer').appendChild(equipmentPane);
+        Tabs.registerGameTab(equipmentPane, 'Equipment');
+    }
+    Equipment.draw = draw;
+
+    function registerGatherer(id) {
+        if (gatherers[id])
+            return;
+
+        var gatherer = new Gatherer();
+        gatherers[id] = gatherer;
+        drawGatherer(id);
+    }
+    Equipment.registerGatherer = registerGatherer;
+
+    function drawGatherer(id) {
+        var gatherer = gatherers[id];
+        var container = document.createElement('div');
+        container.classList.add('equipment-gatherer-container');
+        var header = document.createElement('div');
+        header.textContent = Objects.lookupName(id);
+        var toggle = Utils.createButton('Disable', '');
+        toggle.addEventListener('click', function () {
+            Connection.toggleGatherer(id, !gatherer.enabled);
+        });
+        container.appendChild(header);
+        container.appendChild(toggle);
+        gatherer.toggleElm = toggle.firstChild;
+
+        equipmentPane.appendChild(container);
+    }
+
+    function toggleGatherer(id, enabled) {
+        var gatherer = gatherers[id];
+        if (!gatherer)
+            return;
+        console.log(enabled);
+        gatherer.enabled = enabled;
+        gatherer.toggleElm.textContent = enabled ? 'Disable' : 'Enable';
+    }
+    Equipment.toggleGatherer = toggleGatherer;
+})(Equipment || (Equipment = {}));
 var Store;
 (function (Store) {
     var storePane;
@@ -2290,6 +2377,8 @@ var Store;
             draw();
 
         if (!items[id]) {
+            Objects.register(id, name);
+
             var item = new StoreItem();
             item.id = id;
             item.category = category;
@@ -2299,6 +2388,10 @@ var Store;
             item.maxQuantity = maxQuantity ? maxQuantity : 0;
 
             Objects.register(item.id, item.name);
+
+            if (item.category == 2 /* MACHINES */) {
+                Equipment.registerGatherer(item.id);
+            }
 
             var categoryContainer = categories[Category[category]];
             if (categoryContainer == null) {

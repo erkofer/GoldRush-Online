@@ -222,6 +222,7 @@ module Inventory {
 
 
         Tabs.registerGameTab(inventoryPane, 'Inventory');
+        Equipment.draw();
     }
 
     export function modifyConfig(id: number, enabled: boolean) {

@@ -142,5 +142,13 @@ message GameState {
 	}
 	repeated Buff Buffs = 10;
 	optional bool IsRateLimited = 11;
+
+	optional int32 ConnectedUsers=12[default = -100];
+
+	message Gatherer {
+		optional int32 Id=1;
+		optional bool Enabled=2;
+	}
+	repeated Gatherer Gatherers = 13;
 } 
 
