@@ -220,6 +220,7 @@
     <Compile Include="Connections\GameConnection.cs" />
     <Compile Include="Controllers\GameController.cs" />
     <Compile Include="Areas\Api\Controllers\StatsController.cs" />
+    <Compile Include="Controllers\VersionController.cs" />
     <Compile Include="Extensions\ModelStateEx.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -304,6 +305,7 @@
     <Content Include="Content\Sprites\up.png" />
     <Content Include="Content\Sprites\Uranium.png" />
     <Content Include="Content\Stone.png" />
+    <Content Include="Content\version.css" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
@@ -379,6 +381,7 @@
     <Content Include="Views\Shared\Lockout.cshtml" />
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
     <Content Include="Scripts\ProtoBuf.min.map" />
+    <Content Include="Views\Version\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -428,6 +431,7 @@
     <TypeScriptCompile Include="Scripts\chat.ts" />
     <TypeScriptCompile Include="Scripts\connection.ts" />
     <TypeScriptCompile Include="Scripts\crafting.ts" />
+    <TypeScriptCompile Include="Scripts\equipment.ts" />
     <TypeScriptCompile Include="Scripts\inventory.ts" />
     <TypeScriptCompile Include="Scripts\modal.ts" />
     <TypeScriptCompile Include="Scripts\objects.ts" />

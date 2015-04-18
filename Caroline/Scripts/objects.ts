@@ -8,6 +8,7 @@
 
         name: string;
         quantity: number;
+        maxQuantity: number;
         lifeTimeTotal: number;
     }
 
@@ -30,6 +31,14 @@
 
     export function getQuantity(id: number) {
         return gameobjects[id].quantity;
+    }
+
+    export function setMaxQuantity(id: number, maxQuantity: number) {
+        gameobjects[id].maxQuantity = maxQuantity;
+    }
+
+    export function getMaxQuantity(id: number) {
+        return gameobjects[id].maxQuantity;
     }
 
     export function setLifeTimeTotal(id: number, quantity: number) {

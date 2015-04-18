@@ -11,7 +11,6 @@ namespace GoldRush
     class Gatherers
     {
         public GameObjects Game;
-        private Random acRandom = new Random();
 
         public Gatherers(GameObjects game)
         {
@@ -93,8 +92,8 @@ namespace GoldRush
 
         private void ScrambleAntiCheat()
         {
-            AntiCheatX = acRandom.Next(5, 195);
-            AntiCheatY = acRandom.Next(5, 195);
+            AntiCheatX = Game.Random.Next(5, 195);
+            AntiCheatY = Game.Random.Next(5, 195);
             AntiCheatNextChange = 25;
         }
 
@@ -157,6 +156,8 @@ namespace GoldRush
             public double TotalBaseResourcesPerSecond { get { 
                 return BaseResourcesPerSecond + ResourcesPerSecondBaseIncrease;
             } }
+
+            public bool Enabled = true;
 
             private double probabilityModifier=1;
             /// <summary>
@@ -258,7 +259,8 @@ namespace GoldRush
             /// <param name="ms">Time that has passed since last mine.</param>
             public void Mine(double ms)
             {
-                ms = (1000)*(60)*(60);
+                if (!Enabled) return;
+
                 if(ResourcesPerSecond<=0) return;
 
                 if (recalculate)
@@ -271,7 +273,7 @@ namespace GoldRush
                 if (Fuel != null)
                 {
                     var fuelToConsume = Math.Min(Fuel.Quantity, FuelConsumption*Quantity);
-                    Fuel.Quantity -= fuelToConsume;
+                    Fuel.Quantity -= (long)fuelToConsume;
 
                     fuelEfficiency = fuelToConsume/FuelConsumption;
                 }

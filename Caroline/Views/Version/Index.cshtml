@@ -1,0 +1,32 @@
+﻿@{
+    ViewBag.Title = "Version History";
+}
+@Styles.Render("~/Content/version.css")
+
+<div class="update alpha">
+    <p>v0.1</p>
+    <div class="update">
+        <p>v0.1.0</p>
+        <ul>
+            <li>Initial release.</li>
+        </ul>
+    </div>
+    <div class="update">
+        <p>v0.1.1</p>
+        <p>Features</p>
+        <ul>
+            <li>
+                Gatherers can now be disabled to stop them from consuming fuel and gatherering resources.
+            </li>
+        </ul>
+        <p>Fixes</p>
+        <ul>
+            <li>
+                Item quantities no longer overflow to negative.
+            </li>
+            <li>
+                Oil consumption correctly rounds.
+            </li>
+        </ul>
+    </div>
+</div>

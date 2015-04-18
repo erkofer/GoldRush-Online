@@ -68,6 +68,8 @@
             draw();
 
         if (!items[id]) { // if we haven't already drawn this item.
+            Objects.register(id, name);
+
             var item = new StoreItem();
             item.id = id;
             item.category = category;
@@ -97,7 +99,8 @@
                 try {
                     item.maxQuantity = maxQuantity;
                     item.maxQuantityElm.textContent = maxQuantity.toString();
-                }catch(err){
+                   
+                } catch (err) {
                     
                 }
             }
