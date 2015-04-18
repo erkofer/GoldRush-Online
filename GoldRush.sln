@@ -67,6 +67,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caroline.Persistence.Redis.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caroline.Persistence.Models.Tests", "Caroline.Persistence.Models.Tests\Caroline.Persistence.Models.Tests.csproj", "{B67DB907-3271-4571-8F80-FC9BF7F92D0A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caroline.Admin", "Caroline.Admin\Caroline.Admin.csproj", "{39EEFFD7-0726-440B-9FD8-5D2F9A7817A4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -125,6 +127,10 @@ Global
 		{B67DB907-3271-4571-8F80-FC9BF7F92D0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B67DB907-3271-4571-8F80-FC9BF7F92D0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B67DB907-3271-4571-8F80-FC9BF7F92D0A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39EEFFD7-0726-440B-9FD8-5D2F9A7817A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39EEFFD7-0726-440B-9FD8-5D2F9A7817A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39EEFFD7-0726-440B-9FD8-5D2F9A7817A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39EEFFD7-0726-440B-9FD8-5D2F9A7817A4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

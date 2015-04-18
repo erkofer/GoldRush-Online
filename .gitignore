@@ -40,3 +40,5 @@
 /Caroline.Persistence.Redis.Tests/obj
 /Caroline.Persistence.Models.Tests/bin/Debug
 /Caroline.Persistence.Models.Tests/obj/Debug
+/Caroline.Admin/obj/Debug
+/Caroline.Admin/bin/Debug
