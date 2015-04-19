@@ -486,6 +486,7 @@
     <Exec Command="tsc$(TypeScriptSourceMap) -target ES5 --module amd --out Scripts/game.js" />
     <Exec Command="java -jar &quot;$(SolutionDir)Build\compiler.jar&quot; --js &quot;$(SolutionDir)Caroline\Scripts\game.js&quot; --js_output_file &quot;$(SolutionDir)Caroline\Scripts\game.min.js&quot;" />
     <Message Importance="high" Text="Building spritesheet." />
+<<<<<<< HEAD
     <Exec Command="&quot;$(SolutionDir)Build\Python27\Scripts\glue.exe&quot; --source &quot;$(SolutionDir)Caroline\Content\Sprites&quot; --output &quot;$(SolutionDir)Caroline\Content&quot; --css=&quot;$(SolutionDir)Caroline\Content&quot; --sprite-namespace= --namespace= --force">
       <Output TaskParameter="ExitCode" PropertyName="TestGlueExitCode" />
     </Exec>
@@ -497,6 +498,10 @@
     <Exec Command="&quot;$(SolutionDir)Build\pngquant.exe&quot; &quot;$(SolutionDir)Caroline\Content\sprites.png&quot; --ext .png --force">
       <Output TaskParameter="ExitCode" PropertyName="TestPNGExitCode" />
     </Exec>
+=======
+    <Message Importance="high" Text="$(TestGlueExitCode)" />
+    <Message Importance="high" Text="$(TestExitCode)" />
+>>>>>>> Tristyn/register-name-hijack
     <Message Importance="high" Text="$(TestPNGExitCode)" />
   </Target>
   <Target Name="AfterBuild">
