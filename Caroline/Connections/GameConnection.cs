@@ -47,13 +47,13 @@ namespace Caroline.Connections
             if (!IpEndpoint.TryParse(request.Environment, out endpoint))
                 throw new Exception("Can not get IP addresses from owin environment.");
             var userId = HttpContext.Current.User.Identity.GetUserId<long>();
+            if (userId == 0)
+                return;
             var gameEndpoint = new GameSessionEndpoint(endpoint, userId);
 
             var state = await _gameManager.Update(gameEndpoint, actions);
             state.ConnectedUsers = UserIdList.Count;
-            if (state != null)
-                await Connection.Send(connectionId, ProtoBufHelpers.SerializeToString(state));
-
+            await Connection.Send(connectionId, ProtoBufHelpers.SerializeToString(state));
             await Socialize(request, connectionId, actions);
         }
 

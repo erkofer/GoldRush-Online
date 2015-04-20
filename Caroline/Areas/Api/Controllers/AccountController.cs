@@ -63,7 +63,7 @@ namespace Caroline.Areas.Api.Controllers
             switch (result)
             {
                 case SignInStatus.Success:
-                    ret = new IdentityResult();
+                    ret = IdentityResult.Success;
                     break;
                 case SignInStatus.LockedOut:
                     ret = new IdentityResult("Locked out.");
