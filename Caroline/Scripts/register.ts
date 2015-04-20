@@ -175,6 +175,7 @@ module Account {
         highscoresLink.addEventListener('click', function () {
             leaderboardsModal();
         });
+        highscoresLink.style.cursor = 'pointer';
         document.getElementsByClassName('header-links')[0].appendChild(highscoresLink);
 
         info();

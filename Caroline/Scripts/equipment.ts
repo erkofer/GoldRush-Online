@@ -51,7 +51,6 @@
     export function toggleGatherer(id: number, enabled: boolean) {
         var gatherer = gatherers[id];
         if (!gatherer) return;
-        console.log(enabled);
         gatherer.enabled = enabled;
         gatherer.toggleElm.textContent = enabled ? 'Disable' : 'Enable';
     }

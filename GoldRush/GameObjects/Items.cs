@@ -39,7 +39,6 @@ namespace GoldRush
 
             /*foreach (var item in items)
                 item.Quantity = 100;*/
-            Coins.Quantity = 5000000000;
 
         }
         private List<Item> items = new List<Item>();

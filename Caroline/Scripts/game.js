@@ -130,1085 +130,6 @@
     }
     Utils.convertServerTimeToLocal = convertServerTimeToLocal;
 })(Utils || (Utils = {}));
-var modal;
-(function (modal) {
-    var timeOpened = 0;
-    var modalPane;
-    modal.activeWindow;
-    modal.intervalIdentifier;
-
-    function hide() {
-        if (modal.activeWindow) {
-            modal.activeWindow.hide();
-        }
-        modal.activeWindow = null;
-    }
-    modal.hide = hide;
-
-    function close() {
-        if (modal.activeWindow) {
-            var a = modal.activeWindow;
-            hide();
-            a.container.parentNode.removeChild(a.container);
-        }
-    }
-    modal.close = close;
-
-    var Window = (function () {
-        function Window() {
-            this.container = document.createElement("div");
-            this.container.addEventListener("click", function (e) {
-                e.stopPropagation();
-            }, false);
-            this.container.classList.add("modal-window");
-            if (!modalPane) {
-                var pane = document.createElement("div");
-                modalPane = pane;
-                pane.classList.add("modal-wrapper");
-                pane.addEventListener("click", function (e) {
-                    e.stopPropagation();
-                    if ((Date.now() - timeOpened) > 3000)
-                        modal.close();
-                }, false);
-                document.body.appendChild(pane);
-            }
-            modalPane.appendChild(this.container);
-
-            this.titleEl = document.createElement("div");
-            this.titleEl.classList.add("modal-header");
-            this.bodyEl = document.createElement("div");
-
-            this.container.appendChild(this.titleEl);
-            this.container.appendChild(this.bodyEl);
-        }
-        Object.defineProperty(Window.prototype, "title", {
-            get: function () {
-                return this._title;
-            },
-            set: function (s) {
-                this._title = s;
-                this.titleEl.textContent = this._title;
-            },
-            enumerable: true,
-            configurable: true
-        });
-
-        Window.prototype.addElement = function (el) {
-            this.bodyEl.appendChild(el);
-        };
-
-        // intended for the bottom bar of controls.
-        Window.prototype.addOption = function (opt) {
-            if (!this.options) {
-                this.options = document.createElement("div");
-                this.options.classList.add("modal-options");
-                this.container.appendChild(this.options);
-            }
-            var optionContainer = document.createElement("span");
-            optionContainer.classList.add("modal-option");
-
-            var option = document.createElement("span");
-            option.textContent = opt;
-
-            optionContainer.appendChild(option);
-            this.options.appendChild(optionContainer);
-            return optionContainer;
-        };
-
-        Window.prototype.addAffirmativeOption = function (opt) {
-            var option = this.addOption(opt);
-            option.classList.add("affirmative");
-            return option;
-        };
-
-        Window.prototype.addNegativeOption = function (opt) {
-            var option = this.addOption(opt);
-            option.classList.add("negative");
-            return option;
-        };
-
-        Window.prototype.show = function () {
-            if (!this.container.classList.contains("opened"))
-                this.container.classList.add("opened");
-            if (!modalPane.classList.contains("opened"))
-                modalPane.classList.add("opened");
-            modal.activeWindow = this;
-            updatePosition();
-            modal.intervalIdentifier = setInterval(updatePosition, 100);
-            timeOpened = Date.now();
-        };
-
-        Window.prototype.hide = function () {
-            if (this.container.classList.contains("opened"))
-                this.container.classList.remove("opened");
-            if (modalPane.classList.contains("opened"))
-                modalPane.classList.remove("opened");
-        };
-        return Window;
-    })();
-    modal.Window = Window;
-
-    function updatePosition() {
-        if (!modal.activeWindow) {
-            clearInterval(modal.intervalIdentifier);
-        } else {
-            var containerDimensions = modal.activeWindow.container.getBoundingClientRect();
-            modal.activeWindow.container.style.left = (window.innerWidth / 2) - ((containerDimensions.right - containerDimensions.left) / 2) + "px";
-            modal.activeWindow.container.style.top = (window.innerHeight / 2) - ((containerDimensions.bottom - containerDimensions.top) / 2) + "px";
-        }
-    }
-})(modal || (modal = {}));
-var Objects;
-(function (Objects) {
-    var gameobjects = new Array();
-
-    var GameObject = (function () {
-        function GameObject() {
-            this.quantity = 0;
-        }
-        return GameObject;
-    })();
-
-    function register(id, name) {
-        if (!gameobjects[id]) {
-            var gameobject = new GameObject();
-            gameobject.name = name;
-
-            gameobjects[id] = gameobject;
-        }
-    }
-    Objects.register = register;
-
-    function lookupName(id) {
-        return gameobjects[id].name;
-    }
-    Objects.lookupName = lookupName;
-
-    function setQuantity(id, quantity) {
-        gameobjects[id].quantity = quantity;
-    }
-    Objects.setQuantity = setQuantity;
-
-    function getQuantity(id) {
-        return gameobjects[id].quantity;
-    }
-    Objects.getQuantity = getQuantity;
-
-    function setMaxQuantity(id, maxQuantity) {
-        gameobjects[id].maxQuantity = maxQuantity;
-    }
-    Objects.setMaxQuantity = setMaxQuantity;
-
-    function getMaxQuantity(id) {
-        return gameobjects[id].maxQuantity;
-    }
-    Objects.getMaxQuantity = getMaxQuantity;
-
-    function setLifeTimeTotal(id, quantity) {
-        gameobjects[id].lifeTimeTotal = quantity;
-    }
-    Objects.setLifeTimeTotal = setLifeTimeTotal;
-
-    function getLifeTimeTotal(id) {
-        return gameobjects[id].lifeTimeTotal;
-    }
-    Objects.getLifeTimeTotal = getLifeTimeTotal;
-
-    function setTooltip(id, tooltip) {
-        gameobjects[id].tooltip = tooltip;
-    }
-    Objects.setTooltip = setTooltip;
-    function getTooltip(id) {
-        return gameobjects[id].tooltip;
-    }
-    Objects.getTooltip = getTooltip;
-})(Objects || (Objects = {}));
-/// <reference path="typings/jquery/jquery.d.ts"/>
-var Account;
-(function (Account) {
-    var container;
-    var userButton;
-    var userSpan;
-    var contextMenu;
-
-    var registrationErrors;
-    var loginErrors;
-
-    var mouseTimeout;
-
-    var LeaderboardAjaxService = (function () {
-        function LeaderboardAjaxService() {
-        }
-        LeaderboardAjaxService.prototype.failed = function (request) {
-            this.resultsElement.textContent = 'Loading failed...';
-        };
-
-        LeaderboardAjaxService.prototype.succeeded = function (request) {
-            while (this.resultsElement.firstChild)
-                this.resultsElement.removeChild(this.resultsElement.firstChild);
-
-            var leaderboardTable = document.createElement('table');
-            var thead = leaderboardTable.createTHead();
-            var subheader = thead.insertRow(0);
-            subheader.classList.add('table-subheader');
-
-            var score = subheader.insertCell(0);
-            score.textContent = 'Score';
-            score.style.width = '65%';
-            var player = subheader.insertCell(0);
-            player.textContent = 'Name';
-            player.style.width = '25%';
-            var rank = subheader.insertCell(0);
-            rank.textContent = 'Rank';
-            rank.style.width = '10%';
-
-            var tbody = leaderboardTable.createTBody();
-
-            for (var i = 0; i < request.length; i++) {
-                var leaderboardEntry = request[i];
-                console.log(leaderboardEntry);
-
-                var row = tbody.insertRow(tbody.rows.length);
-                row.classList.add('table-row');
-
-                var rScore = row.insertCell(0);
-                rScore.textContent = Utils.formatNumber(leaderboardEntry.Score);
-                rScore.style.width = '65%';
-                rScore.addEventListener('click', function (event) {
-                    var score;
-                    var cell = event.target;
-
-                    if (cell.dataset) {
-                        score = cell.dataset['tooltip'];
-                    } else {
-                        score = cell.getAttribute('data-tooltip');
-                    }
-
-                    if (cell.textContent.indexOf(',') > 0) {
-                        cell.textContent = Utils.formatNumber(score);
-                    } else {
-                        cell.textContent = Utils.formatNumber(score, true);
-                    }
-                });
-
-                if (rScore.dataset) {
-                    rScore.dataset['tooltip'] = leaderboardEntry.Score;
-                } else {
-                    rScore.setAttribute('data-tooltip', leaderboardEntry.Score.toString());
-                }
-
-                var rPlayer = row.insertCell(0);
-                rPlayer.textContent = leaderboardEntry.UserId;
-                player.style.width = '25%';
-                var rRank = row.insertCell(0);
-                rRank.textContent = Utils.formatNumber(leaderboardEntry.Rank);
-                rRank.style.width = '10%';
-            }
-            this.resultsElement.appendChild(leaderboardTable);
-        };
-
-        LeaderboardAjaxService.prototype.sendRequest = function (lowerbound, upperbound) {
-            var self = this;
-
-            var request = $.ajax({
-                asyn: true,
-                type: 'POST',
-                url: '/Api/Stats/LeaderBoard/',
-                data: $.param({ Lower: lowerbound, Upper: upperbound }),
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                success: function (request) {
-                    request = JSON.parse(request);
-                    self.succeeded(request);
-                },
-                failure: function (request) {
-                    self.failed(request);
-                }
-            });
-        };
-        return LeaderboardAjaxService;
-    })();
-
-    function draw() {
-        container = document.createElement('DIV');
-        container.classList.add('account-manager');
-        container.classList.add('closed');
-
-        container.onmouseenter = function () {
-            clearTimeout(mouseTimeout);
-        };
-
-        container.onmouseleave = function () {
-            mouseTimeout = setTimeout(hideMenu, 250);
-        };
-
-        // Anon stuff.
-        var loginButton = document.createElement('DIV');
-        loginButton.textContent = 'Sign in';
-        loginButton.classList.add('account-option');
-        loginButton.classList.add('anonymous-account-option');
-        loginButton.addEventListener('click', function () {
-            loginModal();
-        });
-        container.appendChild(loginButton);
-
-        var registerButton = document.createElement('DIV');
-        registerButton.textContent = 'Register';
-        registerButton.classList.add('account-option');
-        registerButton.classList.add('anonymous-account-option');
-        registerButton.addEventListener('click', function () {
-            registerModal();
-        });
-        container.appendChild(registerButton);
-
-        // Registered stuff.
-        var optionsButton = document.createElement('DIV');
-        optionsButton.textContent = 'Options';
-        optionsButton.classList.add('account-option');
-        optionsButton.classList.add('registered-account-option');
-        container.appendChild(optionsButton);
-
-        var logoffButton = document.createElement('DIV');
-        logoffButton.textContent = 'Sign out';
-        logoffButton.classList.add('account-option');
-        logoffButton.classList.add('registered-account-option');
-        logoffButton.addEventListener('click', function () {
-            logoff();
-        });
-        container.appendChild(logoffButton);
-
-        userButton = document.createElement('DIV');
-        userButton.classList.add('account-user');
-        userSpan = document.createElement('SPAN');
-        userButton.appendChild(userSpan);
-        container.appendChild(userButton);
-
-        document.body.appendChild(container);
-        userButton.addEventListener('click', function () {
-            toggleMenu();
-        });
-
-        var highscoresLink = document.createElement('SPAN');
-        highscoresLink.textContent = 'Leaderboards';
-        highscoresLink.addEventListener('click', function () {
-            leaderboardsModal();
-        });
-        document.getElementsByClassName('header-links')[0].appendChild(highscoresLink);
-
-        info();
-    }
-    draw();
-    function toggleMenu() {
-        if (container.classList.contains('closed'))
-            container.classList.remove('closed');
-        else
-            container.classList.add('closed');
-    }
-
-    function hideMenu() {
-        if (!container.classList.contains('closed'))
-            container.classList.add('closed');
-    }
-
-    function updateUser(name, isAnon) {
-        userSpan.textContent = isAnon ? 'Guest' : name;
-
-        // styles the container depending on the status of the account.
-        Utils.cssSwap(container, isAnon ? 'registered' : 'anonymous', isAnon ? 'anonymous' : 'registered');
-    }
-
-    function leaderboardsModal() {
-        var leaderboardModal = new modal.Window();
-        leaderboardModal.title = 'Leaderboards';
-        var leaderboardList = document.createElement('DIV');
-        leaderboardList.style.width = '400px';
-        leaderboardList.textContent = 'Loading...';
-        leaderboardModal.addElement(leaderboardList);
-
-        var leaderboardService = new LeaderboardAjaxService();
-        leaderboardService.resultsElement = leaderboardList;
-        leaderboardService.sendRequest(0, 19);
-
-        leaderboardModal.show();
-    }
-
-    function loginModal() {
-        var loginModal = new modal.Window();
-        var formControlsContainer = document.createElement('DIV');
-        formControlsContainer.style.width = '400px';
-
-        var usernameContainer = document.createElement('DIV');
-        usernameContainer.style.marginBottom = '5px';
-        var username = document.createElement("INPUT");
-        username.type = 'TEXT';
-        username.maxLength = 16;
-        username.placeholder = 'Username';
-        usernameContainer.appendChild(username);
-
-        var passwordContainer = document.createElement('DIV');
-        passwordContainer.style.marginBottom = '5px';
-        var password = document.createElement("INPUT");
-        password.type = 'PASSWORD';
-        password.pattern = ".{6,}";
-        password.placeholder = 'Password';
-        passwordContainer.appendChild(password);
-
-        var rememberMeContainer = document.createElement('DIV');
-        rememberMeContainer.style.marginBottom = '5px';
-        var rememberMe = document.createElement('INPUT');
-        rememberMe.type = 'CHECKBOX';
-        rememberMe.placeholder = 'Stay logged in on this computer?';
-        rememberMeContainer.appendChild(rememberMe);
-
-        formControlsContainer.appendChild(usernameContainer);
-        formControlsContainer.appendChild(passwordContainer);
-        formControlsContainer.appendChild(rememberMeContainer);
-
-        loginErrors = document.createElement('div');
-        loginModal.addElement(loginErrors);
-
-        loginModal.title = 'Log in';
-        loginModal.addElement(formControlsContainer);
-
-        var no = loginModal.addNegativeOption("Cancel");
-        no.addEventListener("click", function () {
-            modal.close();
-        }, false);
-        var yes = loginModal.addAffirmativeOption("Submit");
-        yes.addEventListener("click", function () {
-            login(username.value, password.value, rememberMe.checked);
-            while (loginErrors.firstChild) {
-                loginErrors.removeChild(loginErrors.firstChild);
-            }
-        }, false);
-        loginModal.show();
-    }
-
-    function registerModal() {
-        var registerModal = new modal.Window();
-        var formControlsContainer = document.createElement('DIV');
-        formControlsContainer.style.width = '400px';
-
-        var usernameContainer = document.createElement('DIV');
-        usernameContainer.style.marginBottom = '5px';
-        var username = document.createElement("INPUT");
-        username.type = 'TEXT';
-        username.maxLength = 16;
-        username.placeholder = 'Username';
-        usernameContainer.appendChild(username);
-
-        var emailContainer = document.createElement('DIV');
-        emailContainer.style.marginBottom = '5px';
-        var email = document.createElement("INPUT");
-        email.type = 'EMAIL';
-        email.placeholder = 'Email';
-        emailContainer.appendChild(email);
-
-        var passwordContainer = document.createElement('DIV');
-        passwordContainer.style.marginBottom = '5px';
-        var password = document.createElement("INPUT");
-        password.type = 'PASSWORD';
-        password.pattern = ".{6,}";
-        password.placeholder = 'Password';
-        passwordContainer.appendChild(password);
-
-        var confpassContainer = document.createElement('DIV');
-        confpassContainer.style.marginBottom = '5px';
-        var confirmPassword = document.createElement("INPUT");
-        confirmPassword.type = 'PASSWORD';
-        confirmPassword.pattern = ".{6,}";
-        confirmPassword.placeholder = 'Confirm password';
-        confpassContainer.appendChild(confirmPassword);
-        confirmPassword.onblur = function () {
-            if (password.value != confirmPassword.value)
-                confirmPassword.setCustomValidity('Passwords are not the same.');
-        };
-
-        confirmPassword.onfocus = function () {
-            confirmPassword.setCustomValidity('');
-        };
-        formControlsContainer.appendChild(usernameContainer);
-        formControlsContainer.appendChild(emailContainer);
-        formControlsContainer.appendChild(passwordContainer);
-        formControlsContainer.appendChild(confpassContainer);
-
-        registerModal.addElement(formControlsContainer);
-        registrationErrors = document.createElement('div');
-        registerModal.addElement(registrationErrors);
-
-        registerModal.title = "Register";
-
-        var no = registerModal.addNegativeOption("Cancel");
-        no.addEventListener("click", function () {
-            modal.close();
-        }, false);
-        var yes = registerModal.addAffirmativeOption("Submit");
-        yes.addEventListener("click", function () {
-            create(email.value, username.value, password.value, confirmPassword.value);
-            while (registrationErrors.firstChild) {
-                registrationErrors.removeChild(registrationErrors.firstChild);
-            }
-        }, false);
-
-        registerModal.show();
-    }
-
-    function create(email, username, password, passwordConfirmation) {
-        var request = $.ajax({
-            type: 'POST',
-            url: '/Api/Account/Register',
-            data: $.param({ Email: email, UserName: username, Password: password, ConfirmPassword: passwordConfirmation }),
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            success: function (request) {
-                request = JSON.parse(request);
-                if (request.Succeeded) {
-                    Connection.restart();
-                    info();
-                    modal.close();
-                } else {
-                    while (registrationErrors.firstChild) {
-                        registrationErrors.removeChild(registrationErrors.firstChild);
-                    }
-                    for (var i = 0; i < request.Errors.length; i++) {
-                        var errorElm = document.createElement('div');
-                        errorElm.textContent = request.Errors[i];
-                        registrationErrors.appendChild(errorElm);
-                    }
-                }
-            }
-        });
-    }
-
-    function login(email, password, rememberMe) {
-        var request = $.ajax({
-            type: 'POST',
-            url: '/Api/Account/Login',
-            data: $.param({ UserName: email, Password: password, RememberMe: rememberMe }),
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            success: function (request) {
-                request = JSON.parse(request);
-
-                if (request.Succeeded) {
-                    Connection.restart();
-                    info();
-                    modal.close();
-                } else {
-                    while (loginErrors.firstChild) {
-                        loginErrors.removeChild(loginErrors.firstChild);
-                    }
-                    for (var i = 0; i < request.Errors.length; i++) {
-                        var errorElm = document.createElement('div');
-                        errorElm.textContent = request.Errors[i];
-                        loginErrors.appendChild(errorElm);
-                    }
-                }
-            }
-        });
-    }
-
-    function logoff() {
-        var request = $.ajax({
-            type: 'POST',
-            url: '/Api/Account/LogOff',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            success: function (request) {
-                console.log(request);
-                Connection.restart();
-                info();
-                location.reload();
-            }
-        });
-    }
-
-    function info() {
-        var request = $.ajax({
-            type: 'POST',
-            url: '/Api/Account/Info',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            success: function (request) {
-                request = JSON.parse(request);
-                updateUser(request.UserName, request.Anonymous);
-            }
-        });
-    }
-    Account.info = info;
-})(Account || (Account = {}));
-var Rock;
-(function (Rock) {
-    var canvas = document.getElementById('rock');
-    var particleCanvas = document.getElementById('particles');
-    var context = canvas.getContext('2d');
-    var particleContext = particleCanvas.getContext('2d');
-    var relativeRockURL = '/Content/Rock.png';
-    var relativeStoneURL = '/Content/Stone.png';
-    var rockImage = new Image();
-    var stoneImage = new Image(16, 16);
-    var stoneLoaded = false;
-    var lastX = 0;
-    var lastY = 0;
-    var rockSize = 64;
-    var rockGrowth = 4;
-    var rockIsBig = false;
-    var mouseDown = false;
-    Rock.particles = new Array();
-
-    var Particle = (function () {
-        function Particle(x, y) {
-            this.width = 5;
-            this.height = 5;
-            this.dispose = false;
-            this.x = x;
-            this.y = y;
-            this.verticalVelocity = Utils.getRandomInt(-100, -155);
-            this.horizonalVelocity = Utils.getRandomInt(-50, 50);
-            this.width = Utils.getRandomInt(3, 6);
-            this.height = Utils.getRandomInt(3, 6);
-            this.rotation = Utils.getRandomInt(0, 180);
-            this.rotationalVelocity = Utils.getRandomInt(-75, 75);
-
-            this.lastTick = Date.now();
-        }
-        Particle.prototype.update = function () {
-            var timeSinceLastTick = Date.now() - this.lastTick;
-            this.lastTick = Date.now();
-            timeSinceLastTick /= 1000;
-
-            this.rotation += (this.rotationalVelocity * timeSinceLastTick);
-            this.y += (this.verticalVelocity * timeSinceLastTick);
-            this.x += (this.horizonalVelocity * timeSinceLastTick);
-            this.verticalVelocity += (200 * timeSinceLastTick);
-            if (this.y > 270) {
-                this.dispose = true;
-            }
-        };
-        return Particle;
-    })();
-    Rock.Particle = Particle;
-
-    function initialize() {
-        rockImage.onload = function () {
-            drawBackground();
-            console.log('rock loaded');
-        };
-        rockImage.src = relativeRockURL;
-
-        stoneImage.onload = function () {
-            stoneLoaded = true;
-        };
-        stoneImage.src = relativeStoneURL;
-
-        canvas.addEventListener('mousemove', function (e) {
-            var mousePos = getMousePos(canvas, e);
-            isOverRock(mousePos.x, mousePos.y);
-            //console.log('x: ' + mousePos.x + ' y: ' + mousePos.y);
-        }, false);
-        canvas.addEventListener('mousedown', function (e) {
-            var mousePos = getMousePos(canvas, e);
-            mouseDown = true;
-            isOverRock(mousePos.x, mousePos.y);
-            Connection.mine(mousePos.x, mousePos.y);
-        }, false);
-        canvas.addEventListener('mouseup', function (e) {
-            var mousePos = getMousePos(canvas, e);
-            mouseDown = false;
-            isOverRock(mousePos.x, mousePos.y);
-        }, false);
-        canvas.addEventListener('mouseleave', function (e) {
-            var mousePos = getMousePos(canvas, e);
-            mouseDown = false;
-            isOverRock(mousePos.x, mousePos.y);
-        }, false);
-    }
-
-    function getMousePos(canvas, evt) {
-        var rect = canvas.getBoundingClientRect();
-        return {
-            x: evt.clientX - rect.left,
-            y: evt.clientY - rect.top
-        };
-    }
-
-    var released = true;
-    function isOverRock(x, y) {
-        if (x > lastX && x < (lastX + rockSize) && y > lastY && y < (lastY + rockSize)) {
-            if (!mouseDown) {
-                drawRock(lastX - (rockGrowth / 2), lastY - (rockGrowth / 2), rockSize + rockGrowth, rockSize + rockGrowth);
-                released = true;
-            } else {
-                drawRock(lastX + (rockGrowth / 2), lastY + (rockGrowth / 2), rockSize - rockGrowth, rockSize - rockGrowth);
-                if (released)
-                    addParticles(x, y);
-                released = false;
-            }
-
-            rockIsBig = true;
-        } else if (rockIsBig) {
-            drawRock(lastX, lastY, rockSize, rockSize);
-            rockIsBig = false;
-            released = true;
-        }
-    }
-
-    function moveRock(x, y) {
-        if (x != lastX && y != lastY) {
-            lastX = x;
-            lastY = y;
-            if (stoneLoaded)
-                drawRock(x, y, rockSize, rockSize);
-            else
-                setTimeout(function () {
-                    moveRock(x, y);
-                }, 10);
-        }
-    }
-    Rock.moveRock = moveRock;
-
-    function clearCanvas() {
-        context.clearRect(0, 0, 250, 250);
-    }
-
-    function drawBackground() {
-        context.drawImage(rockImage, 0, 0);
-    }
-
-    function addParticles(x, y) {
-        var rand = Utils.getRandomInt(1, 3);
-        for (var i = 0; i < rand; i++) {
-            var xOffset = Utils.getRandomInt(-5, 5);
-            var yOffset = Utils.getRandomInt(-2, 2);
-            Rock.particles.push(new Particle(x + xOffset, y + yOffset));
-        }
-    }
-
-    var particleCache = document.createElement('canvas');
-    var cacheCtx = particleCache.getContext('2d');
-
-    function drawParticle(particle) {
-        particleCache.width = particle.width;
-        particleCache.height = particle.height;
-        cacheCtx.rect(0, 0, particle.width, particle.height);
-        cacheCtx.fillStyle = 'gray';
-        cacheCtx.fill();
-        cacheCtx.stroke();
-
-        particleContext.beginPath();
-
-        drawImageRot(particleContext, particleCache, particle.x, particle.y, particle.width, particle.height, particle.rotation);
-    }
-
-    function drawImageRot(ctx, img, x, y, width, height, deg) {
-        //Convert degrees to radian
-        var rad = deg * Math.PI / 180;
-
-        //Set the origin to the center of the image
-        ctx.translate(x + width / 2, y + height / 2);
-
-        //Rotate the canvas around the origin
-        ctx.rotate(rad);
-
-        //draw the image
-        ctx.drawImage(img, width / 2 * (-1), height / 2 * (-1), width, height);
-
-        //reset the canvas
-        ctx.rotate(rad * (-1));
-        ctx.translate((x + width / 2) * (-1), (y + height / 2) * (-1));
-    }
-
-    function updateParticles() {
-        particleContext.clearRect(0, 0, 250, 250);
-
-        for (var i = 0; i < Rock.particles.length; i++) {
-            var particle = Rock.particles[i];
-            particle.update();
-            drawParticle(particle);
-
-            if (particle.dispose) {
-                Rock.particles.splice(i, 1);
-            }
-        }
-    }
-    setInterval(updateParticles, 10);
-
-    function drawRock(x, y, xScale, yScale) {
-        clearCanvas();
-        drawBackground();
-        context.drawImage(stoneImage, x, y, xScale, yScale);
-        //context.drawImage(stoneImage, x, y);
-    }
-
-    initialize();
-})(Rock || (Rock = {}));
-var Tabs;
-(function (Tabs) {
-    var lowestTabContainerId = 0;
-    var tabContainer = document.getElementById("paneContainer");
-    Tabs.bottomPadding = 200;
-    var tabContainers = new Array();
-    var selectedTab;
-
-    var TabContainer = (function () {
-        function TabContainer(container) {
-            this.container = container;
-            this.tabs = new Array();
-            this.lowestId = 0;
-            this.id = lowestTabContainerId++;
-            tabContainers.push(this);
-        }
-        TabContainer.prototype.newTab = function (pane) {
-            var tab = new Tab();
-            tab.pane = pane;
-            var button = document.createElement('DIV');
-            button.classList.add('tab-button');
-            this.container.appendChild(button);
-            tab.button = button;
-
-            if (this.lowestId == 0) {
-                tab.activate();
-            } else {
-                tab.deactivate();
-            }
-
-            // IDs are incremented here. to get their initial value we must subtract.
-            var id = this.lowestId++;
-            var contId = this.id;
-
-            button.addEventListener('click', function () {
-                Tabs.activateTab(contId, id);
-            });
-
-            this.tabs.push(tab);
-            this.container.appendChild(button);
-
-            return this.lowestId - 1;
-        };
-
-        TabContainer.prototype.activate = function (id) {
-            for (var i = 0; i < this.tabs.length; i++) {
-                this.tabs[i].deactivate();
-            }
-            this.tabs[id].activate();
-        };
-
-        TabContainer.prototype.css = function (id, className) {
-            this.tabs[id].button.classList.add(className);
-        };
-        return TabContainer;
-    })();
-
-    var gameTabs = new TabContainer(document.getElementById('tabContainer'));
-
-    function registerGameTab(pane, css) {
-        var id = gameTabs.newTab(pane);
-        if (css)
-            gameTabs.css(id, css);
-    }
-    Tabs.registerGameTab = registerGameTab;
-
-    function updateGameTabs() {
-        if (selectedTab) {
-            var height = selectedTab.scrollHeight;
-            if (height > window.innerHeight - Tabs.bottomPadding) {
-                height = window.innerHeight - Tabs.bottomPadding;
-            }
-            tabContainer.style.minHeight = height + 'px';
-            tabContainer.style.maxHeight = height + 'px';
-            tabContainer.style.overflowY = height >= window.innerHeight - Tabs.bottomPadding ? 'scroll' : 'hidden';
-        }
-    }
-    Tabs.updateGameTabs = updateGameTabs;
-
-    Utils.addEvent(window, 'resize', Tabs.updateGameTabs);
-    setInterval(updateGameTabs, 20);
-
-    function activateTab(containerId, tabId) {
-        tabContainers[containerId].activate(tabId);
-        updateGameTabs();
-    }
-    Tabs.activateTab = activateTab;
-
-    var Tab = (function () {
-        function Tab() {
-        }
-        Tab.prototype.deactivate = function () {
-            Utils.cssSwap(this.button, 'active', 'inactive');
-            this.pane.style.display = 'none';
-            this.pane.style.overflow = 'hidden';
-        };
-
-        Tab.prototype.activate = function () {
-            Utils.cssSwap(this.button, 'inactive', 'active');
-            this.pane.style.display = 'block';
-            this.pane.style.overflow = 'visible';
-            selectedTab = this.pane;
-        };
-        return Tab;
-    })();
-})(Tabs || (Tabs = {}));
-//<reference path="connection.ts"/>
-var Chat;
-(function (Chat) {
-    var chatWindow;
-    var chatLogContainer;
-    var debugLogContainer;
-    function initialize() {
-        if (!chatWindow) {
-            chatWindow = document.createElement('DIV');
-            chatWindow.classList.add('chat-window');
-            chatWindow.classList.add('social');
-            chatWindow.id = 'chatWindow';
-
-            chatWindow.style.backgroundColor = '#ebebeb';
-            chatWindow.style.border = '1px solid #adadad';
-
-            var chatHeader = document.createElement('DIV');
-            chatHeader.classList.add('chat-header');
-
-            chatHeader.style.backgroundColor = 'rgb(160, 160, 160)';
-            chatWindow.appendChild(chatHeader);
-
-            var chatCloser = document.createElement('DIV');
-            chatCloser.textContent = '_';
-            chatCloser.style.position = 'absolute';
-            chatCloser.style.top = '0';
-            chatCloser.style.right = '0';
-            chatCloser.addEventListener('click', function () {
-                if (chatWindow.classList.contains('closed')) {
-                    chatWindow.classList.remove('closed');
-                    chatCloser.textContent = '_';
-                } else {
-                    chatWindow.classList.add('closed');
-                    chatCloser.textContent = '+';
-                }
-            });
-            chatHeader.appendChild(chatCloser);
-
-            var chatRoomTab = document.createElement('DIV');
-            chatRoomTab.classList.add('chat-room-tab');
-            chatRoomTab.textContent = 'General';
-            chatRoomTab.addEventListener('click', function () {
-                document.getElementById('debugpane').style.display = 'none';
-                document.getElementById('chatpane').style.display = 'block';
-            });
-            chatHeader.appendChild(chatRoomTab);
-
-            var debugTab = document.createElement('DIV');
-            debugTab.classList.add('chat-room-tab');
-            debugTab.textContent = '>Dev';
-            debugTab.addEventListener('click', function () {
-                document.getElementById('debugpane').style.display = 'block';
-                document.getElementById('chatpane').style.display = 'none';
-            });
-            debugTab.style.display = 'none';
-            chatHeader.appendChild(debugTab);
-
-            debugLogContainer = document.createElement('DIV');
-            debugLogContainer.id = 'debugpane';
-            debugLogContainer.classList.add('chat-room');
-            debugLogContainer.style.display = 'none';
-            chatWindow.appendChild(debugLogContainer);
-
-            chatLogContainer = document.createElement('DIV');
-            chatLogContainer.id = 'chatpane';
-            chatLogContainer.classList.add('chat-room');
-            chatWindow.appendChild(chatLogContainer);
-
-            var debugLog = document.createElement('DIV');
-            debugLog.id = 'debuglog';
-            debugLog.classList.add('chat-room-content');
-            debugLogContainer.appendChild(debugLog);
-
-            var chatLog = document.createElement('DIV');
-            chatLog.id = 'chatlog';
-            chatLog.classList.add('chat-room-content');
-            chatLogContainer.appendChild(chatLog);
-
-            var chatSendingContainer = document.createElement('DIV');
-
-            var chatInputContainer = document.createElement('DIV');
-            chatInputContainer.classList.add('chat-textbox-container');
-
-            var chatInput = document.createElement('INPUT');
-            chatInput.setAttribute('TYPE', 'TEXT');
-            chatInput.classList.add('chat-textbox');
-            chatInput.style.borderTop = '1px solid #adadad';
-            chatInput.setAttribute('maxlength', '220');
-            chatInput.addEventListener('keydown', function (e) {
-                if (e.keyCode == 13)
-                    sendGlobalMessagePress();
-
-                if (e.keyCode == 68 && e.altKey)
-                    document.getElementById('debugtab').style.display = 'inline-block';
-            });
-            chatInput.id = 'chattext';
-            chatInputContainer.appendChild(chatInput);
-            chatSendingContainer.appendChild(chatInputContainer);
-
-            var chatSendContainer = document.createElement('DIV');
-            chatSendContainer.classList.add('chat-submit-container');
-
-            var chatSend = document.createElement('INPUT');
-            chatSend.setAttribute('TYPE', 'BUTTON');
-            chatSend.setAttribute('VALUE', 'SEND');
-            chatSend.classList.add('chat-submit');
-            chatSend.style.borderTop = '1px solid #adadad';
-            chatSend.style.borderLeft = '1px solid #adadad';
-            chatSend.addEventListener('click', function () {
-                sendGlobalMessagePress();
-            });
-            chatSendContainer.appendChild(chatSend);
-            chatSendingContainer.appendChild(chatSendContainer);
-            chatWindow.appendChild(chatSendingContainer);
-
-            document.body.appendChild(chatWindow);
-        }
-    }
-    Chat.initialize = initialize;
-    initialize();
-
-    function sendGlobalMessagePress() {
-        Connection.sendGlobalMessage(document.getElementById('chattext').value);
-        document.getElementById('chattext').value = '';
-    }
-
-    function log(message) {
-        var debugLog = document.getElementById('debuglog');
-        var debugItem = document.createElement('DIV');
-        debugItem.textContent = message;
-        debugLog.appendChild(debugItem);
-    }
-    Chat.log = log;
-
-    function receiveGlobalMessage(sender, message, time, perms) {
-        var chatLog = document.getElementById('chatlog');
-
-        var difference = chatLog.scrollTop - (chatLog.scrollHeight - chatLog.offsetHeight);
-        var scrolledDown = Math.abs(difference) < 5;
-
-        var chatItem = document.createElement('DIV');
-        chatItem.classList.add('chat-msg');
-        if (perms && perms != '')
-            chatItem.classList.add('chat-' + perms);
-        var timeSpan = document.createElement('SPAN');
-        timeSpan.textContent = '[' + Utils.convertServerTimeToLocal(time) + '] ';
-        var nameSpan = document.createElement('SPAN');
-        nameSpan.textContent = sender;
-        nameSpan.classList.add('chat-sender');
-        var messageSpan = document.createElement('SPAN');
-        messageSpan.textContent = message;
-        messageSpan.classList.add('chat-text');
-        var dividerSpan = document.createElement('SPAN');
-        dividerSpan.textContent = ': ';
-        chatItem.appendChild(timeSpan);
-        chatItem.appendChild(nameSpan);
-        chatItem.appendChild(dividerSpan);
-        chatItem.appendChild(messageSpan);
-
-        chatLog.appendChild(chatItem);
-
-        if (scrolledDown)
-            chatLog.scrollTop = chatLog.scrollHeight;
-    }
-    Chat.receiveGlobalMessage = receiveGlobalMessage;
-})(Chat || (Chat = {}));
 var tooltip;
 (function (_tooltip) {
     var registeredTooltips = 0;
@@ -1395,6 +316,343 @@ var tooltip;
         }
     }
 })(tooltip || (tooltip = {}));
+//<reference path="connection.ts"/>
+var Chat;
+(function (Chat) {
+    var chatWindow;
+    var chatLogContainer;
+    var debugLogContainer;
+    function initialize() {
+        if (!chatWindow) {
+            chatWindow = document.createElement('DIV');
+            chatWindow.classList.add('chat-window');
+            chatWindow.classList.add('social');
+            chatWindow.id = 'chatWindow';
+
+            chatWindow.style.backgroundColor = '#ebebeb';
+            chatWindow.style.border = '1px solid #adadad';
+
+            var chatHeader = document.createElement('DIV');
+            chatHeader.classList.add('chat-header');
+
+            chatHeader.style.backgroundColor = 'rgb(160, 160, 160)';
+            chatWindow.appendChild(chatHeader);
+
+            var chatCloser = document.createElement('DIV');
+            chatCloser.textContent = '_';
+            chatCloser.style.position = 'absolute';
+            chatCloser.style.top = '0';
+            chatCloser.style.right = '0';
+            chatCloser.addEventListener('click', function () {
+                if (chatWindow.classList.contains('closed')) {
+                    chatWindow.classList.remove('closed');
+                    chatCloser.textContent = '_';
+                } else {
+                    chatWindow.classList.add('closed');
+                    chatCloser.textContent = '+';
+                }
+            });
+            chatHeader.appendChild(chatCloser);
+
+            var chatRoomTab = document.createElement('DIV');
+            chatRoomTab.classList.add('chat-room-tab');
+            chatRoomTab.textContent = 'General';
+            chatRoomTab.addEventListener('click', function () {
+                document.getElementById('debugpane').style.display = 'none';
+                document.getElementById('chatpane').style.display = 'block';
+            });
+            chatHeader.appendChild(chatRoomTab);
+
+            var debugTab = document.createElement('DIV');
+            debugTab.classList.add('chat-room-tab');
+            debugTab.textContent = '>Dev';
+            debugTab.addEventListener('click', function () {
+                document.getElementById('debugpane').style.display = 'block';
+                document.getElementById('chatpane').style.display = 'none';
+            });
+            debugTab.style.display = 'none';
+            chatHeader.appendChild(debugTab);
+
+            debugLogContainer = document.createElement('DIV');
+            debugLogContainer.id = 'debugpane';
+            debugLogContainer.classList.add('chat-room');
+            debugLogContainer.style.display = 'none';
+            chatWindow.appendChild(debugLogContainer);
+
+            chatLogContainer = document.createElement('DIV');
+            chatLogContainer.id = 'chatpane';
+            chatLogContainer.classList.add('chat-room');
+            chatWindow.appendChild(chatLogContainer);
+
+            var debugLog = document.createElement('DIV');
+            debugLog.id = 'debuglog';
+            debugLog.classList.add('chat-room-content');
+            debugLogContainer.appendChild(debugLog);
+
+            var chatLog = document.createElement('DIV');
+            chatLog.id = 'chatlog';
+            chatLog.classList.add('chat-room-content');
+            chatLogContainer.appendChild(chatLog);
+
+            var chatSendingContainer = document.createElement('DIV');
+
+            var chatInputContainer = document.createElement('DIV');
+            chatInputContainer.classList.add('chat-textbox-container');
+
+            var chatInput = document.createElement('INPUT');
+            chatInput.setAttribute('TYPE', 'TEXT');
+            chatInput.classList.add('chat-textbox');
+            chatInput.style.borderTop = '1px solid #adadad';
+            chatInput.setAttribute('maxlength', '220');
+            chatInput.addEventListener('keydown', function (e) {
+                if (e.keyCode == 13)
+                    sendGlobalMessagePress();
+
+                if (e.keyCode == 68 && e.altKey)
+                    document.getElementById('debugtab').style.display = 'inline-block';
+            });
+            chatInput.id = 'chattext';
+            chatInputContainer.appendChild(chatInput);
+            chatSendingContainer.appendChild(chatInputContainer);
+
+            var chatSendContainer = document.createElement('DIV');
+            chatSendContainer.classList.add('chat-submit-container');
+
+            var chatSend = document.createElement('INPUT');
+            chatSend.setAttribute('TYPE', 'BUTTON');
+            chatSend.setAttribute('VALUE', 'SEND');
+            chatSend.classList.add('chat-submit');
+            chatSend.style.borderTop = '1px solid #adadad';
+            chatSend.style.borderLeft = '1px solid #adadad';
+            chatSend.addEventListener('click', function () {
+                sendGlobalMessagePress();
+            });
+            chatSendContainer.appendChild(chatSend);
+            chatSendingContainer.appendChild(chatSendContainer);
+            chatWindow.appendChild(chatSendingContainer);
+
+            document.body.appendChild(chatWindow);
+        }
+    }
+    Chat.initialize = initialize;
+    initialize();
+
+    function sendGlobalMessagePress() {
+        Connection.sendGlobalMessage(document.getElementById('chattext').value);
+        document.getElementById('chattext').value = '';
+    }
+
+    function log(message) {
+        var debugLog = document.getElementById('debuglog');
+        var debugItem = document.createElement('DIV');
+        debugItem.textContent = message;
+        debugLog.appendChild(debugItem);
+    }
+    Chat.log = log;
+
+    function receiveGlobalMessage(sender, message, time, perms) {
+        var chatLog = document.getElementById('chatlog');
+
+        var difference = chatLog.scrollTop - (chatLog.scrollHeight - chatLog.offsetHeight);
+        var scrolledDown = Math.abs(difference) < 5;
+
+        var chatItem = document.createElement('DIV');
+        chatItem.classList.add('chat-msg');
+        if (perms && perms != '')
+            chatItem.classList.add('chat-' + perms);
+        var timeSpan = document.createElement('SPAN');
+        timeSpan.textContent = '[' + Utils.convertServerTimeToLocal(time) + '] ';
+        var nameSpan = document.createElement('SPAN');
+        nameSpan.textContent = sender;
+        nameSpan.classList.add('chat-sender');
+        var messageSpan = document.createElement('SPAN');
+        messageSpan.textContent = message;
+        messageSpan.classList.add('chat-text');
+        var dividerSpan = document.createElement('SPAN');
+        dividerSpan.textContent = ': ';
+        chatItem.appendChild(timeSpan);
+        chatItem.appendChild(nameSpan);
+        chatItem.appendChild(dividerSpan);
+        chatItem.appendChild(messageSpan);
+
+        chatLog.appendChild(chatItem);
+
+        if (scrolledDown)
+            chatLog.scrollTop = chatLog.scrollHeight;
+    }
+    Chat.receiveGlobalMessage = receiveGlobalMessage;
+})(Chat || (Chat = {}));
+var Tabs;
+(function (Tabs) {
+    var lowestTabContainerId = 0;
+    var tabContainer = document.getElementById("paneContainer");
+    Tabs.bottomPadding = 200;
+    var tabContainers = new Array();
+    var selectedTab;
+
+    var TabContainer = (function () {
+        function TabContainer(container) {
+            this.container = container;
+            this.tabs = new Array();
+            this.lowestId = 0;
+            this.id = lowestTabContainerId++;
+            tabContainers.push(this);
+        }
+        TabContainer.prototype.newTab = function (pane) {
+            var tab = new Tab();
+            tab.pane = pane;
+            var button = document.createElement('DIV');
+            button.classList.add('tab-button');
+            this.container.appendChild(button);
+            tab.button = button;
+
+            if (this.lowestId == 0) {
+                tab.activate();
+            } else {
+                tab.deactivate();
+            }
+
+            // IDs are incremented here. to get their initial value we must subtract.
+            var id = this.lowestId++;
+            var contId = this.id;
+
+            button.addEventListener('click', function () {
+                Tabs.activateTab(contId, id);
+            });
+
+            this.tabs.push(tab);
+            this.container.appendChild(button);
+
+            return this.lowestId - 1;
+        };
+
+        TabContainer.prototype.activate = function (id) {
+            for (var i = 0; i < this.tabs.length; i++) {
+                this.tabs[i].deactivate();
+            }
+            this.tabs[id].activate();
+        };
+
+        TabContainer.prototype.css = function (id, className) {
+            this.tabs[id].button.classList.add(className);
+        };
+        return TabContainer;
+    })();
+
+    var gameTabs = new TabContainer(document.getElementById('tabContainer'));
+
+    function registerGameTab(pane, css) {
+        var id = gameTabs.newTab(pane);
+        if (css)
+            gameTabs.css(id, css);
+    }
+    Tabs.registerGameTab = registerGameTab;
+
+    function updateGameTabs() {
+        if (selectedTab) {
+            var height = selectedTab.scrollHeight;
+            if (height > window.innerHeight - Tabs.bottomPadding) {
+                height = window.innerHeight - Tabs.bottomPadding;
+            }
+            tabContainer.style.minHeight = height + 'px';
+            tabContainer.style.maxHeight = height + 'px';
+            tabContainer.style.overflowY = height >= window.innerHeight - Tabs.bottomPadding ? 'scroll' : 'hidden';
+        }
+    }
+    Tabs.updateGameTabs = updateGameTabs;
+
+    Utils.addEvent(window, 'resize', Tabs.updateGameTabs);
+    setInterval(updateGameTabs, 20);
+
+    function activateTab(containerId, tabId) {
+        tabContainers[containerId].activate(tabId);
+        updateGameTabs();
+    }
+    Tabs.activateTab = activateTab;
+
+    var Tab = (function () {
+        function Tab() {
+        }
+        Tab.prototype.deactivate = function () {
+            Utils.cssSwap(this.button, 'active', 'inactive');
+            this.pane.style.display = 'none';
+            this.pane.style.overflow = 'hidden';
+        };
+
+        Tab.prototype.activate = function () {
+            Utils.cssSwap(this.button, 'inactive', 'active');
+            this.pane.style.display = 'block';
+            this.pane.style.overflow = 'visible';
+            selectedTab = this.pane;
+        };
+        return Tab;
+    })();
+})(Tabs || (Tabs = {}));
+var Objects;
+(function (Objects) {
+    var gameobjects = new Array();
+
+    var GameObject = (function () {
+        function GameObject() {
+            this.quantity = 0;
+        }
+        return GameObject;
+    })();
+
+    function register(id, name) {
+        if (!gameobjects[id]) {
+            var gameobject = new GameObject();
+            gameobject.name = name;
+
+            gameobjects[id] = gameobject;
+        }
+    }
+    Objects.register = register;
+
+    function lookupName(id) {
+        return gameobjects[id].name;
+    }
+    Objects.lookupName = lookupName;
+
+    function setQuantity(id, quantity) {
+        gameobjects[id].quantity = quantity;
+    }
+    Objects.setQuantity = setQuantity;
+
+    function getQuantity(id) {
+        return gameobjects[id].quantity;
+    }
+    Objects.getQuantity = getQuantity;
+
+    function setMaxQuantity(id, maxQuantity) {
+        gameobjects[id].maxQuantity = maxQuantity;
+    }
+    Objects.setMaxQuantity = setMaxQuantity;
+
+    function getMaxQuantity(id) {
+        return gameobjects[id].maxQuantity;
+    }
+    Objects.getMaxQuantity = getMaxQuantity;
+
+    function setLifeTimeTotal(id, quantity) {
+        gameobjects[id].lifeTimeTotal = quantity;
+    }
+    Objects.setLifeTimeTotal = setLifeTimeTotal;
+
+    function getLifeTimeTotal(id) {
+        return gameobjects[id].lifeTimeTotal;
+    }
+    Objects.getLifeTimeTotal = getLifeTimeTotal;
+
+    function setTooltip(id, tooltip) {
+        gameobjects[id].tooltip = tooltip;
+    }
+    Objects.setTooltip = setTooltip;
+    function getTooltip(id) {
+        return gameobjects[id].tooltip;
+    }
+    Objects.getTooltip = getTooltip;
+})(Objects || (Objects = {}));
 ///<reference path="utils.ts"/>
 ///<reference path="tooltip.ts"/>
 ///<reference path="tabs.ts"/>
@@ -1830,502 +1088,92 @@ var Inventory;
     }
     Inventory.update = update;
 })(Inventory || (Inventory = {}));
-///<reference path="chat.ts"/>
-///<reference path="inventory.ts"/>
-var Connection;
-(function (Connection) {
-    var conInterval;
-    var disconInterval;
-    var notificationElm;
-    var networkErrorElm;
-    var rateLimitedElm;
-
-    function init() {
-        notificationElm = document.createElement('div');
-        notificationElm.classList.add('error-notification-tray');
-        notificationElm.style.display = 'none';
-
-        networkErrorElm = document.createElement('div');
-        networkErrorElm.classList.add('network-error');
-        var networkErrorText = document.createElement('div');
-        networkErrorText.classList.add('network-error-text');
-        networkErrorText.textContent = 'No connection';
-        networkErrorElm.appendChild(networkErrorText);
-
-        rateLimitedElm = document.createElement('div');
-        rateLimitedElm.classList.add('rate-limited');
-        var rateLimitText = document.createElement('div');
-        rateLimitText.classList.add('network-error-text');
-        rateLimitText.textContent = 'You have exceeded your allotted requests';
-        rateLimitedElm.appendChild(rateLimitText);
-
-        var game = document.getElementById('game');
-        notificationElm.appendChild(networkErrorElm);
-        notificationElm.appendChild(rateLimitedElm);
-        game.insertBefore(notificationElm, game.childNodes[0]);
-    }
-    init();
-
-    Komodo.connection.received(function (msg) {
-        Chat.log("Recieved " + roughSizeOfObject(msg) + " bytes from komodo.");
-        Chat.log("Encoded: ");
-        Chat.log(msg);
-        Chat.log("Decoded: ");
-        Chat.log(JSON.stringify(Komodo.decode(msg)));
-        Chat.log(roughSizeOfObject(JSON.stringify(Komodo.decode(msg))) - roughSizeOfObject(msg) + " bytes saved.");
-        msg = Komodo.decode(msg);
-
-        // CHAT MESSAGES
-        if (msg.Messages != null) {
-            receiveGlobalMessages(msg.Messages);
+var Statistics;
+(function (Statistics) {
+    var statsPane;
+    var itemsBody;
+    var items = new Array();
+    var Item = (function () {
+        function Item() {
         }
-
-        // GAME SCHEMA
-        if (msg.GameSchema != null) {
-            loadSchema(msg.GameSchema);
-        }
-
-        // INVENTORY UPDATES
-        if (msg.Items != null) {
-            updateInventory(msg.Items);
-        }
-
-        // STORE UPDATES
-        if (msg.StoreItemsUpdate != null) {
-            updateStore(msg.StoreItemsUpdate);
-        }
-        if (msg.StatItemsUpdate != null) {
-            updateStats(msg.StatItemsUpdate);
-        }
-        if (msg.ConfigItems != null) {
-            updateInventoryConfigurations(msg.ConfigItems);
-        }
-
-        // PROCESSOR UPDATES
-        if (msg.Processors != null) {
-            updateProcessors(msg.Processors);
-        }
-
-        // Anti cheat
-        if (msg.AntiCheatCoordinates != null) {
-            antiCheat(msg.AntiCheatCoordinates);
-        }
-
-        // Buffs
-        if (msg.Buffs != null) {
-            updateBuffs(msg.Buffs);
-        }
-        if (msg.IsRateLimited != null) {
-            rateLimit(msg.IsRateLimited);
-        }
-        if (msg.Gatherers != null) {
-            updateGatherers(msg.Gatherers);
-        }
-    });
-
-    function restart() {
-        Komodo.restart();
-    }
-    Connection.restart = restart;
-
-    var actions = new Komodo.ClientActions();
-
-    Komodo.connection.stateChanged(function (change) {
-        if (change.newState === $.signalR.connectionState.connected) {
-            connected();
-            networkErrorElm.style.display = 'none';
-        }
-        if (change.newState === $.signalR.connectionState.disconnected) {
-            clearInterval(conInterval);
-            networkErrorElm.style.display = 'block';
-        }
-        if (change.newState === $.signalR.connectionState.reconnecting) {
-            networkErrorElm.style.display = 'block';
-        }
-    });
-
-    function connected() {
-        console.log('Connection opened');
-        var encoded = actions.encode64();
-        send(encoded);
-        actions = new Komodo.ClientActions();
-
-        conInterval = setInterval(function () {
-            var encoded = actions.encode64();
-
-            // if (encoded!='') {
-            send(encoded);
-
-            //}
-            actions = new Komodo.ClientActions();
-        }, 1000);
-    }
-
-    function disconnected() {
-        console.log('Connection lost');
-        networkErrorElm.style.top = '0px';
-        disconInterval = setTimeout(function () {
-            Komodo.restart();
-        }, 5000);
-    }
-
-    function loadSchema(schema) {
-        if (schema.Items) {
-            for (var i = 0; i < schema.Items.length; i++) {
-                Inventory.addItem(schema.Items[i].Id, schema.Items[i].Name, schema.Items[i].Worth, schema.Items[i].Category);
-                Statistics.addItem(schema.Items[i].Id, schema.Items[i].Name);
-            }
-        }
-
-        if (schema.StoreItems) {
-            for (var i = 0; i < schema.StoreItems.length; i++) {
-                var item = schema.StoreItems[i];
-                Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.MaxQuantity, item.Tooltip);
-            }
-        }
-
-        if (schema.Processors) {
-            for (var i = 0; i < schema.Processors.length; i++) {
-                var processor = schema.Processors[i];
-                Crafting.addProcessor(processor.Id, processor.Name);
-                for (var r = 0; r < processor.Recipes.length; r++) {
-                    Crafting.addProcessorRecipe(processor.Id, processor.Recipes[r].Ingredients, processor.Recipes[r].Resultants);
-                }
-            }
-        }
-        if (schema.CraftingItems) {
-            for (var i = 0; i < schema.CraftingItems.length; i++) {
-                var item = schema.CraftingItems[i];
-                Crafting.addRecipe(item.Id, item.Ingredients, item.Resultants, item.IsItem);
-            }
-        }
-        if (schema.Buffs) {
-            for (var i = 0; i < schema.Buffs.length; i++) {
-                var buff = schema.Buffs[i];
-                Buffs.register(buff.Id, buff.Name, buff.Description, buff.Duration);
-            }
-        }
-    }
-
-    function rateLimit(limited) {
-        rateLimitedElm.style.display = limited ? 'block' : 'none';
-    }
-
-    function toggleGatherer(id, enabled) {
-        var gathererAction = new Komodo.ClientActions.GathererAction();
-        gathererAction.Id = id;
-        gathererAction.Enabled = enabled;
-        actions.GathererActions.push(gathererAction);
-    }
-    Connection.toggleGatherer = toggleGatherer;
-
-    function updateGatherers(gatherers) {
-        for (var i = 0; i < gatherers.length; i++) {
-            var gatherer = gatherers[i];
-            Equipment.toggleGatherer(gatherer.Id, gatherer.Enabled);
-        }
-    }
-
-    function updateBuffs(buffs) {
-        for (var i = 0; i < buffs.length; i++) {
-            var buff = buffs[i];
-            Buffs.update(buff.Id, buff.TimeActive);
-        }
-    }
-
-    function receiveGlobalMessages(messages) {
-        for (var i = 0; i < messages.length; i++) {
-            var msg = messages[i];
-            Chat.receiveGlobalMessage(msg.Sender, msg.Text, msg.Time, msg.Permissions);
-        }
-    }
-
-    function updateProcessors(processors) {
-        for (var i = 0; i < processors.length; i++) {
-            var processor = processors[i];
-            Crafting.updateProcessor(processor.Id, processor.SelectedRecipe, processor.OperationDuration, processor.CompletedOperations, processor.TotalOperations, processor.Capacity);
-        }
-    }
-
-    function antiCheat(ac) {
-        Rock.moveRock(ac.X, ac.Y);
-    }
-
-    function updateStats(items) {
-        for (var i = 0; i < items.length; i++)
-            Statistics.changeStats(items[i].Id, items[i].PrestigeQuantity, items[i].LifeTimeQuantity);
-    }
-
-    function updateInventory(items) {
-        for (var i = 0; i < items.length; i++) {
-            Inventory.changeQuantity(items[i].Id, items[i].Quantity);
-            Inventory.changePrice(items[i].Id, items[i].Worth);
-        }
-    }
-
-    function updateInventoryConfigurations(items) {
-        for (var i = 0; i < items.length; i++)
-            Inventory.modifyConfig(items[i].Id, items[i].Enabled);
-    }
-
-    function updateStore(items) {
-        for (var i = 0; i < items.length; i++)
-            Store.changeQuantity(items[i].Id, items[i].Quantity, items[i].MaxQuantity, items[i].Price);
-    }
-
-    function drink(id) {
-        var potionAction = new Komodo.ClientActions.PotionAction();
-        potionAction.Id = id;
-        actions.PotionActions.push(potionAction);
-    }
-    Connection.drink = drink;
-
-    function mine(x, y) {
-        var miningAction = new Komodo.ClientActions.MiningAction();
-        miningAction.X = x;
-        miningAction.Y = y;
-        actions.MiningActions.push(miningAction);
-    }
-    Connection.mine = mine;
-
-    function sellItem(id, quantity) {
-        var inventoryAction = new Komodo.ClientActions.InventoryAction();
-        var sellAction = new Komodo.ClientActions.InventoryAction.SellAction();
-        sellAction.Id = id;
-        sellAction.Quantity = quantity;
-        inventoryAction.Sell = sellAction;
-        actions.InventoryActions.push(inventoryAction);
-    }
-    Connection.sellItem = sellItem;
-
-    function configureItem(id, enabled) {
-        var inventoryAction = new Komodo.ClientActions.InventoryAction();
-        var configAction = new Komodo.ClientActions.InventoryAction.ConfigAction();
-        configAction.Id = id;
-        configAction.Enabled = enabled;
-        inventoryAction.Config = configAction;
-        actions.InventoryActions.push(inventoryAction);
-        //ConfigAction
-    }
-    Connection.configureItem = configureItem;
-
-    function purchaseItem(id, quantity) {
-        var storeAction = new Komodo.ClientActions.StoreAction();
-        var purchaseAction = new Komodo.ClientActions.StoreAction.PurchaseAction();
-        purchaseAction.Id = id;
-        purchaseAction.Quantity = (quantity ? quantity : 1);
-        storeAction.Purchase = purchaseAction;
-        actions.StoreActions.push(storeAction);
-    }
-    Connection.purchaseItem = purchaseItem;
-
-    function sellAllItems() {
-        var inventoryAction = new Komodo.ClientActions.InventoryAction();
-        inventoryAction.SellAll = true;
-        actions.InventoryActions.push(inventoryAction);
-    }
-    Connection.sellAllItems = sellAllItems;
-
-    function craftRecipe(id, quantity) {
-        var craftingAction = new Komodo.ClientActions.CraftingAction();
-        craftingAction.Id = id;
-        craftingAction.Quantity = quantity;
-        actions.CraftingActions.push(craftingAction);
-    }
-    Connection.craftRecipe = craftRecipe;
-
-    function processRecipe(id, recipeIndex, iterations) {
-        var processingAction = new Komodo.ClientActions.ProcessingAction();
-        processingAction.Id = id;
-        processingAction.RecipeIndex = recipeIndex;
-        processingAction.Iterations = iterations;
-        actions.ProcessingActions.push(processingAction);
-    }
-    Connection.processRecipe = processRecipe;
-
-    function sendGlobalMessage(message) {
-        /*var clientActions = new Komodo.ClientActions();
-        var socialAction = new Komodo.ClientActions.SocialAction();
-        var chatAction = new Komodo.ClientActions.SocialAction.ChatAction();
-        chatAction.GlobalMessage = message;
-        socialAction.Chat = chatAction;
-        clientActions.SocialActions.push(socialAction);
-        
-        Connection.send(clientActions);*/
-        var socialAction = new Komodo.ClientActions.SocialAction();
-        var chatAction = new Komodo.ClientActions.SocialAction.ChatAction();
-        chatAction.GlobalMessage = message;
-        socialAction.Chat = chatAction;
-        actions.SocialActions.push(socialAction);
-    }
-    Connection.sendGlobalMessage = sendGlobalMessage;
-
-    function send(message) {
-        if (message.encode64) {
-            var encoded = message.encode64();
-            Chat.log("Sent " + roughSizeOfObject(encoded) + " bytes to komodo.");
-            Chat.log("Decoded: ");
-            Chat.log(JSON.stringify(message));
-            Chat.log("Encoded: ");
-            Chat.log(message.encode64());
-            Komodo.send(message.encode64());
-        } else {
-            Chat.log("Sent " + roughSizeOfObject(message) + " bytes to komodo.");
-            Komodo.send(message);
-        }
-    }
-    Connection.send = send;
-
-    function roughSizeOfObject(object) {
-        var objectList = [];
-        var stack = [object];
-        var bytes = 0;
-
-        while (stack.length) {
-            var value = stack.pop();
-
-            if (typeof value === 'boolean') {
-                bytes += 4;
-            } else if (typeof value === 'string') {
-                bytes += value.length * 2;
-            } else if (typeof value === 'number') {
-                bytes += 8;
-            } else if (typeof value === 'object' && objectList.indexOf(value) === -1) {
-                objectList.push(value);
-
-                for (var i in value) {
-                    stack.push(value[i]);
-                }
-            }
-        }
-        return bytes;
-    }
-})(Connection || (Connection = {}));
-var Buffs;
-(function (Buffs) {
-    var buffs = new Array();
-    var sidebar = document.getElementById('sidebarInformation');
-    var buffContainer;
-
-    var Buff = (function () {
-        function Buff() {
-        }
-        return Buff;
+        return Item;
     })();
 
-    function init() {
-        buffContainer = document.createElement('div');
-        sidebar.appendChild(buffContainer);
+    function changeStats(id, prestige, lifetime) {
+        var item = items[id];
+
+        Utils.ifNotDefault(prestige, function () {
+            item.prestigeQuantity = prestige;
+            item.prestigeRow.textContent = Utils.formatNumber(prestige);
+        });
+
+        Utils.ifNotDefault(lifetime, function () {
+            item.lifetimeQuantity = lifetime;
+            Objects.setLifeTimeTotal(id, lifetime);
+            item.alltimeRow.textContent = Utils.formatNumber(lifetime);
+        });
     }
+    Statistics.changeStats = changeStats;
 
-    function register(id, name, description, duration) {
-        if (buffs[id])
-            return;
+    function addItem(id, name) {
+        if (!statsPane)
+            draw();
 
-        var buff = new Buff();
-        buff.name = name;
-        buff.description = description;
-        buff.duration = duration;
-        buffs[id] = buff;
+        if (!items[id]) {
+            var item = new Item();
+            items[id] = item;
 
-        draw(buff);
-    }
-    Buffs.register = register;
-
-    function draw(buff) {
-        var container = document.createElement('div');
-        container.classList.add('buff-container');
-        tooltip.create(container, buff.description);
-
-        var header = document.createElement('div');
-        header.textContent = buff.name;
-        header.classList.add('buff-header');
-        container.appendChild(header);
-
-        var imageContainer = document.createElement('div');
-        imageContainer.classList.add('buff-image-container');
-        container.appendChild(imageContainer);
-
-        var image = document.createElement('div');
-        image.classList.add(Utils.cssifyName(buff.name));
-        imageContainer.appendChild(image);
-
-        var duration = document.createElement('div');
-        duration.classList.add('buff-header');
-        container.appendChild(duration);
-
-        buffContainer.appendChild(container);
-        buff.container = container;
-        buff.durationElm = duration;
-    }
-
-    function update(id, timeActive) {
-        var buff = buffs[id];
-        buff.timeActive = timeActive;
-        buff.durationElm.textContent = '(' + Utils.formatTime(buff.duration - timeActive) + ')';
-        buff.container.style.display = timeActive == 0 ? 'none' : 'inline-block';
-    }
-    Buffs.update = update;
-    init();
-})(Buffs || (Buffs = {}));
-var Equipment;
-(function (Equipment) {
-    var gatherers = new Array();
-    var equipmentPane;
-
-    var Gatherer = (function () {
-        function Gatherer() {
+            var row = itemsBody.insertRow(itemsBody.rows.length);
+            row.classList.add('table-row');
+            item.alltimeRow = row.insertCell(0);
+            item.alltimeRow.style.width = '40%';
+            item.prestigeRow = row.insertCell(0);
+            item.prestigeRow.style.width = '40%';
+            var imageRow = row.insertCell(0);
+            imageRow.style.width = '20%';
+            var image = document.createElement('DIV');
+            image.classList.add('Third-' + Utils.cssifyName(name));
+            image.style.display = 'inline-block';
+            imageRow.appendChild(image);
         }
-        return Gatherer;
-    })();
+    }
+    Statistics.addItem = addItem;
 
     function draw() {
-        if (equipmentPane)
-            return;
+        statsPane = document.createElement('DIV');
+        document.getElementById('paneContainer').appendChild(statsPane);
+        Tabs.registerGameTab(statsPane, 'Statistics');
 
-        equipmentPane = document.createElement('div');
-        document.getElementById('paneContainer').appendChild(equipmentPane);
-        Tabs.registerGameTab(equipmentPane, 'Equipment');
-    }
-    Equipment.draw = draw;
-
-    function registerGatherer(id) {
-        if (gatherers[id])
-            return;
-
-        var gatherer = new Gatherer();
-        gatherers[id] = gatherer;
-        drawGatherer(id);
-    }
-    Equipment.registerGatherer = registerGatherer;
-
-    function drawGatherer(id) {
-        var gatherer = gatherers[id];
-        var container = document.createElement('div');
-        container.classList.add('equipment-gatherer-container');
-        var header = document.createElement('div');
-        header.textContent = Objects.lookupName(id);
-        var toggle = Utils.createButton('Disable', '');
-        toggle.addEventListener('click', function () {
-            Connection.toggleGatherer(id, !gatherer.enabled);
-        });
-        container.appendChild(header);
-        container.appendChild(toggle);
-        gatherer.toggleElm = toggle.firstChild;
-
-        equipmentPane.appendChild(container);
+        statsPane.appendChild(drawItemsTable());
     }
 
-    function toggleGatherer(id, enabled) {
-        var gatherer = gatherers[id];
-        if (!gatherer)
-            return;
-        console.log(enabled);
-        gatherer.enabled = enabled;
-        gatherer.toggleElm.textContent = enabled ? 'Disable' : 'Enable';
+    function drawItemsTable() {
+        var itemsTable = document.createElement('TABLE');
+
+        var header = itemsTable.createTHead();
+        var titleRow = header.insertRow(0);
+        titleRow.classList.add('table-header');
+        var titleCell = titleRow.insertCell(0);
+        titleCell.textContent = 'Item Statistics';
+        titleCell.setAttribute('colspan', '3');
+
+        var descriptionsRow = header.insertRow(1);
+        descriptionsRow.classList.add('table-subheader');
+        var lifetime = descriptionsRow.insertCell(0);
+        lifetime.textContent = 'Lifetime Quantity';
+        lifetime.style.width = '40%';
+        var prestige = descriptionsRow.insertCell(0);
+        prestige.textContent = 'Prestige Quantity';
+        prestige.style.width = '40%';
+        var item = descriptionsRow.insertCell(0);
+        item.textContent = 'Item';
+        item.style.width = '20%';
+
+        itemsBody = itemsTable.createTBody();
+
+        return itemsTable;
     }
-    Equipment.toggleGatherer = toggleGatherer;
-})(Equipment || (Equipment = {}));
+})(Statistics || (Statistics = {}));
 var Store;
 (function (Store) {
     var storePane;
@@ -2551,92 +1399,308 @@ var Store;
         return itemContainer;
     }
 })(Store || (Store = {}));
-var Statistics;
-(function (Statistics) {
-    var statsPane;
-    var itemsBody;
-    var items = new Array();
-    var Item = (function () {
-        function Item() {
+var Rock;
+(function (Rock) {
+    var canvas = document.getElementById('rock');
+    var particleCanvas = document.getElementById('particles');
+    var context = canvas.getContext('2d');
+    var particleContext = particleCanvas.getContext('2d');
+    var relativeRockURL = '/Content/Rock.png';
+    var relativeStoneURL = '/Content/Stone.png';
+    var rockImage = new Image();
+    var stoneImage = new Image(16, 16);
+    var stoneLoaded = false;
+    var lastX = 0;
+    var lastY = 0;
+    var rockSize = 64;
+    var rockGrowth = 4;
+    var rockIsBig = false;
+    var mouseDown = false;
+
+    Rock.notTouched = true;
+    Rock.growing = true;
+    Rock.currentNotifier = 0;
+    var growRate = 8;
+    var notifierGrowth = 4;
+    var gsLastTick = Date.now();
+
+    Rock.particles = new Array();
+
+    var Particle = (function () {
+        function Particle(x, y) {
+            this.width = 5;
+            this.height = 5;
+            this.dispose = false;
+            this.x = x;
+            this.y = y;
+            this.verticalVelocity = Utils.getRandomInt(-100, -155);
+            this.horizonalVelocity = Utils.getRandomInt(-50, 50);
+            this.width = Utils.getRandomInt(3, 6);
+            this.height = Utils.getRandomInt(3, 6);
+            this.rotation = Utils.getRandomInt(0, 180);
+            this.rotationalVelocity = Utils.getRandomInt(-75, 75);
+
+            this.lastTick = Date.now();
         }
-        return Item;
+        Particle.prototype.update = function () {
+            var timeSinceLastTick = Date.now() - this.lastTick;
+            this.lastTick = Date.now();
+            timeSinceLastTick /= 1000;
+
+            this.rotation += (this.rotationalVelocity * timeSinceLastTick);
+            this.y += (this.verticalVelocity * timeSinceLastTick);
+            this.x += (this.horizonalVelocity * timeSinceLastTick);
+            this.verticalVelocity += (200 * timeSinceLastTick);
+            if (this.y > 270) {
+                this.dispose = true;
+            }
+        };
+        return Particle;
+    })();
+    Rock.Particle = Particle;
+
+    function initialize() {
+        rockImage.onload = function () {
+            drawBackground();
+            console.log('rock loaded');
+        };
+        rockImage.src = relativeRockURL;
+
+        stoneImage.onload = function () {
+            stoneLoaded = true;
+        };
+        stoneImage.src = relativeStoneURL;
+
+        canvas.addEventListener('mousemove', function (e) {
+            var mousePos = getMousePos(canvas, e);
+            isOverRock(mousePos.x, mousePos.y);
+            //console.log('x: ' + mousePos.x + ' y: ' + mousePos.y);
+        }, false);
+        canvas.addEventListener('mousedown', function (e) {
+            var mousePos = getMousePos(canvas, e);
+            mouseDown = true;
+            isOverRock(mousePos.x, mousePos.y);
+            Connection.mine(mousePos.x, mousePos.y);
+        }, false);
+        canvas.addEventListener('mouseup', function (e) {
+            var mousePos = getMousePos(canvas, e);
+            mouseDown = false;
+            isOverRock(mousePos.x, mousePos.y);
+        }, false);
+        canvas.addEventListener('mouseleave', function (e) {
+            var mousePos = getMousePos(canvas, e);
+            mouseDown = false;
+            isOverRock(mousePos.x, mousePos.y);
+        }, false);
+    }
+
+    function growAndShrink() {
+        if (!stoneLoaded) {
+            setTimeout(growAndShrink, 10);
+            return;
+        }
+
+        var time = Date.now();
+        var timePassed = time - gsLastTick;
+        timePassed /= 1000;
+        gsLastTick = time;
+
+        if (Rock.growing) {
+            Rock.currentNotifier += growRate * timePassed;
+        } else {
+            Rock.currentNotifier -= growRate * timePassed;
+        }
+
+        if (Rock.currentNotifier > notifierGrowth || Rock.currentNotifier < -notifierGrowth) {
+            Rock.growing = !Rock.growing;
+        }
+
+        drawRock(lastX, lastY, rockSize + Rock.currentNotifier, rockSize + Rock.currentNotifier);
+
+        if (Rock.notTouched)
+            setTimeout(growAndShrink, 10);
+    }
+    growAndShrink();
+
+    function getMousePos(canvas, evt) {
+        var rect = canvas.getBoundingClientRect();
+        return {
+            x: evt.clientX - rect.left,
+            y: evt.clientY - rect.top
+        };
+    }
+
+    var released = true;
+    function isOverRock(x, y) {
+        if (x > lastX && x < (lastX + rockSize) && y > lastY && y < (lastY + rockSize)) {
+            if (!mouseDown) {
+                drawRock(lastX - (rockGrowth / 2), lastY - (rockGrowth / 2), rockSize + rockGrowth, rockSize + rockGrowth);
+                released = true;
+                Rock.notTouched = false;
+            } else {
+                drawRock(lastX + (rockGrowth / 2), lastY + (rockGrowth / 2), rockSize - rockGrowth, rockSize - rockGrowth);
+                if (released)
+                    addParticles(x, y);
+                released = false;
+                Rock.notTouched = false;
+            }
+
+            rockIsBig = true;
+        } else if (rockIsBig) {
+            drawRock(lastX, lastY, rockSize, rockSize);
+            rockIsBig = false;
+            released = true;
+        }
+
+        canvas.style.cursor = rockIsBig ? 'pointer' : 'initial';
+    }
+
+    function moveRock(x, y) {
+        if (x != lastX && y != lastY) {
+            lastX = x;
+            lastY = y;
+            if (stoneLoaded)
+                drawRock(x, y, rockSize, rockSize);
+            else
+                setTimeout(function () {
+                    moveRock(x, y);
+                }, 10);
+        }
+    }
+    Rock.moveRock = moveRock;
+
+    function clearCanvas() {
+        context.clearRect(0, 0, 250, 250);
+    }
+
+    function drawBackground() {
+        context.drawImage(rockImage, 0, 0);
+    }
+
+    function addParticles(x, y) {
+        var rand = Utils.getRandomInt(1, 3);
+        for (var i = 0; i < rand; i++) {
+            var xOffset = Utils.getRandomInt(-5, 5);
+            var yOffset = Utils.getRandomInt(-2, 2);
+            Rock.particles.push(new Particle(x + xOffset, y + yOffset));
+        }
+    }
+
+    var particleCache = document.createElement('canvas');
+    var cacheCtx = particleCache.getContext('2d');
+
+    function drawParticle(particle) {
+        particleCache.width = particle.width;
+        particleCache.height = particle.height;
+        cacheCtx.rect(0, 0, particle.width, particle.height);
+        cacheCtx.fillStyle = 'gray';
+        cacheCtx.fill();
+        cacheCtx.stroke();
+
+        particleContext.beginPath();
+
+        drawImageRot(particleContext, particleCache, particle.x, particle.y, particle.width, particle.height, particle.rotation);
+    }
+
+    function drawImageRot(ctx, img, x, y, width, height, deg) {
+        //Convert degrees to radian
+        var rad = deg * Math.PI / 180;
+
+        //Set the origin to the center of the image
+        ctx.translate(x + width / 2, y + height / 2);
+
+        //Rotate the canvas around the origin
+        ctx.rotate(rad);
+
+        //draw the image
+        ctx.drawImage(img, width / 2 * (-1), height / 2 * (-1), width, height);
+
+        //reset the canvas
+        ctx.rotate(rad * (-1));
+        ctx.translate((x + width / 2) * (-1), (y + height / 2) * (-1));
+    }
+
+    function updateParticles() {
+        particleContext.clearRect(0, 0, 250, 250);
+
+        for (var i = 0; i < Rock.particles.length; i++) {
+            var particle = Rock.particles[i];
+            particle.update();
+            drawParticle(particle);
+
+            if (particle.dispose) {
+                Rock.particles.splice(i, 1);
+            }
+        }
+    }
+    setInterval(updateParticles, 10);
+
+    function drawRock(x, y, xScale, yScale) {
+        clearCanvas();
+        drawBackground();
+        context.drawImage(stoneImage, x, y, xScale, yScale);
+        //context.drawImage(stoneImage, x, y);
+    }
+
+    initialize();
+})(Rock || (Rock = {}));
+var Equipment;
+(function (Equipment) {
+    var gatherers = new Array();
+    var equipmentPane;
+
+    var Gatherer = (function () {
+        function Gatherer() {
+        }
+        return Gatherer;
     })();
 
-    function changeStats(id, prestige, lifetime) {
-        var item = items[id];
-
-        Utils.ifNotDefault(prestige, function () {
-            item.prestigeQuantity = prestige;
-            item.prestigeRow.textContent = Utils.formatNumber(prestige);
-        });
-
-        Utils.ifNotDefault(lifetime, function () {
-            item.lifetimeQuantity = lifetime;
-            Objects.setLifeTimeTotal(id, lifetime);
-            item.alltimeRow.textContent = Utils.formatNumber(lifetime);
-        });
-    }
-    Statistics.changeStats = changeStats;
-
-    function addItem(id, name) {
-        if (!statsPane)
-            draw();
-
-        if (!items[id]) {
-            var item = new Item();
-            items[id] = item;
-
-            var row = itemsBody.insertRow(itemsBody.rows.length);
-            row.classList.add('table-row');
-            item.alltimeRow = row.insertCell(0);
-            item.alltimeRow.style.width = '40%';
-            item.prestigeRow = row.insertCell(0);
-            item.prestigeRow.style.width = '40%';
-            var imageRow = row.insertCell(0);
-            imageRow.style.width = '20%';
-            var image = document.createElement('DIV');
-            image.classList.add('Third-' + Utils.cssifyName(name));
-            image.style.display = 'inline-block';
-            imageRow.appendChild(image);
-        }
-    }
-    Statistics.addItem = addItem;
-
     function draw() {
-        statsPane = document.createElement('DIV');
-        document.getElementById('paneContainer').appendChild(statsPane);
-        Tabs.registerGameTab(statsPane, 'Statistics');
+        if (equipmentPane)
+            return;
 
-        statsPane.appendChild(drawItemsTable());
+        equipmentPane = document.createElement('div');
+        document.getElementById('paneContainer').appendChild(equipmentPane);
+        Tabs.registerGameTab(equipmentPane, 'Equipment');
+    }
+    Equipment.draw = draw;
+
+    function registerGatherer(id) {
+        if (gatherers[id])
+            return;
+
+        var gatherer = new Gatherer();
+        gatherers[id] = gatherer;
+        drawGatherer(id);
+    }
+    Equipment.registerGatherer = registerGatherer;
+
+    function drawGatherer(id) {
+        var gatherer = gatherers[id];
+        var container = document.createElement('div');
+        container.classList.add('equipment-gatherer-container');
+        var header = document.createElement('div');
+        header.textContent = Objects.lookupName(id);
+        var toggle = Utils.createButton('Disable', '');
+        toggle.addEventListener('click', function () {
+            Connection.toggleGatherer(id, !gatherer.enabled);
+        });
+        container.appendChild(header);
+        container.appendChild(toggle);
+        gatherer.toggleElm = toggle.firstChild;
+
+        equipmentPane.appendChild(container);
     }
 
-    function drawItemsTable() {
-        var itemsTable = document.createElement('TABLE');
-
-        var header = itemsTable.createTHead();
-        var titleRow = header.insertRow(0);
-        titleRow.classList.add('table-header');
-        var titleCell = titleRow.insertCell(0);
-        titleCell.textContent = 'Item Statistics';
-        titleCell.setAttribute('colspan', '3');
-
-        var descriptionsRow = header.insertRow(1);
-        descriptionsRow.classList.add('table-subheader');
-        var lifetime = descriptionsRow.insertCell(0);
-        lifetime.textContent = 'Lifetime Quantity';
-        lifetime.style.width = '40%';
-        var prestige = descriptionsRow.insertCell(0);
-        prestige.textContent = 'Prestige Quantity';
-        prestige.style.width = '40%';
-        var item = descriptionsRow.insertCell(0);
-        item.textContent = 'Item';
-        item.style.width = '20%';
-
-        itemsBody = itemsTable.createTBody();
-
-        return itemsTable;
+    function toggleGatherer(id, enabled) {
+        var gatherer = gatherers[id];
+        if (!gatherer)
+            return;
+        gatherer.enabled = enabled;
+        gatherer.toggleElm.textContent = enabled ? 'Disable' : 'Enable';
     }
-})(Statistics || (Statistics = {}));
+    Equipment.toggleGatherer = toggleGatherer;
+})(Equipment || (Equipment = {}));
 var Crafting;
 (function (Crafting) {
     var storePane;
@@ -3242,3 +2306,1009 @@ var Crafting;
         }
     }
 })(Crafting || (Crafting = {}));
+var Buffs;
+(function (Buffs) {
+    var buffs = new Array();
+    var sidebar = document.getElementById('sidebarInformation');
+    var buffContainer;
+
+    var Buff = (function () {
+        function Buff() {
+        }
+        return Buff;
+    })();
+
+    function init() {
+        buffContainer = document.createElement('div');
+        sidebar.appendChild(buffContainer);
+    }
+
+    function register(id, name, description, duration) {
+        if (buffs[id])
+            return;
+
+        var buff = new Buff();
+        buff.name = name;
+        buff.description = description;
+        buff.duration = duration;
+        buffs[id] = buff;
+
+        draw(buff);
+    }
+    Buffs.register = register;
+
+    function draw(buff) {
+        var container = document.createElement('div');
+        container.classList.add('buff-container');
+        tooltip.create(container, buff.description);
+
+        var header = document.createElement('div');
+        header.textContent = buff.name;
+        header.classList.add('buff-header');
+        container.appendChild(header);
+
+        var imageContainer = document.createElement('div');
+        imageContainer.classList.add('buff-image-container');
+        container.appendChild(imageContainer);
+
+        var image = document.createElement('div');
+        image.classList.add(Utils.cssifyName(buff.name));
+        imageContainer.appendChild(image);
+
+        var duration = document.createElement('div');
+        duration.classList.add('buff-header');
+        container.appendChild(duration);
+
+        buffContainer.appendChild(container);
+        buff.container = container;
+        buff.durationElm = duration;
+    }
+
+    function update(id, timeActive) {
+        var buff = buffs[id];
+        buff.timeActive = timeActive;
+        buff.durationElm.textContent = '(' + Utils.formatTime(buff.duration - timeActive) + ')';
+        buff.container.style.display = timeActive == 0 ? 'none' : 'inline-block';
+    }
+    Buffs.update = update;
+    init();
+})(Buffs || (Buffs = {}));
+/// <reference path="typings/jquery/jquery.d.ts"/>
+var Account;
+(function (Account) {
+    var container;
+    var userButton;
+    var userSpan;
+    var contextMenu;
+
+    var registrationErrors;
+    var loginErrors;
+
+    var mouseTimeout;
+
+    var LeaderboardAjaxService = (function () {
+        function LeaderboardAjaxService() {
+        }
+        LeaderboardAjaxService.prototype.failed = function (request) {
+            this.resultsElement.textContent = 'Loading failed...';
+        };
+
+        LeaderboardAjaxService.prototype.succeeded = function (request) {
+            while (this.resultsElement.firstChild)
+                this.resultsElement.removeChild(this.resultsElement.firstChild);
+
+            var leaderboardTable = document.createElement('table');
+            var thead = leaderboardTable.createTHead();
+            var subheader = thead.insertRow(0);
+            subheader.classList.add('table-subheader');
+
+            var score = subheader.insertCell(0);
+            score.textContent = 'Score';
+            score.style.width = '65%';
+            var player = subheader.insertCell(0);
+            player.textContent = 'Name';
+            player.style.width = '25%';
+            var rank = subheader.insertCell(0);
+            rank.textContent = 'Rank';
+            rank.style.width = '10%';
+
+            var tbody = leaderboardTable.createTBody();
+
+            for (var i = 0; i < request.length; i++) {
+                var leaderboardEntry = request[i];
+                console.log(leaderboardEntry);
+
+                var row = tbody.insertRow(tbody.rows.length);
+                row.classList.add('table-row');
+
+                var rScore = row.insertCell(0);
+                rScore.textContent = Utils.formatNumber(leaderboardEntry.Score);
+                rScore.style.width = '65%';
+                rScore.addEventListener('click', function (event) {
+                    var score;
+                    var cell = event.target;
+
+                    if (cell.dataset) {
+                        score = cell.dataset['tooltip'];
+                    } else {
+                        score = cell.getAttribute('data-tooltip');
+                    }
+
+                    if (cell.textContent.indexOf(',') > 0) {
+                        cell.textContent = Utils.formatNumber(score);
+                    } else {
+                        cell.textContent = Utils.formatNumber(score, true);
+                    }
+                });
+
+                if (rScore.dataset) {
+                    rScore.dataset['tooltip'] = leaderboardEntry.Score;
+                } else {
+                    rScore.setAttribute('data-tooltip', leaderboardEntry.Score.toString());
+                }
+
+                var rPlayer = row.insertCell(0);
+                rPlayer.textContent = leaderboardEntry.UserId;
+                player.style.width = '25%';
+                var rRank = row.insertCell(0);
+                rRank.textContent = Utils.formatNumber(leaderboardEntry.Rank);
+                rRank.style.width = '10%';
+            }
+            this.resultsElement.appendChild(leaderboardTable);
+        };
+
+        LeaderboardAjaxService.prototype.sendRequest = function (lowerbound, upperbound) {
+            var self = this;
+
+            var request = $.ajax({
+                asyn: true,
+                type: 'POST',
+                url: '/Api/Stats/LeaderBoard/',
+                data: $.param({ Lower: lowerbound, Upper: upperbound }),
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                success: function (request) {
+                    request = JSON.parse(request);
+                    self.succeeded(request);
+                },
+                failure: function (request) {
+                    self.failed(request);
+                }
+            });
+        };
+        return LeaderboardAjaxService;
+    })();
+
+    function draw() {
+        container = document.createElement('DIV');
+        container.classList.add('account-manager');
+        container.classList.add('closed');
+
+        container.onmouseenter = function () {
+            clearTimeout(mouseTimeout);
+        };
+
+        container.onmouseleave = function () {
+            mouseTimeout = setTimeout(hideMenu, 250);
+        };
+
+        // Anon stuff.
+        var loginButton = document.createElement('DIV');
+        loginButton.textContent = 'Sign in';
+        loginButton.classList.add('account-option');
+        loginButton.classList.add('anonymous-account-option');
+        loginButton.addEventListener('click', function () {
+            loginModal();
+        });
+        container.appendChild(loginButton);
+
+        var registerButton = document.createElement('DIV');
+        registerButton.textContent = 'Register';
+        registerButton.classList.add('account-option');
+        registerButton.classList.add('anonymous-account-option');
+        registerButton.addEventListener('click', function () {
+            registerModal();
+        });
+        container.appendChild(registerButton);
+
+        // Registered stuff.
+        var optionsButton = document.createElement('DIV');
+        optionsButton.textContent = 'Options';
+        optionsButton.classList.add('account-option');
+        optionsButton.classList.add('registered-account-option');
+        container.appendChild(optionsButton);
+
+        var logoffButton = document.createElement('DIV');
+        logoffButton.textContent = 'Sign out';
+        logoffButton.classList.add('account-option');
+        logoffButton.classList.add('registered-account-option');
+        logoffButton.addEventListener('click', function () {
+            logoff();
+        });
+        container.appendChild(logoffButton);
+
+        userButton = document.createElement('DIV');
+        userButton.classList.add('account-user');
+        userSpan = document.createElement('SPAN');
+        userButton.appendChild(userSpan);
+        container.appendChild(userButton);
+
+        document.body.appendChild(container);
+        userButton.addEventListener('click', function () {
+            toggleMenu();
+        });
+
+        var highscoresLink = document.createElement('SPAN');
+        highscoresLink.textContent = 'Leaderboards';
+        highscoresLink.addEventListener('click', function () {
+            leaderboardsModal();
+        });
+        highscoresLink.style.cursor = 'pointer';
+        document.getElementsByClassName('header-links')[0].appendChild(highscoresLink);
+
+        info();
+    }
+    draw();
+    function toggleMenu() {
+        if (container.classList.contains('closed'))
+            container.classList.remove('closed');
+        else
+            container.classList.add('closed');
+    }
+
+    function hideMenu() {
+        if (!container.classList.contains('closed'))
+            container.classList.add('closed');
+    }
+
+    function updateUser(name, isAnon) {
+        userSpan.textContent = isAnon ? 'Guest' : name;
+
+        // styles the container depending on the status of the account.
+        Utils.cssSwap(container, isAnon ? 'registered' : 'anonymous', isAnon ? 'anonymous' : 'registered');
+    }
+
+    function leaderboardsModal() {
+        var leaderboardModal = new modal.Window();
+        leaderboardModal.title = 'Leaderboards';
+        var leaderboardList = document.createElement('DIV');
+        leaderboardList.style.width = '400px';
+        leaderboardList.textContent = 'Loading...';
+        leaderboardModal.addElement(leaderboardList);
+
+        var leaderboardService = new LeaderboardAjaxService();
+        leaderboardService.resultsElement = leaderboardList;
+        leaderboardService.sendRequest(0, 19);
+
+        leaderboardModal.show();
+    }
+
+    function loginModal() {
+        var loginModal = new modal.Window();
+        var formControlsContainer = document.createElement('DIV');
+        formControlsContainer.style.width = '400px';
+
+        var usernameContainer = document.createElement('DIV');
+        usernameContainer.style.marginBottom = '5px';
+        var username = document.createElement("INPUT");
+        username.type = 'TEXT';
+        username.maxLength = 16;
+        username.placeholder = 'Username';
+        usernameContainer.appendChild(username);
+
+        var passwordContainer = document.createElement('DIV');
+        passwordContainer.style.marginBottom = '5px';
+        var password = document.createElement("INPUT");
+        password.type = 'PASSWORD';
+        password.pattern = ".{6,}";
+        password.placeholder = 'Password';
+        passwordContainer.appendChild(password);
+
+        var rememberMeContainer = document.createElement('DIV');
+        rememberMeContainer.style.marginBottom = '5px';
+        var rememberMe = document.createElement('INPUT');
+        rememberMe.type = 'CHECKBOX';
+        rememberMe.placeholder = 'Stay logged in on this computer?';
+        rememberMeContainer.appendChild(rememberMe);
+
+        formControlsContainer.appendChild(usernameContainer);
+        formControlsContainer.appendChild(passwordContainer);
+        formControlsContainer.appendChild(rememberMeContainer);
+
+        loginErrors = document.createElement('div');
+        loginModal.addElement(loginErrors);
+
+        loginModal.title = 'Log in';
+        loginModal.addElement(formControlsContainer);
+
+        var no = loginModal.addNegativeOption("Cancel");
+        no.addEventListener("click", function () {
+            modal.close();
+        }, false);
+        var yes = loginModal.addAffirmativeOption("Submit");
+        yes.addEventListener("click", function () {
+            login(username.value, password.value, rememberMe.checked);
+            while (loginErrors.firstChild) {
+                loginErrors.removeChild(loginErrors.firstChild);
+            }
+        }, false);
+        loginModal.show();
+    }
+
+    function registerModal() {
+        var registerModal = new modal.Window();
+        var formControlsContainer = document.createElement('DIV');
+        formControlsContainer.style.width = '400px';
+
+        var usernameContainer = document.createElement('DIV');
+        usernameContainer.style.marginBottom = '5px';
+        var username = document.createElement("INPUT");
+        username.type = 'TEXT';
+        username.maxLength = 16;
+        username.placeholder = 'Username';
+        usernameContainer.appendChild(username);
+
+        var emailContainer = document.createElement('DIV');
+        emailContainer.style.marginBottom = '5px';
+        var email = document.createElement("INPUT");
+        email.type = 'EMAIL';
+        email.placeholder = 'Email';
+        emailContainer.appendChild(email);
+
+        var passwordContainer = document.createElement('DIV');
+        passwordContainer.style.marginBottom = '5px';
+        var password = document.createElement("INPUT");
+        password.type = 'PASSWORD';
+        password.pattern = ".{6,}";
+        password.placeholder = 'Password';
+        passwordContainer.appendChild(password);
+
+        var confpassContainer = document.createElement('DIV');
+        confpassContainer.style.marginBottom = '5px';
+        var confirmPassword = document.createElement("INPUT");
+        confirmPassword.type = 'PASSWORD';
+        confirmPassword.pattern = ".{6,}";
+        confirmPassword.placeholder = 'Confirm password';
+        confpassContainer.appendChild(confirmPassword);
+        confirmPassword.onblur = function () {
+            if (password.value != confirmPassword.value)
+                confirmPassword.setCustomValidity('Passwords are not the same.');
+        };
+
+        confirmPassword.onfocus = function () {
+            confirmPassword.setCustomValidity('');
+        };
+        formControlsContainer.appendChild(usernameContainer);
+        formControlsContainer.appendChild(emailContainer);
+        formControlsContainer.appendChild(passwordContainer);
+        formControlsContainer.appendChild(confpassContainer);
+
+        registerModal.addElement(formControlsContainer);
+        registrationErrors = document.createElement('div');
+        registerModal.addElement(registrationErrors);
+
+        registerModal.title = "Register";
+
+        var no = registerModal.addNegativeOption("Cancel");
+        no.addEventListener("click", function () {
+            modal.close();
+        }, false);
+        var yes = registerModal.addAffirmativeOption("Submit");
+        yes.addEventListener("click", function () {
+            create(email.value, username.value, password.value, confirmPassword.value);
+            while (registrationErrors.firstChild) {
+                registrationErrors.removeChild(registrationErrors.firstChild);
+            }
+        }, false);
+
+        registerModal.show();
+    }
+
+    function create(email, username, password, passwordConfirmation) {
+        var request = $.ajax({
+            type: 'POST',
+            url: '/Api/Account/Register',
+            data: $.param({ Email: email, UserName: username, Password: password, ConfirmPassword: passwordConfirmation }),
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            success: function (request) {
+                request = JSON.parse(request);
+                if (request.Succeeded) {
+                    Connection.restart();
+                    info();
+                    modal.close();
+                } else {
+                    while (registrationErrors.firstChild) {
+                        registrationErrors.removeChild(registrationErrors.firstChild);
+                    }
+                    for (var i = 0; i < request.Errors.length; i++) {
+                        var errorElm = document.createElement('div');
+                        errorElm.textContent = request.Errors[i];
+                        registrationErrors.appendChild(errorElm);
+                    }
+                }
+            }
+        });
+    }
+
+    function login(email, password, rememberMe) {
+        var request = $.ajax({
+            type: 'POST',
+            url: '/Api/Account/Login',
+            data: $.param({ UserName: email, Password: password, RememberMe: rememberMe }),
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            success: function (request) {
+                request = JSON.parse(request);
+
+                if (request.Succeeded) {
+                    Connection.restart();
+                    info();
+                    modal.close();
+                } else {
+                    while (loginErrors.firstChild) {
+                        loginErrors.removeChild(loginErrors.firstChild);
+                    }
+                    for (var i = 0; i < request.Errors.length; i++) {
+                        var errorElm = document.createElement('div');
+                        errorElm.textContent = request.Errors[i];
+                        loginErrors.appendChild(errorElm);
+                    }
+                }
+            }
+        });
+    }
+
+    function logoff() {
+        var request = $.ajax({
+            type: 'POST',
+            url: '/Api/Account/LogOff',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            success: function (request) {
+                console.log(request);
+                Connection.restart();
+                info();
+                location.reload();
+            }
+        });
+    }
+
+    function info() {
+        var request = $.ajax({
+            type: 'POST',
+            url: '/Api/Account/Info',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            success: function (request) {
+                request = JSON.parse(request);
+                updateUser(request.UserName, request.Anonymous);
+            }
+        });
+    }
+    Account.info = info;
+})(Account || (Account = {}));
+var modal;
+(function (modal) {
+    var timeOpened = 0;
+    var modalPane;
+    modal.activeWindow;
+    modal.intervalIdentifier;
+
+    function hide() {
+        if (modal.activeWindow) {
+            modal.activeWindow.hide();
+        }
+        modal.activeWindow = null;
+    }
+    modal.hide = hide;
+
+    function close() {
+        if (modal.activeWindow) {
+            var a = modal.activeWindow;
+            hide();
+            a.container.parentNode.removeChild(a.container);
+        }
+    }
+    modal.close = close;
+
+    var Window = (function () {
+        function Window() {
+            this.container = document.createElement("div");
+            this.container.addEventListener("click", function (e) {
+                e.stopPropagation();
+            }, false);
+            this.container.classList.add("modal-window");
+            if (!modalPane) {
+                var pane = document.createElement("div");
+                modalPane = pane;
+                pane.classList.add("modal-wrapper");
+                pane.addEventListener("click", function (e) {
+                    e.stopPropagation();
+                    if ((Date.now() - timeOpened) > 3000)
+                        modal.close();
+                }, false);
+                document.body.appendChild(pane);
+            }
+            modalPane.appendChild(this.container);
+
+            this.titleEl = document.createElement("div");
+            this.titleEl.classList.add("modal-header");
+            this.bodyEl = document.createElement("div");
+
+            this.container.appendChild(this.titleEl);
+            this.container.appendChild(this.bodyEl);
+        }
+        Object.defineProperty(Window.prototype, "title", {
+            get: function () {
+                return this._title;
+            },
+            set: function (s) {
+                this._title = s;
+                this.titleEl.textContent = this._title;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Window.prototype.addElement = function (el) {
+            this.bodyEl.appendChild(el);
+        };
+
+        // intended for the bottom bar of controls.
+        Window.prototype.addOption = function (opt) {
+            if (!this.options) {
+                this.options = document.createElement("div");
+                this.options.classList.add("modal-options");
+                this.container.appendChild(this.options);
+            }
+            var optionContainer = document.createElement("span");
+            optionContainer.classList.add("modal-option");
+
+            var option = document.createElement("span");
+            option.textContent = opt;
+
+            optionContainer.appendChild(option);
+            this.options.appendChild(optionContainer);
+            return optionContainer;
+        };
+
+        Window.prototype.addAffirmativeOption = function (opt) {
+            var option = this.addOption(opt);
+            option.classList.add("affirmative");
+            return option;
+        };
+
+        Window.prototype.addNegativeOption = function (opt) {
+            var option = this.addOption(opt);
+            option.classList.add("negative");
+            return option;
+        };
+
+        Window.prototype.show = function () {
+            if (!this.container.classList.contains("opened"))
+                this.container.classList.add("opened");
+            if (!modalPane.classList.contains("opened"))
+                modalPane.classList.add("opened");
+            modal.activeWindow = this;
+            updatePosition();
+            modal.intervalIdentifier = setInterval(updatePosition, 100);
+            timeOpened = Date.now();
+        };
+
+        Window.prototype.hide = function () {
+            if (this.container.classList.contains("opened"))
+                this.container.classList.remove("opened");
+            if (modalPane.classList.contains("opened"))
+                modalPane.classList.remove("opened");
+        };
+        return Window;
+    })();
+    modal.Window = Window;
+
+    function updatePosition() {
+        if (!modal.activeWindow) {
+            clearInterval(modal.intervalIdentifier);
+        } else {
+            var containerDimensions = modal.activeWindow.container.getBoundingClientRect();
+            modal.activeWindow.container.style.left = (window.innerWidth / 2) - ((containerDimensions.right - containerDimensions.left) / 2) + "px";
+            modal.activeWindow.container.style.top = (window.innerHeight / 2) - ((containerDimensions.bottom - containerDimensions.top) / 2) + "px";
+        }
+    }
+})(modal || (modal = {}));
+///<reference path="chat.ts"/>
+///<reference path="inventory.ts"/>
+///<reference path="stats.ts"/>
+///<reference path="store.ts"/>
+///<reference path="rock.ts"/>
+///<reference path="equipment.ts"/>
+///<reference path="crafting.ts"/>
+///<reference path="typings/jquery/jquery.d.ts"/>
+///<reference path="buffs.ts"/>
+///<reference path="register.ts"/>
+///<reference path="modal.ts"/>
+///<reference path="tooltip.ts"/>
+var Connection;
+(function (Connection) {
+    var conInterval;
+    var disconInterval;
+    var notificationElm;
+    var networkErrorElm;
+    var rateLimitedElm;
+    var playerCounter;
+
+    function init() {
+        var headerLinks = document.getElementsByClassName('header-links')[0];
+        var versionHistory = document.createElement('div');
+        versionHistory.style.display = 'inline-block';
+        versionHistory.textContent = 'Version History';
+        versionHistory.addEventListener('click', function () {
+            window.open('/version');
+        });
+        versionHistory.style.cursor = 'pointer';
+        headerLinks.appendChild(versionHistory);
+
+        playerCounter = document.createElement('div');
+        playerCounter.style.display = 'inline-block';
+        playerCounter.textContent = 'There are # players mining.';
+        headerLinks.appendChild(playerCounter);
+
+        notificationElm = document.createElement('div');
+        notificationElm.classList.add('error-notification-tray');
+
+        networkErrorElm = document.createElement('div');
+        networkErrorElm.classList.add('network-error');
+        var networkErrorText = document.createElement('div');
+        networkErrorText.classList.add('network-error-text');
+        networkErrorText.textContent = 'No connection';
+        networkErrorElm.appendChild(networkErrorText);
+
+        rateLimitedElm = document.createElement('div');
+        rateLimitedElm.classList.add('rate-limited');
+        var rateLimitText = document.createElement('div');
+        rateLimitText.classList.add('network-error-text');
+        rateLimitedElm.style.display = 'none';
+        ;
+        rateLimitText.textContent = 'You have exceeded your allotted requests';
+        rateLimitedElm.appendChild(rateLimitText);
+
+        var game = document.getElementById('game');
+        notificationElm.appendChild(networkErrorElm);
+        notificationElm.appendChild(rateLimitedElm);
+        game.insertBefore(notificationElm, game.childNodes[0]);
+    }
+    init();
+
+    Komodo.connection.received(function (msg) {
+        Chat.log("Recieved " + roughSizeOfObject(msg) + " bytes from komodo.");
+        Chat.log("Encoded: ");
+        Chat.log(msg);
+        Chat.log("Decoded: ");
+        Chat.log(JSON.stringify(Komodo.decode(msg)));
+        Chat.log(roughSizeOfObject(JSON.stringify(Komodo.decode(msg))) - roughSizeOfObject(msg) + " bytes saved.");
+        msg = Komodo.decode(msg);
+
+        // CHAT MESSAGES
+        if (msg.Messages != null) {
+            receiveGlobalMessages(msg.Messages);
+        }
+
+        // GAME SCHEMA
+        if (msg.GameSchema != null) {
+            loadSchema(msg.GameSchema);
+        }
+
+        // INVENTORY UPDATES
+        if (msg.Items != null) {
+            updateInventory(msg.Items);
+        }
+
+        // STORE UPDATES
+        if (msg.StoreItemsUpdate != null) {
+            updateStore(msg.StoreItemsUpdate);
+        }
+        if (msg.StatItemsUpdate != null) {
+            updateStats(msg.StatItemsUpdate);
+        }
+        if (msg.ConfigItems != null) {
+            updateInventoryConfigurations(msg.ConfigItems);
+        }
+
+        // PROCESSOR UPDATES
+        if (msg.Processors != null) {
+            updateProcessors(msg.Processors);
+        }
+
+        // Anti cheat
+        if (msg.AntiCheatCoordinates != null) {
+            antiCheat(msg.AntiCheatCoordinates);
+        }
+
+        // Buffs
+        if (msg.Buffs != null) {
+            updateBuffs(msg.Buffs);
+        }
+        if (msg.IsRateLimited != null) {
+            rateLimit(msg.IsRateLimited);
+        }
+        if (msg.Gatherers != null) {
+            updateGatherers(msg.Gatherers);
+        }
+        if (msg.ConnectedUsers) {
+            playerCounter.textContent = 'There are ' + msg.ConnectedUsers + ' players mining.';
+        }
+    });
+
+    function restart() {
+        Komodo.restart();
+    }
+    Connection.restart = restart;
+
+    var actions = new Komodo.ClientActions();
+
+    Komodo.connection.stateChanged(function (change) {
+        if (change.newState === $.signalR.connectionState.connected) {
+            connected();
+            networkErrorElm.style.display = 'none';
+        }
+        if (change.newState === $.signalR.connectionState.disconnected) {
+            clearInterval(conInterval);
+            networkErrorElm.style.display = 'block';
+        }
+        if (change.newState === $.signalR.connectionState.reconnecting) {
+            networkErrorElm.style.display = 'block';
+        }
+    });
+
+    function connected() {
+        console.log('Connection opened');
+        var encoded = actions.encode64();
+        send(encoded);
+        actions = new Komodo.ClientActions();
+
+        conInterval = setInterval(function () {
+            var encoded = actions.encode64();
+
+            // if (encoded!='') {
+            send(encoded);
+
+            //}
+            actions = new Komodo.ClientActions();
+        }, 1000);
+    }
+
+    function disconnected() {
+        console.log('Connection lost');
+        networkErrorElm.style.top = '0px';
+        disconInterval = setTimeout(function () {
+            Komodo.restart();
+        }, 5000);
+    }
+
+    function loadSchema(schema) {
+        if (schema.Items) {
+            for (var i = 0; i < schema.Items.length; i++) {
+                Inventory.addItem(schema.Items[i].Id, schema.Items[i].Name, schema.Items[i].Worth, schema.Items[i].Category);
+                Statistics.addItem(schema.Items[i].Id, schema.Items[i].Name);
+            }
+        }
+
+        if (schema.StoreItems) {
+            for (var i = 0; i < schema.StoreItems.length; i++) {
+                var item = schema.StoreItems[i];
+                Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.MaxQuantity, item.Tooltip);
+            }
+        }
+
+        if (schema.Processors) {
+            for (var i = 0; i < schema.Processors.length; i++) {
+                var processor = schema.Processors[i];
+                Crafting.addProcessor(processor.Id, processor.Name);
+                for (var r = 0; r < processor.Recipes.length; r++) {
+                    Crafting.addProcessorRecipe(processor.Id, processor.Recipes[r].Ingredients, processor.Recipes[r].Resultants);
+                }
+            }
+        }
+        if (schema.CraftingItems) {
+            for (var i = 0; i < schema.CraftingItems.length; i++) {
+                var item = schema.CraftingItems[i];
+                Crafting.addRecipe(item.Id, item.Ingredients, item.Resultants, item.IsItem);
+            }
+        }
+        if (schema.Buffs) {
+            for (var i = 0; i < schema.Buffs.length; i++) {
+                var buff = schema.Buffs[i];
+                Buffs.register(buff.Id, buff.Name, buff.Description, buff.Duration);
+            }
+        }
+    }
+
+    function rateLimit(limited) {
+        rateLimitedElm.style.display = limited ? 'block' : 'none';
+    }
+
+    function toggleGatherer(id, enabled) {
+        var gathererAction = new Komodo.ClientActions.GathererAction();
+        gathererAction.Id = id;
+        gathererAction.Enabled = enabled;
+        actions.GathererActions.push(gathererAction);
+    }
+    Connection.toggleGatherer = toggleGatherer;
+
+    function updateGatherers(gatherers) {
+        for (var i = 0; i < gatherers.length; i++) {
+            var gatherer = gatherers[i];
+            Equipment.toggleGatherer(gatherer.Id, gatherer.Enabled);
+        }
+    }
+
+    function updateBuffs(buffs) {
+        for (var i = 0; i < buffs.length; i++) {
+            var buff = buffs[i];
+            Buffs.update(buff.Id, buff.TimeActive);
+        }
+    }
+
+    function receiveGlobalMessages(messages) {
+        for (var i = 0; i < messages.length; i++) {
+            var msg = messages[i];
+            Chat.receiveGlobalMessage(msg.Sender, msg.Text, msg.Time, msg.Permissions);
+        }
+    }
+
+    function updateProcessors(processors) {
+        for (var i = 0; i < processors.length; i++) {
+            var processor = processors[i];
+            Crafting.updateProcessor(processor.Id, processor.SelectedRecipe, processor.OperationDuration, processor.CompletedOperations, processor.TotalOperations, processor.Capacity);
+        }
+    }
+
+    function antiCheat(ac) {
+        Rock.moveRock(ac.X, ac.Y);
+    }
+
+    function updateStats(items) {
+        for (var i = 0; i < items.length; i++)
+            Statistics.changeStats(items[i].Id, items[i].PrestigeQuantity, items[i].LifeTimeQuantity);
+    }
+
+    function updateInventory(items) {
+        for (var i = 0; i < items.length; i++) {
+            Inventory.changeQuantity(items[i].Id, items[i].Quantity);
+            Inventory.changePrice(items[i].Id, items[i].Worth);
+        }
+    }
+
+    function updateInventoryConfigurations(items) {
+        for (var i = 0; i < items.length; i++)
+            Inventory.modifyConfig(items[i].Id, items[i].Enabled);
+    }
+
+    function updateStore(items) {
+        for (var i = 0; i < items.length; i++)
+            Store.changeQuantity(items[i].Id, items[i].Quantity, items[i].MaxQuantity, items[i].Price);
+    }
+
+    function drink(id) {
+        var potionAction = new Komodo.ClientActions.PotionAction();
+        potionAction.Id = id;
+        actions.PotionActions.push(potionAction);
+    }
+    Connection.drink = drink;
+
+    function mine(x, y) {
+        var miningAction = new Komodo.ClientActions.MiningAction();
+        miningAction.X = x;
+        miningAction.Y = y;
+        actions.MiningActions.push(miningAction);
+    }
+    Connection.mine = mine;
+
+    function sellItem(id, quantity) {
+        var inventoryAction = new Komodo.ClientActions.InventoryAction();
+        var sellAction = new Komodo.ClientActions.InventoryAction.SellAction();
+        sellAction.Id = id;
+        sellAction.Quantity = quantity;
+        inventoryAction.Sell = sellAction;
+        actions.InventoryActions.push(inventoryAction);
+    }
+    Connection.sellItem = sellItem;
+
+    function configureItem(id, enabled) {
+        var inventoryAction = new Komodo.ClientActions.InventoryAction();
+        var configAction = new Komodo.ClientActions.InventoryAction.ConfigAction();
+        configAction.Id = id;
+        configAction.Enabled = enabled;
+        inventoryAction.Config = configAction;
+        actions.InventoryActions.push(inventoryAction);
+        //ConfigAction
+    }
+    Connection.configureItem = configureItem;
+
+    function purchaseItem(id, quantity) {
+        var storeAction = new Komodo.ClientActions.StoreAction();
+        var purchaseAction = new Komodo.ClientActions.StoreAction.PurchaseAction();
+        purchaseAction.Id = id;
+        purchaseAction.Quantity = (quantity ? quantity : 1);
+        storeAction.Purchase = purchaseAction;
+        actions.StoreActions.push(storeAction);
+    }
+    Connection.purchaseItem = purchaseItem;
+
+    function sellAllItems() {
+        var inventoryAction = new Komodo.ClientActions.InventoryAction();
+        inventoryAction.SellAll = true;
+        actions.InventoryActions.push(inventoryAction);
+    }
+    Connection.sellAllItems = sellAllItems;
+
+    function craftRecipe(id, quantity) {
+        var craftingAction = new Komodo.ClientActions.CraftingAction();
+        craftingAction.Id = id;
+        craftingAction.Quantity = quantity;
+        actions.CraftingActions.push(craftingAction);
+    }
+    Connection.craftRecipe = craftRecipe;
+
+    function processRecipe(id, recipeIndex, iterations) {
+        var processingAction = new Komodo.ClientActions.ProcessingAction();
+        processingAction.Id = id;
+        processingAction.RecipeIndex = recipeIndex;
+        processingAction.Iterations = iterations;
+        actions.ProcessingActions.push(processingAction);
+    }
+    Connection.processRecipe = processRecipe;
+
+    function sendGlobalMessage(message) {
+        /*var clientActions = new Komodo.ClientActions();
+        var socialAction = new Komodo.ClientActions.SocialAction();
+        var chatAction = new Komodo.ClientActions.SocialAction.ChatAction();
+        chatAction.GlobalMessage = message;
+        socialAction.Chat = chatAction;
+        clientActions.SocialActions.push(socialAction);
+        
+        Connection.send(clientActions);*/
+        var socialAction = new Komodo.ClientActions.SocialAction();
+        var chatAction = new Komodo.ClientActions.SocialAction.ChatAction();
+        chatAction.GlobalMessage = message;
+        socialAction.Chat = chatAction;
+        actions.SocialActions.push(socialAction);
+    }
+    Connection.sendGlobalMessage = sendGlobalMessage;
+
+    function send(message) {
+        if (message.encode64) {
+            var encoded = message.encode64();
+            Chat.log("Sent " + roughSizeOfObject(encoded) + " bytes to komodo.");
+            Chat.log("Decoded: ");
+            Chat.log(JSON.stringify(message));
+            Chat.log("Encoded: ");
+            Chat.log(message.encode64());
+            Komodo.send(message.encode64());
+        } else {
+            Chat.log("Sent " + roughSizeOfObject(message) + " bytes to komodo.");
+            Komodo.send(message);
+        }
+    }
+    Connection.send = send;
+
+    function roughSizeOfObject(object) {
+        var objectList = [];
+        var stack = [object];
+        var bytes = 0;
+
+        while (stack.length) {
+            var value = stack.pop();
+
+            if (typeof value === 'boolean') {
+                bytes += 4;
+            } else if (typeof value === 'string') {
+                bytes += value.length * 2;
+            } else if (typeof value === 'number') {
+                bytes += 8;
+            } else if (typeof value === 'object' && objectList.indexOf(value) === -1) {
+                objectList.push(value);
+
+                for (var i in value) {
+                    stack.push(value[i]);
+                }
+            }
+        }
+        return bytes;
+    }
+})(Connection || (Connection = {}));

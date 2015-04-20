@@ -891,6 +891,10 @@ td {
     color: white;
 }
 
+.header-links > * {
+    padding-right: 7px;
+}
+
 .equipment-gatherer-container {
     width: 150px;
     height: 150px;
