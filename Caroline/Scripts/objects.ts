@@ -8,7 +8,9 @@
 
         name: string;
         quantity: number;
+        maxQuantity: number;
         lifeTimeTotal: number;
+        tooltip: string;
     }
 
     export function register(id: number, name: string) {
@@ -32,11 +34,26 @@
         return gameobjects[id].quantity;
     }
 
+    export function setMaxQuantity(id: number, maxQuantity: number) {
+        gameobjects[id].maxQuantity = maxQuantity;
+    }
+
+    export function getMaxQuantity(id: number) {
+        return gameobjects[id].maxQuantity;
+    }
+
     export function setLifeTimeTotal(id: number, quantity: number) {
         gameobjects[id].lifeTimeTotal = quantity;
     }
 
     export function getLifeTimeTotal(id: number) {
         return gameobjects[id].lifeTimeTotal;
+    }
+
+    export function setTooltip(id: number, tooltip:string) {
+        gameobjects[id].tooltip = tooltip;
+    }
+    export function getTooltip(id: number) {
+        return gameobjects[id].tooltip;
     }
 }

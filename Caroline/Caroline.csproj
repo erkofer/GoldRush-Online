@@ -37,7 +37,7 @@
     <TypeScriptSourceMap>true</TypeScriptSourceMap>
     <OutputPath>bin\</OutputPath>
     <TypeScriptModuleKind>amd</TypeScriptModuleKind>
-    <TypeScriptSourceMap> Scripts/utils.ts Scripts/modal.ts Scripts/objects.ts Scripts/register.ts Scripts/rock.ts Scripts/tabs.ts Scripts/connection.ts Scripts/chat.ts Scripts/buffs.ts Scripts/inventory.ts Scripts/store.ts Scripts/stats.ts Scripts/crafting.ts</TypeScriptSourceMap>
+    <TypeScriptSourceMap> Scripts/utils.ts Scripts/modal.ts Scripts/objects.ts Scripts/register.ts Scripts/rock.ts Scripts/tabs.ts Scripts/connection.ts Scripts/chat.ts Scripts/buffs.ts Scripts/inventory.ts Scripts/equipment.ts Scripts/store.ts Scripts/stats.ts Scripts/crafting.ts</TypeScriptSourceMap>
     <TypeScriptOutFile>game.js</TypeScriptOutFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -219,7 +219,8 @@
     <Compile Include="Areas\Api\Models\SuccessViewModel.cs" />
     <Compile Include="Connections\GameConnection.cs" />
     <Compile Include="Controllers\GameController.cs" />
-    <Compile Include="Controllers\StatsController.cs" />
+    <Compile Include="Areas\Api\Controllers\StatsController.cs" />
+    <Compile Include="Controllers\VersionController.cs" />
     <Compile Include="Extensions\ModelStateEx.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -304,6 +305,7 @@
     <Content Include="Content\Sprites\up.png" />
     <Content Include="Content\Sprites\Uranium.png" />
     <Content Include="Content\Stone.png" />
+    <Content Include="Content\version.css" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
@@ -379,6 +381,7 @@
     <Content Include="Views\Shared\Lockout.cshtml" />
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
     <Content Include="Scripts\ProtoBuf.min.map" />
+    <Content Include="Views\Version\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -428,6 +431,7 @@
     <TypeScriptCompile Include="Scripts\chat.ts" />
     <TypeScriptCompile Include="Scripts\connection.ts" />
     <TypeScriptCompile Include="Scripts\crafting.ts" />
+    <TypeScriptCompile Include="Scripts\equipment.ts" />
     <TypeScriptCompile Include="Scripts\inventory.ts" />
     <TypeScriptCompile Include="Scripts\modal.ts" />
     <TypeScriptCompile Include="Scripts\objects.ts" />
@@ -482,6 +486,17 @@
     <Exec Command="tsc$(TypeScriptSourceMap) -target ES5 --module amd --out Scripts/game.js" />
     <Exec Command="java -jar &quot;$(SolutionDir)Build\compiler.jar&quot; --js &quot;$(SolutionDir)Caroline\Scripts\game.js&quot; --js_output_file &quot;$(SolutionDir)Caroline\Scripts\game.min.js&quot;" />
     <Message Importance="high" Text="Building spritesheet." />
+    <Exec Command="&quot;$(SolutionDir)Build\Python27\Scripts\glue.exe&quot; --source &quot;$(SolutionDir)Caroline\Content\Sprites&quot; --output &quot;$(SolutionDir)Caroline\Content&quot; --css=&quot;$(SolutionDir)Caroline\Content&quot; --sprite-namespace= --namespace= --force">
+      <Output TaskParameter="ExitCode" PropertyName="TestGlueExitCode" />
+    </Exec>
+    <Message Importance="high" Text="$(TestGlueExitCode)" />
+    <Exec Command="&quot;$(SolutionDir)Build\SpriteRatio.exe&quot; -source &quot;$(SolutionDir)Caroline\Content\sprites.css&quot; -out &quot;$(SolutionDir)Caroline\Content\sprites.css&quot; -ratio 1,0.5,0.35,0.25 -rnames ,Half,Third,Quarter">
+      <Output TaskParameter="ExitCode" PropertyName="TestExitCode" />
+	</Exec>
+    <Message Importance="high" Text="$(TestExitCode)" />
+    <Exec Command="&quot;$(SolutionDir)Build\pngquant.exe&quot; &quot;$(SolutionDir)Caroline\Content\sprites.png&quot; --ext .png --force">
+      <Output TaskParameter="ExitCode" PropertyName="TestPNGExitCode" />
+    </Exec>
     <Message Importance="high" Text="$(TestGlueExitCode)" />
     <Message Importance="high" Text="$(TestExitCode)" />
     <Message Importance="high" Text="$(TestPNGExitCode)" />

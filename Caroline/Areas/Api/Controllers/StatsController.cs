@@ -4,12 +4,15 @@ using Caroline.Domain;
 using Caroline.Models;
 using Newtonsoft.Json;
 
-namespace Caroline.Controllers
+namespace Caroline.Areas.Api.Controllers
 {
     public class StatsController : Controller
     {
-        public async Task<string> LeaderBoard(int start, int end)
+        public async Task<string> LeaderBoard(LeaderboardRequest model)
         {
+            long start = model.Lower;
+            long end = model.Upper;
+
             if (start < 1)
                 start = 1;
             if (start > end)
@@ -26,7 +29,7 @@ namespace Caroline.Controllers
                 ret[i] = new LeaderboardEntry
                 {
                     Rank = start + i,
-                    Score = (long) entries[i].Score,
+                    Score = (long)entries[i].Score,
                     UserId = await db.GetUsername(entries[i].UserId) // TODO: log(count) round trips, batch db.GetUsername calls
                 };
             return JsonConvert.SerializeObject(ret);

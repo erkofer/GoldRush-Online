@@ -34,7 +34,7 @@ namespace GoldRush
                         Id = 1;
                     }
                 }
-                public int Worth;
+                public long Worth;
                 public GoldRush.Items.Category Category;
             }
 
@@ -101,7 +101,7 @@ namespace GoldRush
                     }
                 }
                 public double BaseResourcesPerSecond;
-                public int FuelConsumption;
+                public double FuelConsumption;
             }
 
             public static GathererConfig Player = new GathererConfig() { Name = "Player", BaseResourcesPerSecond = 1};
@@ -144,7 +144,7 @@ namespace GoldRush
 
                 }
 
-                public int BasePrice;
+                public long BasePrice;
                 public Store.Category Category;
                 // the maximum of this item you can purchase. 0 means infinite.
                 public int MaxQuantity = 1;

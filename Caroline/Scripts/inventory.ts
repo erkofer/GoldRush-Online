@@ -222,6 +222,7 @@ module Inventory {
 
 
         Tabs.registerGameTab(inventoryPane, 'Inventory');
+        Equipment.draw();
     }
 
     export function modifyConfig(id: number, enabled: boolean) {
@@ -361,6 +362,7 @@ module Inventory {
 
             var nameAndImage = document.createElement('DIV');
             nameAndImage.classList.add('item-text');
+            nameAndImage.style.height = 'auto';
             var nameSpan = document.createElement('SPAN');
             nameSpan.style.verticalAlign = 'top';
             var image = document.createElement('DIV');

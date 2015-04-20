@@ -68,6 +68,7 @@
     <Compile Include="GameSession.cs" />
     <Compile Include="Pair.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <!-- <Compile Include="SaveState.cs" /> -->
     <Compile Include="SaveState.cs" />
     <Compile Include="ScoreEntry.cs" />
     <Compile Include="User.cs" />

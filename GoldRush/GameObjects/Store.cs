@@ -152,7 +152,7 @@ namespace GoldRush
             public GameObjects.GameObject Currency;
             public int MaxQuantity { get { return _config.MaxQuantity; } }
             public Category Category { get { return _config.Category; } }
-            public int BasePrice { get { return _config.BasePrice; } }
+            public long BasePrice { get { return _config.BasePrice; } }
             public double Factor { get { return _config.Factor; } }
 
             GoldRush.GameConfig.StoreItems.StoreItemConfig _config;
@@ -163,7 +163,7 @@ namespace GoldRush
                 _config = config;
             }
 
-            public int GetPrice()
+            public long GetPrice()
             {
                 return (int)Math.Ceiling((Math.Pow(Factor, Item.Quantity))*Convert.ToDouble(BasePrice));
             }
@@ -179,7 +179,7 @@ namespace GoldRush
 
                 if ((Item.Quantity+quantity) > MaxQuantity && MaxQuantity > 0) return;
 
-                int price = GetPrice();
+                long price = GetPrice();
                 if ((price * quantity) > Currency.Quantity) return;
 
                 Currency.Quantity -= price*quantity;

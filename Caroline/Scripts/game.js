@@ -57,9 +57,13 @@
     }
     Utils.isNumber = isNumber;
 
-    function formatNumber(n) {
+    function formatNumber(n, detailed) {
+        if (typeof detailed === "undefined") { detailed = false; }
         if (!n)
             return '0';
+
+        if (detailed)
+            return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
         if (n > 999999999999999) {
             return (n / 1000000000000000).toFixed(3) + "Qa";
@@ -74,6 +78,11 @@
         }
     }
     Utils.formatNumber = formatNumber;
+
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    Utils.getRandomInt = getRandomInt;
 
     function formatTime(n) {
         var hours = Math.floor(n / 3600);
@@ -285,6 +294,16 @@ var Objects;
     }
     Objects.getQuantity = getQuantity;
 
+    function setMaxQuantity(id, maxQuantity) {
+        gameobjects[id].maxQuantity = maxQuantity;
+    }
+    Objects.setMaxQuantity = setMaxQuantity;
+
+    function getMaxQuantity(id) {
+        return gameobjects[id].maxQuantity;
+    }
+    Objects.getMaxQuantity = getMaxQuantity;
+
     function setLifeTimeTotal(id, quantity) {
         gameobjects[id].lifeTimeTotal = quantity;
     }
@@ -294,6 +313,15 @@ var Objects;
         return gameobjects[id].lifeTimeTotal;
     }
     Objects.getLifeTimeTotal = getLifeTimeTotal;
+
+    function setTooltip(id, tooltip) {
+        gameobjects[id].tooltip = tooltip;
+    }
+    Objects.setTooltip = setTooltip;
+    function getTooltip(id) {
+        return gameobjects[id].tooltip;
+    }
+    Objects.getTooltip = getTooltip;
 })(Objects || (Objects = {}));
 /// <reference path="typings/jquery/jquery.d.ts"/>
 var Account;
@@ -307,6 +335,98 @@ var Account;
     var loginErrors;
 
     var mouseTimeout;
+
+    var LeaderboardAjaxService = (function () {
+        function LeaderboardAjaxService() {
+        }
+        LeaderboardAjaxService.prototype.failed = function (request) {
+            this.resultsElement.textContent = 'Loading failed...';
+        };
+
+        LeaderboardAjaxService.prototype.succeeded = function (request) {
+            while (this.resultsElement.firstChild)
+                this.resultsElement.removeChild(this.resultsElement.firstChild);
+
+            var leaderboardTable = document.createElement('table');
+            var thead = leaderboardTable.createTHead();
+            var subheader = thead.insertRow(0);
+            subheader.classList.add('table-subheader');
+
+            var score = subheader.insertCell(0);
+            score.textContent = 'Score';
+            score.style.width = '65%';
+            var player = subheader.insertCell(0);
+            player.textContent = 'Name';
+            player.style.width = '25%';
+            var rank = subheader.insertCell(0);
+            rank.textContent = 'Rank';
+            rank.style.width = '10%';
+
+            var tbody = leaderboardTable.createTBody();
+
+            for (var i = 0; i < request.length; i++) {
+                var leaderboardEntry = request[i];
+                console.log(leaderboardEntry);
+
+                var row = tbody.insertRow(tbody.rows.length);
+                row.classList.add('table-row');
+
+                var rScore = row.insertCell(0);
+                rScore.textContent = Utils.formatNumber(leaderboardEntry.Score);
+                rScore.style.width = '65%';
+                rScore.addEventListener('click', function (event) {
+                    var score;
+                    var cell = event.target;
+
+                    if (cell.dataset) {
+                        score = cell.dataset['tooltip'];
+                    } else {
+                        score = cell.getAttribute('data-tooltip');
+                    }
+
+                    if (cell.textContent.indexOf(',') > 0) {
+                        cell.textContent = Utils.formatNumber(score);
+                    } else {
+                        cell.textContent = Utils.formatNumber(score, true);
+                    }
+                });
+
+                if (rScore.dataset) {
+                    rScore.dataset['tooltip'] = leaderboardEntry.Score;
+                } else {
+                    rScore.setAttribute('data-tooltip', leaderboardEntry.Score.toString());
+                }
+
+                var rPlayer = row.insertCell(0);
+                rPlayer.textContent = leaderboardEntry.UserId;
+                player.style.width = '25%';
+                var rRank = row.insertCell(0);
+                rRank.textContent = Utils.formatNumber(leaderboardEntry.Rank);
+                rRank.style.width = '10%';
+            }
+            this.resultsElement.appendChild(leaderboardTable);
+        };
+
+        LeaderboardAjaxService.prototype.sendRequest = function (lowerbound, upperbound) {
+            var self = this;
+
+            var request = $.ajax({
+                asyn: true,
+                type: 'POST',
+                url: '/Api/Stats/LeaderBoard/',
+                data: $.param({ Lower: lowerbound, Upper: upperbound }),
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                success: function (request) {
+                    request = JSON.parse(request);
+                    self.succeeded(request);
+                },
+                failure: function (request) {
+                    self.failed(request);
+                }
+            });
+        };
+        return LeaderboardAjaxService;
+    })();
 
     function draw() {
         container = document.createElement('DIV');
@@ -367,6 +487,13 @@ var Account;
             toggleMenu();
         });
 
+        var highscoresLink = document.createElement('SPAN');
+        highscoresLink.textContent = 'Leaderboards';
+        highscoresLink.addEventListener('click', function () {
+            leaderboardsModal();
+        });
+        document.getElementsByClassName('header-links')[0].appendChild(highscoresLink);
+
         info();
     }
     draw();
@@ -387,6 +514,21 @@ var Account;
 
         // styles the container depending on the status of the account.
         Utils.cssSwap(container, isAnon ? 'registered' : 'anonymous', isAnon ? 'anonymous' : 'registered');
+    }
+
+    function leaderboardsModal() {
+        var leaderboardModal = new modal.Window();
+        leaderboardModal.title = 'Leaderboards';
+        var leaderboardList = document.createElement('DIV');
+        leaderboardList.style.width = '400px';
+        leaderboardList.textContent = 'Loading...';
+        leaderboardModal.addElement(leaderboardList);
+
+        var leaderboardService = new LeaderboardAjaxService();
+        leaderboardService.resultsElement = leaderboardList;
+        leaderboardService.sendRequest(0, 19);
+
+        leaderboardModal.show();
     }
 
     function loginModal() {
@@ -583,7 +725,6 @@ var Account;
             url: '/Api/Account/Info',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             success: function (request) {
-                console.log(request);
                 request = JSON.parse(request);
                 updateUser(request.UserName, request.Anonymous);
             }
@@ -594,7 +735,9 @@ var Account;
 var Rock;
 (function (Rock) {
     var canvas = document.getElementById('rock');
+    var particleCanvas = document.getElementById('particles');
     var context = canvas.getContext('2d');
+    var particleContext = particleCanvas.getContext('2d');
     var relativeRockURL = '/Content/Rock.png';
     var relativeStoneURL = '/Content/Stone.png';
     var rockImage = new Image();
@@ -606,6 +749,40 @@ var Rock;
     var rockGrowth = 4;
     var rockIsBig = false;
     var mouseDown = false;
+    Rock.particles = new Array();
+
+    var Particle = (function () {
+        function Particle(x, y) {
+            this.width = 5;
+            this.height = 5;
+            this.dispose = false;
+            this.x = x;
+            this.y = y;
+            this.verticalVelocity = Utils.getRandomInt(-100, -155);
+            this.horizonalVelocity = Utils.getRandomInt(-50, 50);
+            this.width = Utils.getRandomInt(3, 6);
+            this.height = Utils.getRandomInt(3, 6);
+            this.rotation = Utils.getRandomInt(0, 180);
+            this.rotationalVelocity = Utils.getRandomInt(-75, 75);
+
+            this.lastTick = Date.now();
+        }
+        Particle.prototype.update = function () {
+            var timeSinceLastTick = Date.now() - this.lastTick;
+            this.lastTick = Date.now();
+            timeSinceLastTick /= 1000;
+
+            this.rotation += (this.rotationalVelocity * timeSinceLastTick);
+            this.y += (this.verticalVelocity * timeSinceLastTick);
+            this.x += (this.horizonalVelocity * timeSinceLastTick);
+            this.verticalVelocity += (200 * timeSinceLastTick);
+            if (this.y > 270) {
+                this.dispose = true;
+            }
+        };
+        return Particle;
+    })();
+    Rock.Particle = Particle;
 
     function initialize() {
         rockImage.onload = function () {
@@ -650,17 +827,24 @@ var Rock;
         };
     }
 
+    var released = true;
     function isOverRock(x, y) {
         if (x > lastX && x < (lastX + rockSize) && y > lastY && y < (lastY + rockSize)) {
-            if (!mouseDown)
+            if (!mouseDown) {
                 drawRock(lastX - (rockGrowth / 2), lastY - (rockGrowth / 2), rockSize + rockGrowth, rockSize + rockGrowth);
-            else
+                released = true;
+            } else {
                 drawRock(lastX + (rockGrowth / 2), lastY + (rockGrowth / 2), rockSize - rockGrowth, rockSize - rockGrowth);
+                if (released)
+                    addParticles(x, y);
+                released = false;
+            }
 
             rockIsBig = true;
         } else if (rockIsBig) {
             drawRock(lastX, lastY, rockSize, rockSize);
             rockIsBig = false;
+            released = true;
         }
     }
 
@@ -685,6 +869,64 @@ var Rock;
     function drawBackground() {
         context.drawImage(rockImage, 0, 0);
     }
+
+    function addParticles(x, y) {
+        var rand = Utils.getRandomInt(1, 3);
+        for (var i = 0; i < rand; i++) {
+            var xOffset = Utils.getRandomInt(-5, 5);
+            var yOffset = Utils.getRandomInt(-2, 2);
+            Rock.particles.push(new Particle(x + xOffset, y + yOffset));
+        }
+    }
+
+    var particleCache = document.createElement('canvas');
+    var cacheCtx = particleCache.getContext('2d');
+
+    function drawParticle(particle) {
+        particleCache.width = particle.width;
+        particleCache.height = particle.height;
+        cacheCtx.rect(0, 0, particle.width, particle.height);
+        cacheCtx.fillStyle = 'gray';
+        cacheCtx.fill();
+        cacheCtx.stroke();
+
+        particleContext.beginPath();
+
+        drawImageRot(particleContext, particleCache, particle.x, particle.y, particle.width, particle.height, particle.rotation);
+    }
+
+    function drawImageRot(ctx, img, x, y, width, height, deg) {
+        //Convert degrees to radian
+        var rad = deg * Math.PI / 180;
+
+        //Set the origin to the center of the image
+        ctx.translate(x + width / 2, y + height / 2);
+
+        //Rotate the canvas around the origin
+        ctx.rotate(rad);
+
+        //draw the image
+        ctx.drawImage(img, width / 2 * (-1), height / 2 * (-1), width, height);
+
+        //reset the canvas
+        ctx.rotate(rad * (-1));
+        ctx.translate((x + width / 2) * (-1), (y + height / 2) * (-1));
+    }
+
+    function updateParticles() {
+        particleContext.clearRect(0, 0, 250, 250);
+
+        for (var i = 0; i < Rock.particles.length; i++) {
+            var particle = Rock.particles[i];
+            particle.update();
+            drawParticle(particle);
+
+            if (particle.dispose) {
+                Rock.particles.splice(i, 1);
+            }
+        }
+    }
+    setInterval(updateParticles, 10);
 
     function drawRock(x, y, xScale, yScale) {
         clearCanvas();
@@ -810,42 +1052,38 @@ var Chat;
     function initialize() {
         if (!chatWindow) {
             chatWindow = document.createElement('DIV');
-            chatWindow.style.transition = 'all 0.2s';
+            chatWindow.classList.add('chat-window');
+            chatWindow.classList.add('social');
             chatWindow.id = 'chatWindow';
-            chatWindow.style.position = 'fixed';
-            chatWindow.style.bottom = '0px';
-            chatWindow.style.left = '0px';
-            chatWindow.style.minWidth = '400px';
-            chatWindow.style.width = '40%';
+
             chatWindow.style.backgroundColor = '#ebebeb';
             chatWindow.style.border = '1px solid #adadad';
-            chatWindow.style.height = '280px';
-            chatWindow.style.boxShadow = '1px -1px 2px rgb(200,200,200)';
 
             var chatHeader = document.createElement('DIV');
-            chatHeader.style.position = 'relative';
-            chatHeader.style.height = '30px';
+            chatHeader.classList.add('chat-header');
+
             chatHeader.style.backgroundColor = 'rgb(160, 160, 160)';
             chatWindow.appendChild(chatHeader);
 
             var chatCloser = document.createElement('DIV');
-            chatCloser.textContent = 'Collapse';
+            chatCloser.textContent = '_';
             chatCloser.style.position = 'absolute';
             chatCloser.style.top = '0';
             chatCloser.style.right = '0';
             chatCloser.addEventListener('click', function () {
-                var window = document.getElementById('chatWindow');
-                window.style.bottom = (window.style.bottom == '0px') ? '-251px' : '0px';
+                if (chatWindow.classList.contains('closed')) {
+                    chatWindow.classList.remove('closed');
+                    chatCloser.textContent = '_';
+                } else {
+                    chatWindow.classList.add('closed');
+                    chatCloser.textContent = '+';
+                }
             });
             chatHeader.appendChild(chatCloser);
 
             var chatRoomTab = document.createElement('DIV');
-            chatRoomTab.style.color = 'white';
-            chatRoomTab.style.fontSize = '18px';
-            chatRoomTab.style.height = '30px';
-            chatRoomTab.style.display = 'inline-block';
+            chatRoomTab.classList.add('chat-room-tab');
             chatRoomTab.textContent = 'General';
-            chatRoomTab.style.padding = '3px 10px';
             chatRoomTab.addEventListener('click', function () {
                 document.getElementById('debugpane').style.display = 'none';
                 document.getElementById('chatpane').style.display = 'block';
@@ -853,13 +1091,8 @@ var Chat;
             chatHeader.appendChild(chatRoomTab);
 
             var debugTab = document.createElement('DIV');
-            debugTab.style.color = 'white';
-            debugTab.id = 'debugtab';
-            debugTab.style.fontSize = '18px';
-            debugTab.style.height = '30px';
-            debugTab.style.display = 'inline-block';
+            debugTab.classList.add('chat-room-tab');
             debugTab.textContent = '>Dev';
-            debugTab.style.padding = '3px 10px';
             debugTab.addEventListener('click', function () {
                 document.getElementById('debugpane').style.display = 'block';
                 document.getElementById('chatpane').style.display = 'none';
@@ -869,45 +1102,34 @@ var Chat;
 
             debugLogContainer = document.createElement('DIV');
             debugLogContainer.id = 'debugpane';
-            debugLogContainer.style.width = '100%';
-            debugLogContainer.style.height = '230px';
+            debugLogContainer.classList.add('chat-room');
             debugLogContainer.style.display = 'none';
-            debugLogContainer.style.position = 'relative';
             chatWindow.appendChild(debugLogContainer);
 
             chatLogContainer = document.createElement('DIV');
             chatLogContainer.id = 'chatpane';
-            chatLogContainer.style.width = '100%';
-            chatLogContainer.style.height = '230px';
-            chatLogContainer.style.position = 'relative';
+            chatLogContainer.classList.add('chat-room');
             chatWindow.appendChild(chatLogContainer);
 
             var debugLog = document.createElement('DIV');
             debugLog.id = 'debuglog';
-            debugLog.style.position = 'absolute';
-            debugLog.style.bottom = '0px';
-            debugLog.style.maxHeight = '230px';
-            debugLog.style.width = '100%';
-            debugLog.style.overflow = 'auto';
+            debugLog.classList.add('chat-room-content');
             debugLogContainer.appendChild(debugLog);
 
             var chatLog = document.createElement('DIV');
             chatLog.id = 'chatlog';
-            chatLog.style.position = 'absolute';
-            chatLog.style.bottom = '0px';
-            chatLog.style.maxHeight = '230px';
-            chatLog.style.width = '100%';
-            chatLog.style.overflow = 'auto';
+            chatLog.classList.add('chat-room-content');
             chatLogContainer.appendChild(chatLog);
+
+            var chatSendingContainer = document.createElement('DIV');
+
+            var chatInputContainer = document.createElement('DIV');
+            chatInputContainer.classList.add('chat-textbox-container');
 
             var chatInput = document.createElement('INPUT');
             chatInput.setAttribute('TYPE', 'TEXT');
-            chatInput.style.width = '100%';
-            chatInput.style.maxWidth = 'none';
-            chatInput.style.height = '20px';
-            chatInput.style.border = 'none';
+            chatInput.classList.add('chat-textbox');
             chatInput.style.borderTop = '1px solid #adadad';
-            chatInput.style.width = '85%';
             chatInput.setAttribute('maxlength', '220');
             chatInput.addEventListener('keydown', function (e) {
                 if (e.keyCode == 13)
@@ -917,21 +1139,24 @@ var Chat;
                     document.getElementById('debugtab').style.display = 'inline-block';
             });
             chatInput.id = 'chattext';
-            chatWindow.appendChild(chatInput);
+            chatInputContainer.appendChild(chatInput);
+            chatSendingContainer.appendChild(chatInputContainer);
+
+            var chatSendContainer = document.createElement('DIV');
+            chatSendContainer.classList.add('chat-submit-container');
 
             var chatSend = document.createElement('INPUT');
             chatSend.setAttribute('TYPE', 'BUTTON');
             chatSend.setAttribute('VALUE', 'SEND');
-            chatSend.style.height = '20px';
-            chatSend.style.width = '15%';
-            chatSend.style.fontSize = '13px';
-            chatSend.style.border = 'none';
+            chatSend.classList.add('chat-submit');
             chatSend.style.borderTop = '1px solid #adadad';
             chatSend.style.borderLeft = '1px solid #adadad';
             chatSend.addEventListener('click', function () {
                 sendGlobalMessagePress();
             });
-            chatWindow.appendChild(chatSend);
+            chatSendContainer.appendChild(chatSend);
+            chatSendingContainer.appendChild(chatSendContainer);
+            chatWindow.appendChild(chatSendingContainer);
 
             document.body.appendChild(chatWindow);
         }
@@ -954,6 +1179,10 @@ var Chat;
 
     function receiveGlobalMessage(sender, message, time, perms) {
         var chatLog = document.getElementById('chatlog');
+
+        var difference = chatLog.scrollTop - (chatLog.scrollHeight - chatLog.offsetHeight);
+        var scrolledDown = Math.abs(difference) < 5;
+
         var chatItem = document.createElement('DIV');
         chatItem.classList.add('chat-msg');
         if (perms && perms != '')
@@ -974,6 +1203,9 @@ var Chat;
         chatItem.appendChild(messageSpan);
 
         chatLog.appendChild(chatItem);
+
+        if (scrolledDown)
+            chatLog.scrollTop = chatLog.scrollHeight;
     }
     Chat.receiveGlobalMessage = receiveGlobalMessage;
 })(Chat || (Chat = {}));
@@ -1384,6 +1616,7 @@ var Inventory;
         inventoryPane.appendChild(inventory);
 
         Tabs.registerGameTab(inventoryPane, 'Inventory');
+        Equipment.draw();
     }
 
     function modifyConfig(id, enabled) {
@@ -1527,6 +1760,7 @@ var Inventory;
             }*/
             var nameAndImage = document.createElement('DIV');
             nameAndImage.classList.add('item-text');
+            nameAndImage.style.height = 'auto';
             var nameSpan = document.createElement('SPAN');
             nameSpan.style.verticalAlign = 'top';
             var image = document.createElement('DIV');
@@ -1602,17 +1836,33 @@ var Connection;
 (function (Connection) {
     var conInterval;
     var disconInterval;
+    var notificationElm;
     var networkErrorElm;
+    var rateLimitedElm;
 
     function init() {
+        notificationElm = document.createElement('div');
+        notificationElm.classList.add('error-notification-tray');
+        notificationElm.style.display = 'none';
+
         networkErrorElm = document.createElement('div');
         networkErrorElm.classList.add('network-error');
         var networkErrorText = document.createElement('div');
         networkErrorText.classList.add('network-error-text');
         networkErrorText.textContent = 'No connection';
         networkErrorElm.appendChild(networkErrorText);
+
+        rateLimitedElm = document.createElement('div');
+        rateLimitedElm.classList.add('rate-limited');
+        var rateLimitText = document.createElement('div');
+        rateLimitText.classList.add('network-error-text');
+        rateLimitText.textContent = 'You have exceeded your allotted requests';
+        rateLimitedElm.appendChild(rateLimitText);
+
         var game = document.getElementById('game');
-        game.insertBefore(networkErrorElm, game.childNodes[0]);
+        notificationElm.appendChild(networkErrorElm);
+        notificationElm.appendChild(rateLimitedElm);
+        game.insertBefore(notificationElm, game.childNodes[0]);
     }
     init();
 
@@ -1665,6 +1915,12 @@ var Connection;
         if (msg.Buffs != null) {
             updateBuffs(msg.Buffs);
         }
+        if (msg.IsRateLimited != null) {
+            rateLimit(msg.IsRateLimited);
+        }
+        if (msg.Gatherers != null) {
+            updateGatherers(msg.Gatherers);
+        }
     });
 
     function restart() {
@@ -1677,19 +1933,18 @@ var Connection;
     Komodo.connection.stateChanged(function (change) {
         if (change.newState === $.signalR.connectionState.connected) {
             connected();
-            networkErrorElm.style.marginTop = '-21px';
+            networkErrorElm.style.display = 'none';
         }
         if (change.newState === $.signalR.connectionState.disconnected) {
             clearInterval(conInterval);
-            networkErrorElm.style.marginTop = '0px';
+            networkErrorElm.style.display = 'block';
         }
         if (change.newState === $.signalR.connectionState.reconnecting) {
-            networkErrorElm.style.marginTop = '0px';
+            networkErrorElm.style.display = 'block';
         }
     });
 
     function connected() {
-        networkErrorElm.style.top = '-21px';
         console.log('Connection opened');
         var encoded = actions.encode64();
         send(encoded);
@@ -1725,7 +1980,7 @@ var Connection;
         if (schema.StoreItems) {
             for (var i = 0; i < schema.StoreItems.length; i++) {
                 var item = schema.StoreItems[i];
-                Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.MaxQuantity);
+                Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.MaxQuantity, item.Tooltip);
             }
         }
 
@@ -1749,6 +2004,25 @@ var Connection;
                 var buff = schema.Buffs[i];
                 Buffs.register(buff.Id, buff.Name, buff.Description, buff.Duration);
             }
+        }
+    }
+
+    function rateLimit(limited) {
+        rateLimitedElm.style.display = limited ? 'block' : 'none';
+    }
+
+    function toggleGatherer(id, enabled) {
+        var gathererAction = new Komodo.ClientActions.GathererAction();
+        gathererAction.Id = id;
+        gathererAction.Enabled = enabled;
+        actions.GathererActions.push(gathererAction);
+    }
+    Connection.toggleGatherer = toggleGatherer;
+
+    function updateGatherers(gatherers) {
+        for (var i = 0; i < gatherers.length; i++) {
+            var gatherer = gatherers[i];
+            Equipment.toggleGatherer(gatherer.Id, gatherer.Enabled);
         }
     }
 
@@ -1994,6 +2268,64 @@ var Buffs;
     Buffs.update = update;
     init();
 })(Buffs || (Buffs = {}));
+var Equipment;
+(function (Equipment) {
+    var gatherers = new Array();
+    var equipmentPane;
+
+    var Gatherer = (function () {
+        function Gatherer() {
+        }
+        return Gatherer;
+    })();
+
+    function draw() {
+        if (equipmentPane)
+            return;
+
+        equipmentPane = document.createElement('div');
+        document.getElementById('paneContainer').appendChild(equipmentPane);
+        Tabs.registerGameTab(equipmentPane, 'Equipment');
+    }
+    Equipment.draw = draw;
+
+    function registerGatherer(id) {
+        if (gatherers[id])
+            return;
+
+        var gatherer = new Gatherer();
+        gatherers[id] = gatherer;
+        drawGatherer(id);
+    }
+    Equipment.registerGatherer = registerGatherer;
+
+    function drawGatherer(id) {
+        var gatherer = gatherers[id];
+        var container = document.createElement('div');
+        container.classList.add('equipment-gatherer-container');
+        var header = document.createElement('div');
+        header.textContent = Objects.lookupName(id);
+        var toggle = Utils.createButton('Disable', '');
+        toggle.addEventListener('click', function () {
+            Connection.toggleGatherer(id, !gatherer.enabled);
+        });
+        container.appendChild(header);
+        container.appendChild(toggle);
+        gatherer.toggleElm = toggle.firstChild;
+
+        equipmentPane.appendChild(container);
+    }
+
+    function toggleGatherer(id, enabled) {
+        var gatherer = gatherers[id];
+        if (!gatherer)
+            return;
+        console.log(enabled);
+        gatherer.enabled = enabled;
+        gatherer.toggleElm.textContent = enabled ? 'Disable' : 'Enable';
+    }
+    Equipment.toggleGatherer = toggleGatherer;
+})(Equipment || (Equipment = {}));
 var Store;
 (function (Store) {
     var storePane;
@@ -2049,20 +2381,28 @@ var Store;
     }
     Store.tempFix = tempFix;
 
-    function addItem(id, category, price, factor, name, maxQuantity) {
+    function addItem(id, category, price, factor, name, maxQuantity, tooltip) {
         if (!storePane)
             draw();
 
         if (!items[id]) {
+            Objects.register(id, name);
+
             var item = new StoreItem();
             item.id = id;
             item.category = category;
             item.price = price;
             item.factor = factor;
             item.name = name;
+            item.tooltip = tooltip;
             item.maxQuantity = maxQuantity ? maxQuantity : 0;
 
             Objects.register(item.id, item.name);
+            Objects.setTooltip(item.id, item.tooltip);
+
+            if (item.category == 2 /* MACHINES */) {
+                Equipment.registerGatherer(item.id);
+            }
 
             var categoryContainer = categories[Category[category]];
             if (categoryContainer == null) {
@@ -2119,6 +2459,9 @@ var Store;
 
     function drawItem(item) {
         var itemContainer = document.createElement('div');
+        if (item.tooltip != "undefined") {
+            tooltip.create(itemContainer, item.tooltip);
+        }
         itemContainer.classList.add('store-item');
         item.container = itemContainer;
         var header = document.createElement('div');
@@ -2834,7 +3177,7 @@ var Crafting;
                 for (var x = 0; x < recipe.ingredients.length; x++) {
                     var ingredientBox = document.createElement('DIV');
                     ingredientBox.classList.add('item-text');
-                    ingredientBox.style.height = '22px';
+                    ingredientBox.style.height = 'auto';
                     var ingredientImage = document.createElement('DIV');
                     ingredientImage.style.display = 'inline-block';
                     var ingredientQuantity = document.createElement('DIV');
@@ -2850,11 +3193,15 @@ var Crafting;
                 }
             }
 
+            if (cellDescriptions[i] == "Description") {
+                cell.textContent = Objects.getTooltip(recipe.resultants[0].id);
+            }
+
             if (cellDescriptions[i] == "Output") {
                 for (var x = 0; x < recipe.resultants.length; x++) {
                     var ingredientBox = document.createElement('DIV');
                     ingredientBox.classList.add('item-text');
-                    ingredientBox.style.height = '22px';
+                    ingredientBox.style.height = 'auto';
                     var ingredientImage = document.createElement('DIV');
                     ingredientImage.style.display = 'inline-block';
                     var ingredientQuantity = document.createElement('DIV');

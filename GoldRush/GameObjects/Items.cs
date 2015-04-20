@@ -39,7 +39,7 @@ namespace GoldRush
 
             /*foreach (var item in items)
                 item.Quantity = 100;*/
-            Coins.Quantity = 500000000;
+            Coins.Quantity = 5000000000;
 
         }
         private List<Item> items = new List<Item>();
@@ -149,14 +149,14 @@ namespace GoldRush
                 IncludeInSellAll = false;
             }
 
-            private int quantity { get { return base.Quantity; } set { base.Quantity = value; } }
+            private long quantity { get { return base.Quantity; } set { base.Quantity = value; } }
 
-            public override int Quantity
+            public override long Quantity
             {
                 get { return quantity; }
                 set
                 {
-                    int difference = value - quantity;
+                    long difference = value - quantity;
                     if (difference > 0)
                     {
                         PrestigeTimeTotal += difference;
@@ -179,8 +179,8 @@ namespace GoldRush
                 }
             }
 
-            public int PrestigeTimeTotal { get; set; }
-            public int LifeTimeTotal { get; set; }
+            public long PrestigeTimeTotal { get; set; }
+            public long LifeTimeTotal { get; set; }
 
             public bool IncludeInSellAll { get; set; }
 
@@ -190,7 +190,7 @@ namespace GoldRush
             /// <summary>
             /// How much the item is worth at base.
             /// </summary>
-            public int Worth { get { return _config.Worth; } }
+            public long Worth { get { return _config.Worth; } }
 
 
             private double worthMultiplier = 1;
@@ -207,9 +207,9 @@ namespace GoldRush
             /// <summary>
             /// The items worth multiplied by the current item worth modifier.
             /// </summary>
-            public int Value
+            public long Value
             {
-                get { return (int)Math.Floor(Worth * (WorthMultiplier)); }
+                get { return (long)Math.Floor(Worth * (WorthMultiplier)); }
             }
 
             public GoldRush.Crafting.Recipe Recipe { get; set; }
@@ -229,7 +229,7 @@ namespace GoldRush
                 Sell(1);
             }
 
-            public void Sell(int iterations)
+            public void Sell(long iterations)
             {
                 iterations = Math.Min(Quantity, iterations);
                 Quantity -= iterations;

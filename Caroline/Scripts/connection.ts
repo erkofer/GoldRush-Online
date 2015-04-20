@@ -5,17 +5,33 @@ module Connection {
     declare var Komodo: { connection: any; ClientActions: any; decode: any; send: any; restart: any };
     var conInterval;
     var disconInterval;
+    var notificationElm;
     var networkErrorElm;
-
+    var rateLimitedElm;
+    
     function init() {
+        notificationElm = document.createElement('div');
+        notificationElm.classList.add('error-notification-tray');
+        notificationElm.style.display = 'none';
+
         networkErrorElm = document.createElement('div');
         networkErrorElm.classList.add('network-error');
         var networkErrorText = document.createElement('div');
         networkErrorText.classList.add('network-error-text');
         networkErrorText.textContent = 'No connection';
         networkErrorElm.appendChild(networkErrorText);
+
+        rateLimitedElm = document.createElement('div');
+        rateLimitedElm.classList.add('rate-limited');
+        var rateLimitText = document.createElement('div');
+        rateLimitText.classList.add('network-error-text');
+        rateLimitText.textContent = 'You have exceeded your allotted requests';
+        rateLimitedElm.appendChild(rateLimitText);
+
         var game = document.getElementById('game');
-        game.insertBefore(networkErrorElm, game.childNodes[0]);
+        notificationElm.appendChild(networkErrorElm);
+        notificationElm.appendChild(rateLimitedElm);
+        game.insertBefore(notificationElm, game.childNodes[0]);
     }
     init();
 
@@ -62,6 +78,12 @@ module Connection {
         if(msg.Buffs != null){
             updateBuffs(msg.Buffs);
         }
+        if (msg.IsRateLimited != null) {
+            rateLimit(msg.IsRateLimited);
+        }
+        if (msg.Gatherers != null) {
+            updateGatherers(msg.Gatherers);
+        }
     });
 
     export function restart() {
@@ -74,19 +96,18 @@ module Connection {
     Komodo.connection.stateChanged(function (change) {
         if (change.newState === (<any>$).signalR.connectionState.connected) {
             connected();
-            networkErrorElm.style.marginTop = '-21px';
+            networkErrorElm.style.display = 'none';
         }
         if (change.newState === (<any>$).signalR.connectionState.disconnected) {
             clearInterval(conInterval);
-            networkErrorElm.style.marginTop = '0px';
+            networkErrorElm.style.display = 'block';
         }
         if (change.newState === (<any>$).signalR.connectionState.reconnecting) {
-            networkErrorElm.style.marginTop = '0px';
+            networkErrorElm.style.display = 'block';
         }
     });
 
     function connected() {
-        networkErrorElm.style.top = '-21px';
         console.log('Connection opened');
         var encoded = actions.encode64();
         send(encoded);
@@ -122,7 +143,7 @@ module Connection {
         if (schema.StoreItems) {
             for (var i = 0; i < schema.StoreItems.length; i++) {
                 var item = schema.StoreItems[i];
-                Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.MaxQuantity);
+                Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.MaxQuantity,item.Tooltip);
             }
         }
 
@@ -146,6 +167,24 @@ module Connection {
                 var buff = schema.Buffs[i];
                 Buffs.register(buff.Id, buff.Name, buff.Description, buff.Duration);
             }
+        }
+    }
+
+    function rateLimit(limited: any) {
+        rateLimitedElm.style.display = limited ? 'block' : 'none';
+    }
+
+    export function toggleGatherer(id: number, enabled: boolean) {
+        var gathererAction = new Komodo.ClientActions.GathererAction();
+        gathererAction.Id = id;
+        gathererAction.Enabled = enabled;
+        actions.GathererActions.push(gathererAction);
+    }
+
+    function updateGatherers(gatherers: any) {
+        for (var i = 0; i < gatherers.length; i++) {
+            var gatherer = gatherers[i];
+            Equipment.toggleGatherer(gatherer.Id, gatherer.Enabled);
         }
     }
 

@@ -10,8 +10,8 @@ message GameState {
 	
 	message Item {
 		optional int32 Id = 1;
-		optional int32 Quantity = 2 [default = -100];
-		optional int32 Worth = 3 [default = -100];
+		optional int64 Quantity = 2 [default = -100];
+		optional int64 Worth = 3 [default = -100];
 	}
 	repeated Item Items = 2;
 
@@ -36,7 +36,7 @@ message GameState {
 
 			optional int32 Id = 1;
 			optional string Name = 2;
-			optional int32 Worth = 3 [default = -100];
+			optional int64 Worth = 3 [default = -100];
 			optional Section Category=4;
 		}
 		repeated SchemaItem Items = 1;
@@ -52,17 +52,18 @@ message GameState {
 			}
 			optional Section Category=1;
 			optional string Name=2;
-			optional int32 Price=3 [default = -100];
+			optional int64 Price=3 [default = -100];
 			optional double Factor=4 [default = -100];
 			optional int32 Id=5 [default = -100];
 			optional int32 MaxQuantity=6 [default = -100];
+			optional string Tooltip=7;
 		}
 		repeated SchemaStoreItem StoreItems=2;
 
 		message SchemaCraftingItem {
 			message Ingredient {
 				optional int32 Id=1;
-				optional int32 Quantity=2 [default = -100];
+				optional int64 Quantity=2 [default = -100];
 			}
 
 			optional int32 Id=1 [default = -100];
@@ -76,7 +77,7 @@ message GameState {
 			message Recipe {
 				message Ingredient {
 					optional int32 Id=1 [default = -100];
-					optional int32 Quantity=2 [default = -100];
+					optional int64 Quantity=2 [default = -100];
 				}
 				repeated Ingredient Ingredients=1;
 				repeated Ingredient Resultants =2;
@@ -101,16 +102,16 @@ message GameState {
 
 	message StoreItem {
 		optional int32 Id = 1;
-		optional sint32 Quantity = 2 [default = -100];
+		optional int64 Quantity = 2 [default = -100];
 		optional int32 MaxQuantity = 3 [default = -100];
-		optional int32 Price = 4 [default=-100];
+		optional int64 Price = 4 [default=-100];
 	}
 	repeated StoreItem StoreItemsUpdate=5;
 
 	message StatItem {
 		optional int32 Id = 1;
-		optional int32 PrestigeQuantity = 2 [default = -100];
-		optional int32 LifeTimeQuantity = 3 [default = -100];
+		optional int64 PrestigeQuantity = 2 [default = -100];
+		optional int64 LifeTimeQuantity = 3 [default = -100];
 	}
 	repeated StatItem StatItemsUpdate=6;
 
@@ -142,5 +143,13 @@ message GameState {
 	}
 	repeated Buff Buffs = 10;
 	optional bool IsRateLimited = 11;
+
+	optional int32 ConnectedUsers=12[default = -100];
+
+	message Gatherer {
+		optional int32 Id=1;
+		optional bool Enabled=2;
+	}
+	repeated Gatherer Gatherers = 13;
 } 
 

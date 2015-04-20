@@ -19,6 +19,7 @@
         quantity: number;
         maxQuantity: number;
         name: string;
+        tooltip: string;
         priceElm: HTMLElement;
         nameElm: HTMLElement;
         container: HTMLElement;
@@ -63,20 +64,28 @@
         draw();
     }
 
-    export function addItem(id: number, category: Category, price: number, factor: number, name: string, maxQuantity:number) {
+    export function addItem(id: number, category: Category, price: number, factor: number, name: string, maxQuantity:number, tooltip:string) {
         if (!storePane)
             draw();
 
         if (!items[id]) { // if we haven't already drawn this item.
+            Objects.register(id, name);
+
             var item = new StoreItem();
             item.id = id;
             item.category = category;
             item.price = price;
             item.factor = factor;
             item.name = name;
+            item.tooltip = tooltip;
             item.maxQuantity = maxQuantity ? maxQuantity : 0;
 
             Objects.register(item.id, item.name);
+            Objects.setTooltip(item.id, item.tooltip);
+
+            if (item.category == Category.MACHINES) {
+                Equipment.registerGatherer(item.id);
+            }
 
             var categoryContainer = categories[Category[category]];
             if (categoryContainer == null) {
@@ -97,7 +106,8 @@
                 try {
                     item.maxQuantity = maxQuantity;
                     item.maxQuantityElm.textContent = maxQuantity.toString();
-                }catch(err){
+                   
+                } catch (err) {
                     
                 }
             }
@@ -132,6 +142,9 @@
 
     function drawItem(item: StoreItem):HTMLElement {
         var itemContainer = document.createElement('div');
+        if (item.tooltip != "undefined") {
+            tooltip.create(itemContainer, item.tooltip);
+        }
         itemContainer.classList.add('store-item');
         item.container = itemContainer;
         var header = document.createElement('div');

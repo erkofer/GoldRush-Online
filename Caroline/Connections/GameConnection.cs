@@ -8,6 +8,7 @@ using Caroline.Persistence.Redis;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.SignalR;
 using System;
+using System.Collections.Generic;
 using Caroline.App.Models;
 
 namespace Caroline.Connections
@@ -16,14 +17,27 @@ namespace Caroline.Connections
     {
         readonly IGameManager _gameManager = new GameManager();
 
+        private static List<string> UserIdList = new List<string>();   
+
         protected override async Task OnConnected(IRequest request, string connectionId)
         {
+            if(UserIdList.IndexOf(connectionId) == -1)
+                UserIdList.Add(connectionId);
+
             await AnonymousProfileApi.GenerateAnonymousProfileIfNotAuthenticated(request.GetHttpContext());
         }
 
         protected override async Task OnReceived(IRequest request, string connectionId, string data)
         {
             await Update(request, connectionId, data);
+        }
+
+        protected override Task OnDisconnected(IRequest request, string connectionId, bool stopCalled)
+        {
+            if (UserIdList.IndexOf(connectionId) > -1)
+                UserIdList.Remove(connectionId);
+
+            return base.OnDisconnected(request, connectionId, stopCalled);
         }
 
         async Task Update(IRequest request, string connectionId, string data = null)
@@ -36,6 +50,7 @@ namespace Caroline.Connections
             var gameEndpoint = new GameSessionEndpoint(endpoint, userId);
 
             var state = await _gameManager.Update(gameEndpoint, actions);
+            state.ConnectedUsers = UserIdList.Count;
             if (state != null)
                 await Connection.Send(connectionId, ProtoBufHelpers.SerializeToString(state));
 
@@ -74,8 +89,8 @@ namespace Caroline.Connections
 
         private void SendGlobalChatMessage(string sender, string text, string time)
         {
-            string[] developers = new string[] { "Developer", "Hunter" };
-            string[] moderators = new string[] { "scrublord" };
+            string[] developers = new string[] { "Tristyn", "Hunter" };
+            string[] moderators = new string[] { "Ell dubs" };
             string[] server = new string[] { "Server" };
             var maxMessageLength = 220;
 

@@ -213,7 +213,7 @@ namespace GoldRush
         internal class Upgrade : GameObjects.GameObject
         {
             public Upgrade(UpgradeEffect effect, GameConfig.Upgrades.UpgradeConfig config)
-                :base(config)
+                : base(config)
             {
                 Effect = effect;
             }
@@ -236,7 +236,10 @@ namespace GoldRush
                 }
             }
 
-            public string Tooltip { get { return Effect.Tooltip; } }
+            public override string Tooltip
+            {
+                get { return Effect.Tooltip; }
+            }
 
             public UpgradeEffect Effect { get; set; }
         }
@@ -672,3 +675,4 @@ namespace GoldRush
         #endregion
     }
 }
+

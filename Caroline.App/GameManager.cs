@@ -3,6 +3,8 @@ using Caroline.Domain;
 using Caroline.Persistence.Models;
 using GoldRush.APIs;
 using Caroline.App.Models;
+using Caroline.Domain.Models;
+using ProtoBuf;
 
 namespace Caroline.App
 {
@@ -21,7 +23,7 @@ namespace Caroline.App
             if (IsRateLimited(session))
                 return new GameState { IsError = true, IsRateLimited = true };
 
-
+            var user = await userDto.GetUser();
             // get game save
             var save = await userDto.GetGame();
 
@@ -34,11 +36,15 @@ namespace Caroline.App
 
             // save to the database
             var saveDto = game.Save();
+            saveDto.SaveState.Id = save.Id;
             // session gets modified by update
             await userDto.SetSession(session);
             saveDto.SaveState.Id = userId;
             await userDto.SetGame(saveDto.SaveState);
-            await manager.SetLeaderboardEntry(userId, updateDto.Score);
+
+            //TODO:Do not save if user is anonymous.
+            if (!user.IsAnonymous)
+                await manager.SetLeaderboardEntry(userId, updateDto.Score);
 
             // dispose lock on user, no more reading/saving
             await userDto.DisposeAsync();

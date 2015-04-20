@@ -1,6 +1,8 @@
 ﻿module Rock {
     var canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('rock');
+    var particleCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('particles');
     var context = canvas.getContext('2d');
+    var particleContext = particleCanvas.getContext('2d');
     var relativeRockURL: string = '/Content/Rock.png';
     var relativeStoneURL: string = '/Content/Stone.png';
     var rockImage = new Image();
@@ -12,6 +14,47 @@
     var rockGrowth = 4;
     var rockIsBig = false;
     var mouseDown = false;
+    export var particles = new Array<Particle>();
+
+    export class Particle {
+        constructor(x: number, y: number) {
+            this.x = x;
+            this.y = y;
+            this.verticalVelocity = Utils.getRandomInt(-100,-155);
+            this.horizonalVelocity = Utils.getRandomInt(-50, 50);
+            this.width = Utils.getRandomInt(3, 6);
+            this.height = Utils.getRandomInt(3, 6);
+            this.rotation = Utils.getRandomInt(0, 180);
+            this.rotationalVelocity = Utils.getRandomInt(-75, 75);
+            
+            this.lastTick = Date.now();
+        }
+
+        x: number;
+        y: number;
+        width: number = 5;
+        height: number =5;
+        rotation: number;
+        rotationalVelocity:number;
+        verticalVelocity: number;
+        horizonalVelocity: number;
+        lastTick: number;
+        dispose: boolean=false;
+
+        update() {
+            var timeSinceLastTick = Date.now() - this.lastTick;
+            this.lastTick = Date.now();
+            timeSinceLastTick /= 1000;
+
+            this.rotation += (this.rotationalVelocity * timeSinceLastTick);
+            this.y += (this.verticalVelocity * timeSinceLastTick);
+            this.x += (this.horizonalVelocity * timeSinceLastTick);
+            this.verticalVelocity += (200 * timeSinceLastTick);
+            if (this.y > 270) {
+                this.dispose = true;
+            }
+        }
+    }
 
     function initialize() {
         rockImage.onload = function () {
@@ -56,18 +99,25 @@
         };
     }
 
+    var released = true;
     function isOverRock(x: number, y: number) {
         if (x > lastX && x < (lastX + rockSize) && y > lastY && y < (lastY + rockSize)) {
-            if(!mouseDown)
+            if (!mouseDown) {
                 drawRock(lastX - (rockGrowth / 2), lastY - (rockGrowth / 2), rockSize + rockGrowth, rockSize + rockGrowth);
-            else
+                released = true;
+            } else {
                 drawRock(lastX + (rockGrowth / 2), lastY + (rockGrowth / 2), rockSize - rockGrowth, rockSize - rockGrowth);
+                if (released)
+                    addParticles(x, y);
+                released = false;
+            }
 
             rockIsBig = true;
         }
         else if (rockIsBig) {
             drawRock(lastX, lastY, rockSize, rockSize);
             rockIsBig = false;
+            released = true;
         }
     }
 
@@ -89,6 +139,68 @@
     function drawBackground() {
         context.drawImage(rockImage, 0, 0);
     }
+
+    function addParticles(x: number, y: number) {
+        var rand = Utils.getRandomInt(1, 3);
+        for (var i = 0; i < rand; i++) {
+            var xOffset = Utils.getRandomInt(-5, 5);
+            var yOffset = Utils.getRandomInt(-2, 2);
+            particles.push(new Particle(x+xOffset, y+yOffset));
+        }
+    }
+
+    var particleCache = document.createElement('canvas');
+    var cacheCtx = particleCache.getContext('2d');
+
+    function drawParticle(particle: Particle) {
+        particleCache.width = particle.width;
+        particleCache.height = particle.height;
+        cacheCtx.rect(0, 0, particle.width, particle.height);
+        cacheCtx.fillStyle = 'gray';
+        cacheCtx.fill();
+        cacheCtx.stroke();
+
+
+        particleContext.beginPath();
+
+        drawImageRot(particleContext,particleCache, particle.x, particle.y, particle.width, particle.height, particle.rotation);
+       
+    }
+
+    function drawImageRot(ctx, img, x, y, width, height, deg) {
+
+        //Convert degrees to radian 
+        var rad = deg * Math.PI / 180;
+
+        //Set the origin to the center of the image
+        ctx.translate(x + width / 2, y + height / 2);
+
+        //Rotate the canvas around the origin
+        ctx.rotate(rad);
+
+        //draw the image    
+        ctx.drawImage(img, width / 2 * (-1), height / 2 * (-1), width, height);
+
+        //reset the canvas  
+        ctx.rotate(rad * (-1));
+        ctx.translate((x + width / 2) * (-1), (y + height / 2) * (-1));
+    }
+
+    function updateParticles() {
+        particleContext.clearRect(0, 0, 250, 250);
+
+        for (var i = 0; i < particles.length; i++) {
+            var particle: Particle=particles[i];
+            particle.update();
+            drawParticle(particle);
+
+            if (particle.dispose) {
+                particles.splice(i, 1);
+            }
+        }   
+    }
+    setInterval(updateParticles, 10);
+
 
     function drawRock(x: number, y: number, xScale: number, yScale: number) {
         clearCanvas();
