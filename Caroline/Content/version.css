@@ -24,11 +24,17 @@ p {
     -moz-box-shadow: 0px 0px 2px #000 inset;
     -webkit-box-shadow: 0px 0px 2px #000 inset;
     box-shadow: 0px 0px 2px #000 inset;
+    padding-bottom: 3px;
 }
 
 .update .update {
     border-left: 1px dotted gainsboro;
     box-shadow: none;
+    border-bottom: 1px dotted gainsboro;
+}
+
+.update .update:last-child {
+    padding-bottom: 3px;
 }
 
 .wipe:after {
