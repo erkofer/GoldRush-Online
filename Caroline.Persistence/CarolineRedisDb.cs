@@ -70,15 +70,30 @@ namespace Caroline.Persistence
                 UserIds = db.String("ui"),
                 Logins = db.String("ul"),
                 Emails = db.String("ue"),
-                HighScores = db.SetSortedList<ScoreEntry, string>("lb",
+                HighScores = db.SetSortedList("lb",
                     ScoreIdSerializer,
                     DatabaseAreaEx.Objects.StringSerializer,
-                    DatabaseAreaEx.Objects<ScoreEntry, string>.Identifier, DatabaseAreaEx.Objects<ScoreEntry, double>.Identifier)
+                    DatabaseAreaEx.Objects<ScoreEntry, string>.Identifier, DatabaseAreaEx.Objects<ScoreEntry, double>.Identifier),
+
+                ChatroomMessages = db.SetListString<ChatroomMessage>("cm"),
+                ChatroomSubscribers = db.SetHashStringLong<ChatroomSubscriber>("cs"),
+                ChatroomInvitations = db.SetHashStringLong<ChatroomInvitation>("ci"),
+                ChatroomOptions = db.SetString<ChatroomOptions>("co"),
+                UserChatroomSubscriptions = db.SetHashLongString<ChatroomSubscription>("ucs"),
+                UserChatroomNotifications = db.SetListLong<ChatroomNotification>("ucn")
             };
             return ret;
         }
 
-        public ISortedSetTable<ScoreEntry, string> HighScores { get; set; }
+        public IEntityListTable<ChatroomMessage, string> ChatroomMessages { get; private set; }
+
+        public IEntityHashTable<ChatroomSubscriber, string, long> ChatroomSubscribers { get; private set; }
+
+        public IEntityHashTable<ChatroomInvitation, string, long> ChatroomInvitations { get; private set; }
+
+        public IEntityTable<ChatroomOptions, string> ChatroomOptions { get; private set; }
+
+        public ISortedSetTable<ScoreEntry, string> HighScores { get; private set; }
 
         public IPessimisticLockTable<long> UserLocks { get; private set; }
 
@@ -91,9 +106,11 @@ namespace Caroline.Persistence
         public IEntityTable<GameSession, GameSessionEndpoint> GameSessions { get; private set; }
 
         public IStringTable UserNames { get; private set; }
-        public IStringTable UserIds { get; set; }
+        public IStringTable UserIds { get; private set; }
         public IStringTable Logins { get; private set; }
         public IStringTable Emails { get; private set; }
+        public IEntityHashTable<ChatroomSubscription, long, string> UserChatroomSubscriptions { get; private set; }
+        public IEntityListTable<ChatroomNotification, long> UserChatroomNotifications { get; private set; }
 
         static readonly ScoreUserIdSerializer ScoreIdSerializer = new ScoreUserIdSerializer();
         class ScoreUserIdSerializer : ISerializer<ScoreEntry>

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿body {
 }
 
@@ -61,4 +62,53 @@ p {
 
 .alpha {
     background-color: #FCF7F7;
+=======
+﻿body {
+}
+
+p {
+    font-size: 14px;
+}
+
+.update p:first-of-type {
+    font-size: 24px;
+}
+
+.update * {
+    margin-left: 3px;
+}
+
+.update .update p:first-of-type {
+    font-size: 18px
+}
+
+.update {
+    width: 95%;
+    margin: 0 auto;
+    position: relative;
+    -moz-box-shadow: 0px 0px 2px #000 inset;
+    -webkit-box-shadow: 0px 0px 2px #000 inset;
+    box-shadow: 0px 0px 2px #000 inset;
+}
+
+.update .update {
+    border-left: 1px dotted gainsboro;
+    box-shadow: none;
+}
+
+
+.alpha:after {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+
+    background-color: #8B0000;
+    color: white;
+    padding: 3px;
+    content: "Alpha";
+}
+
+.alpha {
+    background-color: #FCF7F7;
+>>>>>>> 3e6ec0c0bafb03877038ad7258953bc6fd752454
 }

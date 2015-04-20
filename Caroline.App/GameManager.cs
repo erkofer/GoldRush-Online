@@ -39,6 +39,7 @@ namespace Caroline.App
             saveDto.SaveState.Id = save.Id;
             // session gets modified by update
             await userDto.SetSession(session);
+            saveDto.SaveState.Id = userId;
             await userDto.SetGame(saveDto.SaveState);
 
             //TODO:Do not save if user is anonymous.

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Caroline.Persistence.Models;
 using Caroline.Persistence.Redis;
@@ -10,7 +11,17 @@ using Microsoft.AspNet.Identity;
 
 namespace Caroline.Persistence
 {
-    public class RedisUserStore : IUserLoginStore<User, long>, IUserPasswordStore<User, long>, IUserSecurityStampStore<User, long>, IUserEmailStore<User, long>, IUserLockoutStore<User, long>
+    public class RedisUserStore :
+        IUserLoginStore<User, long>,
+        IUserClaimStore<User, long>,
+        IUserRoleStore<User, long>,
+        IUserPasswordStore<User, long>,
+        IUserSecurityStampStore<User, long>,
+        IQueryableUserStore<User, long>,
+        IUserEmailStore<User, long>,
+        IUserPhoneNumberStore<User, long>,
+        IUserTwoFactorStore<User, long>,
+        IUserLockoutStore<User, long>
     {
         readonly IStringTable _userNameLookup;
         readonly IStringTable _emailsLookup;
@@ -133,6 +144,49 @@ namespace Caroline.Persistence
 
         #endregion
 
+        #region IUserClaimStore Implementation
+
+        public Task<IList<Claim>> GetClaimsAsync(User user)
+        {
+            return Task.FromResult<IList<Claim>>(new List<Claim>(0));
+        }
+
+        public Task AddClaimAsync(User user, Claim claim)
+        {
+            return Task.FromResult(0);
+        }
+
+        public Task RemoveClaimAsync(User user, Claim claim)
+        {
+            return Task.FromResult(0);
+        }
+
+        #endregion
+
+        #region IUserRoleStore Implementation
+
+        public Task AddToRoleAsync(User user, string roleName)
+        {
+            return Task.FromResult(0);
+        }
+
+        public Task RemoveFromRoleAsync(User user, string roleName)
+        {
+            return Task.FromResult(0);
+        }
+
+        public Task<IList<string>> GetRolesAsync(User user)
+        {
+            return Task.FromResult<IList<string>>(new List<string>());
+        }
+
+        public Task<bool> IsInRoleAsync(User user, string roleName)
+        {
+            return Task.FromResult(false);
+        }
+
+        #endregion
+
         #region IUserPasswordStore Implementation
 
         public Task SetPasswordHashAsync(User user, string passwordHash)
@@ -171,6 +225,11 @@ namespace Caroline.Persistence
             return Task.FromResult(user.SecurityStamp);
         }
 
+        #endregion
+
+        #region IQueryableUserStore Implementation
+
+        public IQueryable<User> Users { get { return Enumerable.Empty<User>().AsQueryable(); } }
         #endregion
 
         #region IUserEmailStore Implementation
@@ -212,34 +271,45 @@ namespace Caroline.Persistence
 
         #endregion
 
-        public void Dispose()
+        #region IUserPhoneNumberStore Implementation
+
+        public Task SetPhoneNumberAsync(User user, string phoneNumber)
         {
-            _disposed = true;
+            return Task.FromResult(0);
         }
 
-        #region Helpers
-
-        void ThrowIfDisposed()
+        public Task<string> GetPhoneNumberAsync(User user)
         {
-            if (_disposed)
-                throw new ObjectDisposedException(GetType().Name);
+            return Task.FromResult<string>(null);
         }
 
-        void Check(object obj)
+        public Task<bool> GetPhoneNumberConfirmedAsync(User user)
         {
-            ThrowIfDisposed();
-            if (obj == null)
-                throw new ArgumentNullException();
+            return Task.FromResult(true);
         }
 
-        void Check(object obj, object obj2)
+        public Task SetPhoneNumberConfirmedAsync(User user, bool confirmed)
         {
-            ThrowIfDisposed();
-            if (obj == null || obj2 == null)
-                throw new ArgumentNullException();
+            return Task.FromResult(0);
         }
 
         #endregion
+
+        #region IUserTwoFactorStore Implementation
+
+        public Task SetTwoFactorEnabledAsync(User user, bool enabled)
+        {
+            return Task.FromResult(0);
+        }
+
+        public Task<bool> GetTwoFactorEnabledAsync(User user)
+        {
+            return Task.FromResult(false);
+        }
+
+        #endregion
+
+        #region IUserLockoutStore Implementation
 
         public Task<DateTimeOffset> GetLockoutEndDateAsync(User user)
         {
@@ -274,6 +344,37 @@ namespace Caroline.Persistence
         public Task SetLockoutEnabledAsync(User user, bool enabled)
         {
             return Task.FromResult(0);
+        }
+
+        #endregion
+
+        #region Helpers
+
+        void ThrowIfDisposed()
+        {
+            if (_disposed)
+                throw new ObjectDisposedException(GetType().Name);
+        }
+
+        void Check(object obj)
+        {
+            ThrowIfDisposed();
+            if (obj == null)
+                throw new ArgumentNullException();
+        }
+
+        void Check(object obj, object obj2)
+        {
+            ThrowIfDisposed();
+            if (obj == null || obj2 == null)
+                throw new ArgumentNullException();
+        }
+
+        #endregion
+
+        public void Dispose()
+        {
+            _disposed = true;
         }
     }
 }

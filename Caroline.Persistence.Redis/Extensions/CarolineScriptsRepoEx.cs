@@ -13,6 +13,12 @@ namespace Caroline.Persistence.Redis.Extensions
             return (RedisValue)await db.ScriptEvaluateAsync(scripts.StringGetSetExpiry, new[] { key }, new RedisValue[] { setValue, ((int)expiry.TotalMilliseconds).ToString(CultureInfo.InvariantCulture) });
         }
 
+        public static async Task<RedisValue[]> ListPopManyAsync(this IDatabase db, CarolineScriptsRepo scripts, RedisKey key,
+            long count, IndexSide side)
+        {
+            return (RedisValue[])await db.ScriptEvaluateAsync(scripts.PopMany, new[] { key }, new RedisValue[] { count.ToStringInvariant(), ((int)side).ToStringInvariant() });
+        }
+
         public static async Task<long> IncrementExpiryAsync(this IDatabase db, CarolineScriptsRepo scripts, RedisKey key, RedisValue increment, TimeSpan expiry)
         {
             return (long)await db.ScriptEvaluateAsync(scripts.IncrementExpiry, new[] { key }, new RedisValue[] { increment, ((int)expiry.TotalMilliseconds).ToString(CultureInfo.InvariantCulture) });
