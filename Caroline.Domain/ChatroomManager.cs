@@ -82,19 +82,21 @@ namespace Caroline.Domain
             switch (options.Invites)
             {
                 case ChatroomOptions.InvitePrivilege.Members:
+                    if (!await _db.ChatroomSubscribers.Exists(chatroom, inviter))
+                        return InviteResult.InsufficientPermissions;
+
                     if (await _db.ChatroomSubscribers.Exists(chatroom, invited))
                         return InviteResult.AlreadyJoined;
-                    if(await _db.ChatroomInvitations.)
 
-                    _db.ChatroomSubscribers.Exists(chatroom, inviter);
-                    break;
+                    await _db.ChatroomInvitations.Set(new ChatroomInvitation{Id = chatroom, InviterUserId = inviter, UserId = invited});
+                    await _db.UserChatroomNotifications.Push(new ChatroomNotification{ Id = invited, ChatroomId = chatroom, SenderUserId = inviter}, IndexSide.Left);
+                    return InviteResult.Success;
                 case ChatroomOptions.InvitePrivilege.Locked:
                     return InviteResult.InsufficientPermissions;
                 case ChatroomOptions.InvitePrivilege.Open:
                 default:
                     return InviteResult.OpenChatroom;
             }
-
         }
 
         public async Task<JoinChatroomResult> JoinChatroom(UserChatroom chatroom)
@@ -136,6 +138,11 @@ namespace Caroline.Domain
             await _db.UserChatroomSubscriptions.Delete(chatroom.UserId, chatroom.Chatroom);
             return LeaveChatroomResult.Success;
         }
+
+        //public async Task<ChatroomNotification[]> GetNotifications(long userId, long start = 0, long stop = -1)
+        //{
+        //    var result = await _db.UserChatroomNotifications.Range(userId, start, stop);
+        //}
 
         public async Task<long[]> GetSubscribers(string chatroom)
         {

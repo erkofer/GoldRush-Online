@@ -36,6 +36,7 @@ namespace Caroline.App
             var saveDto = game.Save();
             // session gets modified by update
             await userDto.SetSession(session);
+            saveDto.SaveState.Id = userId;
             await userDto.SetGame(saveDto.SaveState);
             await manager.SetLeaderboardEntry(userId, updateDto.Score);
 
