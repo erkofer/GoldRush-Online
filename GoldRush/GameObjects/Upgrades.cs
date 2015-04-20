@@ -98,7 +98,7 @@ namespace GoldRush
                 new []{game.Items.Uranium,game.Items.Titanium}),GameConfig.Upgrades.DeeperTunnels);
             All.Add(DeeperTunnels.Id,DeeperTunnels);
 
-           IronPickaxe = new Upgrade(new ProbabilityUpgradeEffect(game,
+            IronPickaxe = new Upgrade(new ProbabilityUpgradeEffect(game,
                new []{game.Gatherers.Player},
                1.05), GameConfig.Upgrades.IronPickaxe);
             All.Add(IronPickaxe.Id,IronPickaxe);
@@ -106,16 +106,19 @@ namespace GoldRush
             SteelPickaxe = new Upgrade(new ProbabilityUpgradeEffect(game,
                new[] { game.Gatherers.Player },
                1.1), GameConfig.Upgrades.SteelPickaxe);
+            SteelPickaxe.Requires = IronPickaxe;
             All.Add(SteelPickaxe.Id, SteelPickaxe);
 
             GoldPickaxe = new Upgrade(new ProbabilityUpgradeEffect(game,
                new[] { game.Gatherers.Player },
                1.15), GameConfig.Upgrades.GoldPickaxe);
+            GoldPickaxe.Requires = SteelPickaxe;
             All.Add(GoldPickaxe.Id, GoldPickaxe);
 
             DiamondPickaxe = new Upgrade(new ProbabilityUpgradeEffect(game,
                new[] { game.Gatherers.Player },
                1.25), GameConfig.Upgrades.DiamondPickaxe);
+            DiamondPickaxe.Requires = GoldPickaxe;
             All.Add(DiamondPickaxe.Id, DiamondPickaxe);
 
 
