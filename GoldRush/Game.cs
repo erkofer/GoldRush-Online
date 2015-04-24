@@ -307,6 +307,9 @@ namespace GoldRush
 
                 stateGatherer.Id = gatherer.Id;
                 stateGatherer.Enabled = gatherer.Enabled;
+                stateGatherer.FuelConsumed = gatherer.FuelConsumption;
+                stateGatherer.Efficiency = gatherer.ResourcesPerSecond;
+                stateGatherer.RarityBonus = gatherer.ProbabilityModifier;
                 state.Gatherers.Add(stateGatherer);
             }
 

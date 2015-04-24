@@ -33,7 +33,7 @@ module Connection {
 
         playerCounter = document.createElement('div');
         playerCounter.style.display = 'inline-block';
-        playerCounter.textContent = 'There are # players mining.';
+        playerCounter.textContent = 'There are 0 players mining.';
         headerLinks.appendChild(playerCounter);
 
         notificationElm = document.createElement('div');
@@ -214,6 +214,9 @@ module Connection {
         for (var i = 0; i < gatherers.length; i++) {
             var gatherer = gatherers[i];
             Equipment.toggleGatherer(gatherer.Id, gatherer.Enabled);
+            Equipment.changeEfficiency(gatherer.Id, gatherer.Efficiency);
+            Equipment.changeFuelConsumption(gatherer.Id, gatherer.FuelConsumed);
+            Equipment.changeRarityBonus(gatherer.Id, gatherer.RarityBonus);
         }
     }
 

@@ -1270,6 +1270,7 @@ var Store;
         Utils.ifNotDefault(maxQuantity, function () {
             if (maxQuantity != 0) {
                 try  {
+                    Equipment.changeMaxQuantity(id, maxQuantity);
                     item.maxQuantity = maxQuantity;
                     item.maxQuantityElm.textContent = maxQuantity.toString();
                 } catch (err) {
@@ -1281,6 +1282,7 @@ var Store;
             Objects.setQuantity(id, quantity);
             item.quantity = quantity;
             Crafting.update();
+            Equipment.changeQuantity(id, quantity);
 
             if (maxQuantity != 0) {
                 if (item.category == 6 /* CRAFTING */)
@@ -1417,9 +1419,9 @@ var Rock;
     var rockIsBig = false;
     var mouseDown = false;
 
-    Rock.notTouched = true;
-    Rock.growing = true;
-    Rock.currentNotifier = 0;
+    var notTouched = true;
+    var growing = true;
+    var currentNotifier = 0;
     var growRate = 8;
     var notifierGrowth = 4;
     var gsLastTick = Date.now();
@@ -1505,19 +1507,19 @@ var Rock;
         timePassed /= 1000;
         gsLastTick = time;
 
-        if (Rock.growing) {
-            Rock.currentNotifier += growRate * timePassed;
+        if (growing) {
+            currentNotifier += growRate * timePassed;
         } else {
-            Rock.currentNotifier -= growRate * timePassed;
+            currentNotifier -= growRate * timePassed;
         }
 
-        if (Rock.currentNotifier > notifierGrowth || Rock.currentNotifier < -notifierGrowth) {
-            Rock.growing = !Rock.growing;
+        if (currentNotifier > notifierGrowth || currentNotifier < -notifierGrowth) {
+            growing = !growing;
         }
 
-        drawRock(lastX, lastY, rockSize + Rock.currentNotifier, rockSize + Rock.currentNotifier);
+        drawRock(lastX, lastY, rockSize + currentNotifier, rockSize + currentNotifier);
 
-        if (Rock.notTouched)
+        if (notTouched)
             setTimeout(growAndShrink, 10);
     }
     growAndShrink();
@@ -1531,28 +1533,26 @@ var Rock;
     }
 
     var released = true;
+
     function isOverRock(x, y) {
         if (x > lastX && x < (lastX + rockSize) && y > lastY && y < (lastY + rockSize)) {
             if (!mouseDown) {
                 drawRock(lastX - (rockGrowth / 2), lastY - (rockGrowth / 2), rockSize + rockGrowth, rockSize + rockGrowth);
                 released = true;
-                Rock.notTouched = false;
+                notTouched = false;
             } else {
                 drawRock(lastX + (rockGrowth / 2), lastY + (rockGrowth / 2), rockSize - rockGrowth, rockSize - rockGrowth);
                 if (released)
                     addParticles(x, y);
                 released = false;
-                Rock.notTouched = false;
+                notTouched = false;
             }
-
             rockIsBig = true;
         } else if (rockIsBig) {
             drawRock(lastX, lastY, rockSize, rockSize);
             rockIsBig = false;
             released = true;
         }
-
-        canvas.style.cursor = rockIsBig ? 'pointer' : 'initial';
     }
 
     function moveRock(x, y) {
@@ -1648,6 +1648,7 @@ var Equipment;
 (function (Equipment) {
     var gatherers = new Array();
     var equipmentPane;
+    var gathererCategory;
 
     var Gatherer = (function () {
         function Gatherer() {
@@ -1675,21 +1676,58 @@ var Equipment;
     }
     Equipment.registerGatherer = registerGatherer;
 
-    function drawGatherer(id) {
-        var gatherer = gatherers[id];
-        var container = document.createElement('div');
-        container.classList.add('equipment-gatherer-container');
+    function drawGathererCategory() {
+        gathererCategory = document.createElement('div');
+        gathererCategory.classList.add('store-category');
         var header = document.createElement('div');
-        header.textContent = Objects.lookupName(id);
+        header.classList.add('store-category-header');
+        header.textContent = 'Gatherers';
+        gathererCategory.appendChild(header);
+        equipmentPane.appendChild(gathererCategory);
+    }
+
+    function drawGatherer(id) {
+        if (!gathererCategory)
+            drawGathererCategory();
+
+        var gatherer = gatherers[id];
+        gatherer.container = document.createElement('div');
+        gatherer.container.classList.add('equipment-gatherer-container');
+        var header = document.createElement('div');
+        header.classList.add('store-item-header');
+        var headerText = document.createElement('div');
+        headerText.classList.add('store-item-header-text');
+        headerText.textContent = Objects.lookupName(id);
+        header.appendChild(headerText);
         var toggle = Utils.createButton('Disable', '');
         toggle.addEventListener('click', function () {
             Connection.toggleGatherer(id, !gatherer.enabled);
         });
-        container.appendChild(header);
-        container.appendChild(toggle);
+        var quantityContainer = document.createElement('div');
+        quantityContainer.classList.add('store-item-header-quantity-container');
+
+        gatherer.quantityElm = document.createElement('span');
+        var dividerSpan = document.createElement('span');
+        dividerSpan.textContent = '/';
+        gatherer.maxQuantityElm = document.createElement('span');
+
+        quantityContainer.appendChild(gatherer.quantityElm);
+        quantityContainer.appendChild(dividerSpan);
+        quantityContainer.appendChild(gatherer.maxQuantityElm);
+
+        header.appendChild(quantityContainer);
+
+        gatherer.container.appendChild(header);
+        gatherer.efficiencyElm = document.createElement('div');
+        gatherer.container.appendChild(gatherer.efficiencyElm);
+        gatherer.fuelConsumptionElm = document.createElement('div');
+        gatherer.container.appendChild(gatherer.fuelConsumptionElm);
+        gatherer.rarityBonusElm = document.createElement('div');
+        gatherer.container.appendChild(gatherer.rarityBonusElm);
+        gatherer.container.appendChild(toggle);
         gatherer.toggleElm = toggle.firstChild;
 
-        equipmentPane.appendChild(container);
+        gathererCategory.appendChild(gatherer.container);
     }
 
     function toggleGatherer(id, enabled) {
@@ -1700,6 +1738,67 @@ var Equipment;
         gatherer.toggleElm.textContent = enabled ? 'Disable' : 'Enable';
     }
     Equipment.toggleGatherer = toggleGatherer;
+
+    function changeQuantity(id, quantity) {
+        Utils.ifNotDefault(quantity, function () {
+            var gatherer = gatherers[id];
+            if (!gatherer)
+                return;
+
+            gatherer.quantity = quantity;
+            gatherer.container.style.display = (quantity > -1) ? 'inline-block' : 'none';
+            gatherer.quantityElm.textContent = Utils.formatNumber(quantity);
+        });
+    }
+    Equipment.changeQuantity = changeQuantity;
+
+    function changeMaxQuantity(id, maxQuantity) {
+        Utils.ifNotDefault(maxQuantity, function () {
+            var gatherer = gatherers[id];
+            if (!gatherer)
+                return;
+
+            gatherer.maxQuantity = maxQuantity;
+            gatherer.maxQuantityElm.textContent = Utils.formatNumber(maxQuantity);
+        });
+    }
+    Equipment.changeMaxQuantity = changeMaxQuantity;
+
+    function changeFuelConsumption(id, fuelConsumed) {
+        Utils.ifNotDefault(fuelConsumed, function () {
+            var gatherer = gatherers[id];
+            if (!gatherer)
+                return;
+
+            gatherer.fuelConsumption = fuelConsumed;
+            gatherer.fuelConsumptionElm.textContent = 'Fuel consumed: ' + Utils.formatNumber(fuelConsumed);
+        });
+    }
+    Equipment.changeFuelConsumption = changeFuelConsumption;
+
+    function changeEfficiency(id, efficiency) {
+        Utils.ifNotDefault(efficiency, function () {
+            var gatherer = gatherers[id];
+            if (!gatherer)
+                return;
+
+            gatherer.efficiency = efficiency;
+            gatherer.efficiencyElm.textContent = 'Resources/s: ' + Utils.formatNumber(efficiency);
+        });
+    }
+    Equipment.changeEfficiency = changeEfficiency;
+
+    function changeRarityBonus(id, rarityBonus) {
+        Utils.ifNotDefault(rarityBonus, function () {
+            var gatherer = gatherers[id];
+            if (!gatherer)
+                return;
+
+            gatherer.rarityBonus = rarityBonus;
+            gatherer.rarityBonusElm.textContent = 'Rarity multiplier: x' + Utils.formatNumber(rarityBonus);
+        });
+    }
+    Equipment.changeRarityBonus = changeRarityBonus;
 })(Equipment || (Equipment = {}));
 var Crafting;
 (function (Crafting) {
@@ -2945,7 +3044,7 @@ var Connection;
 
         playerCounter = document.createElement('div');
         playerCounter.style.display = 'inline-block';
-        playerCounter.textContent = 'There are # players mining.';
+        playerCounter.textContent = 'There are 0 players mining.';
         headerLinks.appendChild(playerCounter);
 
         notificationElm = document.createElement('div');
@@ -3134,6 +3233,9 @@ var Connection;
         for (var i = 0; i < gatherers.length; i++) {
             var gatherer = gatherers[i];
             Equipment.toggleGatherer(gatherer.Id, gatherer.Enabled);
+            Equipment.changeEfficiency(gatherer.Id, gatherer.Efficiency);
+            Equipment.changeFuelConsumption(gatherer.Id, gatherer.FuelConsumed);
+            Equipment.changeRarityBonus(gatherer.Id, gatherer.RarityBonus);
         }
     }
 

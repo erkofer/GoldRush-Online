@@ -132,7 +132,7 @@ namespace GoldRush
 
             public GameObjects.GameObject Fuel { get; set; }
 
-            public double FuelConsumption { get { return _config.FuelConsumption; } }
+            public double FuelConsumption { get { return _config.FuelConsumption * Quantity; } }
 
             private double resourcesPerSecondEfficiency=1;
             /// <summary>
@@ -272,7 +272,7 @@ namespace GoldRush
                 var fuelEfficiency=1.0;
                 if (Fuel != null)
                 {
-                    var fuelToConsume = Math.Min(Fuel.Quantity, FuelConsumption*Quantity);
+                    var fuelToConsume = Math.Min(Fuel.Quantity, FuelConsumption);
                     Fuel.Quantity -= (long)fuelToConsume;
 
                     fuelEfficiency = fuelToConsume/FuelConsumption;

@@ -149,6 +149,9 @@ message GameState {
 	message Gatherer {
 		optional int32 Id=1;
 		optional bool Enabled=2;
+		optional double Efficiency=3;
+		optional double FuelConsumed=4;
+		optional double RarityBonus=5;
 	}
 	repeated Gatherer Gatherers = 13;
 } 
