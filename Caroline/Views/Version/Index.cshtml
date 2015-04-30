@@ -1,19 +1,41 @@
-
 ﻿@{
     ViewBag.Title = "Version History";
 }
 @Styles.Render("~/Content/version.css")
 
 <div class="update alpha">
-    <p>v0.1</p>
-    <div class="update">
-        <p>v0.1.0</p>
+    <p><b>v0.1</b></p>
+    <div class="update wipe">
+        <p><b>v0.1.2</b> - April 27th 2015</p>
+        <p>Features</p>
         <ul>
-            <li>Initial release.</li>
+            <li>
+                Gatherer page expanded to show more information.
+            </li>
+            <li>
+                Furnace and Cauldron now require upgrades to unlock.
+            </li>
+        </ul>
+        <p>Fixes</p>
+        <ul>
+            <li>Store correctly updates.</li>
+        </ul>
+        <p>Technical</p>
+        <ul>
+            <li>
+                Ajax services refactored.
+                <ul>
+                    <li>Fail more gracefully.</li>
+                    <li>Loading indicator added.</li>
+                </ul>
+            </li>
+            <li>
+                Chat system rewritten in preparation for friends chat, group chat, etc.
+            </li>
         </ul>
     </div>
     <div class="update wipe">
-        <p>v0.1.1</p>
+        <p><b>v0.1.1</b></p>
         <p>Features</p>
         <ul>
             <li>
@@ -51,7 +73,7 @@
             </li>
         </ul>
         <div class="update">
-            <p>v0.1.1a</p>
+            <p><b>v0.1.1a</b></p>
             <p>Fixes</p>
             <ul>
                 <li>Logging in now works correctly.</li>
@@ -59,4 +81,11 @@
             </ul>
         </div>
     </div>
+    <div class="update">
+        <p><b>v0.1.0</b></p>
+        <ul>
+            <li>Initial release.</li>
+        </ul>
+    </div>
+
 </div>

@@ -620,7 +620,11 @@ var Objects;
     Objects.setQuantity = setQuantity;
 
     function getQuantity(id) {
-        return gameobjects[id].quantity;
+        var gameobject = gameobjects[id];
+        if (gameobject)
+            return gameobject.quantity;
+
+        return 0;
     }
     Objects.getQuantity = getQuantity;
 
@@ -1795,7 +1799,7 @@ var Equipment;
                 return;
 
             gatherer.rarityBonus = rarityBonus;
-            gatherer.rarityBonusElm.textContent = 'Rarity multiplier: x' + Utils.formatNumber(rarityBonus);
+            gatherer.rarityBonusElm.textContent = 'Rarity multi: x' + Utils.formatNumber(rarityBonus);
         });
     }
     Equipment.changeRarityBonus = changeRarityBonus;
@@ -1931,7 +1935,7 @@ var Crafting;
     }
     Crafting.addRecipe = addRecipe;
 
-    function addProcessor(id, name) {
+    function addProcessor(id, name, required) {
         if (!storePane)
             draw();
 
@@ -1939,6 +1943,7 @@ var Crafting;
             var processor = new Processor();
             processor.id = id;
             processor.name = name;
+            processor.requiredId = required;
             Crafting.processors[id] = processor;
 
             drawProcessor(processor);
@@ -2022,6 +2027,7 @@ var Crafting;
     function drawProcessor(processor) {
         var processorTable = document.createElement('TABLE');
         processorTable.classList.add('block-table');
+        processor.container = processorTable;
 
         var header = processorTable.createTHead();
         var titleRow = header.insertRow(0);
@@ -2243,6 +2249,9 @@ var Crafting;
                 processor.sidebarProgressBar.style.width = totalCompletionPerc + '%';
                 processor.sidebarProgressText.textContent = Utils.formatTime(totalTimeToFinish / 1000);
             }
+
+            if (processor.requiredId != 0)
+                processor.container.style.display = Objects.getQuantity(processor.requiredId) > 0 ? 'block' : 'none';
         });
     }
     setInterval(processorBars, 10);
@@ -2671,12 +2680,12 @@ var Account;
         leaderboardModal.title = 'Leaderboards';
         var leaderboardList = document.createElement('DIV');
         leaderboardList.style.width = '400px';
-        leaderboardList.textContent = 'Loading...';
+        leaderboardList.appendChild(Ajax.createLoader());
         leaderboardModal.addElement(leaderboardList);
 
         var leaderboardService = new LeaderboardAjaxService();
         leaderboardService.resultsElement = leaderboardList;
-        leaderboardService.sendRequest(0, 19);
+        leaderboardService.sendRequest(0, 20);
 
         leaderboardModal.show();
     }
@@ -3010,6 +3019,101 @@ var modal;
         }
     }
 })(modal || (modal = {}));
+var Ajax;
+(function (Ajax) {
+    var loaders = new Array();
+
+    var Loader = (function () {
+        function Loader() {
+            this.notDisplayed = 20;
+            this.notches = 40;
+            this.space = 0.02;
+            this.spawned = false;
+            this.spinPos = 0;
+            this.spinSpeed = 30;
+            this.squareSize = 50;
+            this.timeSinceLastTick = Date.now();
+            this.thickness = 3;
+            this.dead = false;
+            this.container = document.createElement('div');
+            this.container.classList.add('loader');
+            this.canvasElement = document.createElement('canvas');
+            this.canvasElement.width = this.squareSize;
+            this.canvasElement.height = this.squareSize;
+            this.container.appendChild(this.canvasElement);
+            this.context = this.canvasElement.getContext('2d');
+        }
+        Loader.prototype.update = function () {
+            var time = Date.now();
+
+            if (this.canvasElement.parentElement)
+                this.spawned = true;
+
+            var timePassed = time - this.timeSinceLastTick;
+            timePassed /= 1000;
+            this.spinPos += this.spinSpeed * timePassed;
+            this.timeSinceLastTick = time;
+
+            if (this.spawned && !this.canvasElement.parentElement)
+                this.dead = true;
+
+            this.draw();
+        };
+
+        Loader.prototype.draw = function () {
+            var x = this.squareSize / 2;
+            var y = x;
+            var adjustedSpinPosStart = this.spinPos % 2;
+            var adjustedSpinPosEnd = (this.spinPos + 1) % 2;
+
+            var radius = (this.squareSize / 2) - 5;
+            var lengthEach = (2 - (this.space * this.notches)) / this.notches;
+            var selected = this.spinPos % this.notches;
+            var shown = selected - this.notDisplayed;
+
+            this.context.clearRect(0, 0, this.canvasElement.width, this.canvasElement.height);
+            for (var i = 0; i < this.notches; i++) {
+                var start = 0 + (i * lengthEach) + (this.space * i);
+                var end = start + lengthEach;
+                var inverse = i - this.notches;
+
+                if (i <= selected && i >= shown) {
+                    this.context.beginPath();
+                    this.context.arc(x, y, radius, start * Math.PI, end * Math.PI);
+                    this.context.lineWidth = this.thickness;
+                    this.context.strokeStyle = 'rgba(113,142,164,' + (1 - (selected - i) / (this.notches - this.notDisplayed)) + ')';
+                    this.context.stroke();
+                } else if (inverse <= selected && inverse >= shown) {
+                    this.context.beginPath();
+                    this.context.arc(x, y, radius, start * Math.PI, end * Math.PI);
+                    this.context.lineWidth = this.thickness;
+                    this.context.strokeStyle = 'rgba(113,142,164,' + (1 - (selected - inverse) / (this.notches - this.notDisplayed)) + ')';
+                    this.context.stroke();
+                }
+            }
+        };
+        return Loader;
+    })();
+
+    function createLoader() {
+        var loader = new Loader();
+        loaders.push(loader);
+        return loader.container;
+    }
+    Ajax.createLoader = createLoader;
+
+    function update() {
+        for (var i = 0; i < loaders.length; i++) {
+            var loader = loaders[i];
+            if (loader.dead)
+                loaders.splice(i, 1);
+            else
+                loader.update();
+        }
+        setTimeout(update, 10);
+    }
+    update();
+})(Ajax || (Ajax = {}));
 ///<reference path="chat.ts"/>
 ///<reference path="inventory.ts"/>
 ///<reference path="stats.ts"/>
@@ -3022,6 +3126,7 @@ var modal;
 ///<reference path="register.ts"/>
 ///<reference path="modal.ts"/>
 ///<reference path="tooltip.ts"/>
+///<reference path="ajax.ts"/>
 var Connection;
 (function (Connection) {
     var conInterval;
@@ -3197,7 +3302,7 @@ var Connection;
         if (schema.Processors) {
             for (var i = 0; i < schema.Processors.length; i++) {
                 var processor = schema.Processors[i];
-                Crafting.addProcessor(processor.Id, processor.Name);
+                Crafting.addProcessor(processor.Id, processor.Name, processor.RequiredId);
                 for (var r = 0; r < processor.Recipes.length; r++) {
                     Crafting.addProcessorRecipe(processor.Id, processor.Recipes[r].Ingredients, processor.Recipes[r].Resultants);
                 }

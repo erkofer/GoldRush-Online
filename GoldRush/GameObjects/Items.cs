@@ -32,6 +32,7 @@ namespace GoldRush
 
             // Assign item recipes here.
 
+            // Coins.Quantity = 1000000000000000000L;
 
             // Potion buffs should be assigned in the upgrades class.
 

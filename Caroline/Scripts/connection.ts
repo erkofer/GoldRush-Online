@@ -10,6 +10,7 @@
 ///<reference path="register.ts"/>
 ///<reference path="modal.ts"/>
 ///<reference path="tooltip.ts"/>
+///<reference path="ajax.ts"/>
 
 module Connection {
     declare var Komodo: { connection: any; ClientActions: any; decode: any; send: any; restart: any };
@@ -179,7 +180,7 @@ module Connection {
         if (schema.Processors) {
             for (var i = 0; i < schema.Processors.length; i++) {
                 var processor = schema.Processors[i];
-                Crafting.addProcessor(processor.Id, processor.Name);
+                Crafting.addProcessor(processor.Id, processor.Name,processor.RequiredId);
                 for (var r = 0; r < processor.Recipes.length; r++) {
                     Crafting.addProcessorRecipe(processor.Id, processor.Recipes[r].Ingredients, processor.Recipes[r].Resultants);
                 }

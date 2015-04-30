@@ -902,3 +902,9 @@ td {
     margin: 5px;
     border-radius: 10px;
 }
+
+.loader {
+    margin: 0 auto;
+    padding: 5px;
+    text-align: center;
+}

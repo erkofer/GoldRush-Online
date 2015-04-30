@@ -121,7 +121,15 @@ namespace GoldRush
             DiamondPickaxe.Requires = GoldPickaxe;
             All.Add(DiamondPickaxe.Id, DiamondPickaxe);
 
+            Furnace = new Upgrade(new ProcessorUnlockUpgradeEffect(game,
+                new[] {game.Processing.Furnace}), GameConfig.Upgrades.Furnace);
+            game.Processing.Furnace.Requires = Furnace;
+            All.Add(Furnace.Id,Furnace);
 
+            Cauldron = new Upgrade(new ProcessorUnlockUpgradeEffect(game,
+                new[] { game.Processing.Cauldron }), GameConfig.Upgrades.Cauldron);
+            game.Processing.Cauldron.Requires = Cauldron;
+            All.Add(Cauldron.Id,Cauldron);
             #endregion
 
             #region Buffs
@@ -213,6 +221,9 @@ namespace GoldRush
         public Upgrade GoldPickaxe;
         public Upgrade DiamondPickaxe;
 
+        public Upgrade Furnace;
+        public Upgrade Cauldron;
+
         internal class Upgrade : GameObjects.GameObject
         {
             public Upgrade(UpgradeEffect effect, GameConfig.Upgrades.UpgradeConfig config)
@@ -252,15 +263,15 @@ namespace GoldRush
             private GameConfig.Upgrades.BuffConfig _config;
 
             public Buff(UpgradeEffect effect, GameConfig.Upgrades.BuffConfig config)
-                :base(effect,config)
+                : base(effect, config)
             {
                 _config = config;
             }
 
             public void Update(double ms)
             {
-                if(Active)
-                    TimeActive += (ms/1000);
+                if (Active)
+                    TimeActive += (ms / 1000);
             }
 
             /// <summary>
@@ -293,12 +304,12 @@ namespace GoldRush
         /// <summary>
         /// Increases the value of items by a percentage.
         /// </summary>
-        class ItemValueUpgradeEffect:UpgradeEffect
+        class ItemValueUpgradeEffect : UpgradeEffect
         {
             private double value;
 
             public ItemValueUpgradeEffect(GameObjects game, double value)
-                :base(game)
+                : base(game)
             {
                 this.value = value;
             }
@@ -315,7 +326,7 @@ namespace GoldRush
 
             public override string Tooltip
             {
-                get { return "Increases the value of items by " + ((value * 100)-100) + "%."; }
+                get { return "Increases the value of items by " + ((value * 100) - 100) + "%."; }
             }
         }
 
@@ -327,7 +338,7 @@ namespace GoldRush
             private Items.Resource[] resources;
             private Gatherers.Gatherer[] gatherers;
             public ResourceUpgradeEffect(GameObjects game, Gatherers.Gatherer[] gatherers, Items.Resource[] resources)
-                :base(game)
+                : base(game)
             {
                 this.resources = resources;
                 this.gatherers = gatherers;
@@ -340,7 +351,7 @@ namespace GoldRush
                     gatherer.PossibleResources.AddRange(resources);
                     gatherer.RecalculateMiningStuff();
                 }
-                  
+
             }
 
             public override void Deactivate()
@@ -355,16 +366,16 @@ namespace GoldRush
             }
             public override string Tooltip
             {
-                get 
+                get
                 {
                     List<string> names = new List<string>();
-                    
+
                     foreach (var resource in resources)
                         names.Add(resource.Name);
 
                     string concatenatedNames = String.Join(",", names);
 
-                    return "Discovers " + concatenatedNames + "."; 
+                    return "Discovers " + concatenatedNames + ".";
                 }
             }
         }
@@ -378,7 +389,7 @@ namespace GoldRush
             private double efficiency;
 
             public EfficiencyUpgradeEffect(GameObjects game, Gatherers.Gatherer[] gatherers, double efficiency)
-                :base(game)
+                : base(game)
             {
                 this.gatherers = gatherers;
                 this.efficiency = efficiency;
@@ -388,14 +399,14 @@ namespace GoldRush
             {
                 foreach (var gatherer in gatherers)
                     gatherer.ResourcesPerSecondBaseIncrease += efficiency;
-                   
+
             }
 
             public override void Deactivate()
             {
                 foreach (var gatherer in gatherers)
                     gatherer.ResourcesPerSecondBaseIncrease -= efficiency;
-                   
+
             }
 
             public override string Tooltip
@@ -403,13 +414,13 @@ namespace GoldRush
                 get
                 {
                     List<string> names = new List<string>();
-                    
+
                     foreach (var gatherer in gatherers)
                         names.Add(gatherer.Name);
 
                     string concatenatedNames = String.Join(",", names);
 
-                    return "Increases the resources gathered per tick by "+efficiency+" for "+concatenatedNames+".";
+                    return "Increases the resources gathered per tick by " + efficiency + " for " + concatenatedNames + ".";
                 }
             }
         }
@@ -432,7 +443,7 @@ namespace GoldRush
             {
                 foreach (var gatherer in gatherers)
                     gatherer.ResourcesPerSecondEfficiency *= magnitude;
-                    
+
             }
 
             public override void Deactivate()
@@ -453,7 +464,7 @@ namespace GoldRush
 
                     string concatenatedNames = String.Join(",", names);
 
-                    return "Increases the resources gathered per tick by " + ((magnitude * 100)-100) + "% for " + concatenatedNames + ".";
+                    return "Increases the resources gathered per tick by " + ((magnitude * 100) - 100) + "% for " + concatenatedNames + ".";
                 }
             }
         }
@@ -468,7 +479,7 @@ namespace GoldRush
             private Gatherers.Gatherer[] gatherers;
             private double probability;
 
-            public ProbabilityUpgradeEffect(GameObjects game, Gatherers.Gatherer[] gatherers, double probability) 
+            public ProbabilityUpgradeEffect(GameObjects game, Gatherers.Gatherer[] gatherers, double probability)
                 : base(game)
             {
                 this.gatherers = gatherers;
@@ -479,14 +490,14 @@ namespace GoldRush
             {
                 foreach (var gatherer in gatherers)
                     gatherer.ProbabilityModifier *= probability;
-                   
+
             }
 
             public override void Deactivate()
             {
                 foreach (var gatherer in gatherers)
                     gatherer.ProbabilityModifier /= probability;
-                  
+
             }
 
             public override string Tooltip
@@ -500,7 +511,7 @@ namespace GoldRush
 
                     string concatenatedNames = String.Join(",", names);
 
-                    return "Increases the chance of gathering rare resources by " + ((probability * 100)-100) + "% for " + concatenatedNames + ".";
+                    return "Increases the chance of gathering rare resources by " + ((probability * 100) - 100) + "% for " + concatenatedNames + ".";
                 }
             }
         }
@@ -511,7 +522,7 @@ namespace GoldRush
             private double efficiencyIncrease;
 
             public BaseEfficiencyUpgradeEffect(GameObjects game, Gatherers.Gatherer[] gatherers, double efficiencyIncrease)
-                :base(game)
+                : base(game)
             {
                 this.gatherers = gatherers;
                 this.efficiencyIncrease = efficiencyIncrease;
@@ -553,7 +564,7 @@ namespace GoldRush
             int capacity;
 
             public ProcessorCapacityUpgradeEffect(GameObjects game, Processing.Processor[] processors, int capacity)
-                :base(game)
+                : base(game)
             {
                 this.processors = processors;
                 this.capacity = capacity;
@@ -584,9 +595,9 @@ namespace GoldRush
                     foreach (var processor in processors)
                         names.Add(processor.Name);
 
-                    string concatenatedNames = String.Join(",", names); 
+                    string concatenatedNames = String.Join(",", names);
 
-                    return "Increases capacity of "+concatenatedNames+" by "+ capacity+".";
+                    return "Increases capacity of " + concatenatedNames + " by " + capacity + ".";
                 }
             }
         }
@@ -597,7 +608,7 @@ namespace GoldRush
             double efficiency;
 
             public ProcessorEfficiencyUpgradeEffect(GameObjects game, Processing.Processor[] processors, double efficiency)
-                :base(game)
+                : base(game)
             {
                 this.processors = processors;
                 this.efficiency = efficiency;
@@ -629,7 +640,7 @@ namespace GoldRush
 
                     string concatenatedNames = String.Join(",", names);
 
-                    return "Increases efficiency of " + concatenatedNames + " by " + ((efficiency*100)-100) + "%.";
+                    return "Increases efficiency of " + concatenatedNames + " by " + ((efficiency * 100) - 100) + "%.";
                 }
             }
         }
@@ -639,7 +650,7 @@ namespace GoldRush
             Processing.Processor[] processors;
             int increase;
             public ProcessorRecipeEfficiencyUpgradeEffect(GameObjects game, Processing.Processor[] processors, int increase)
-                :base(game)
+                : base(game)
             {
                 this.processors = processors;
                 this.increase = increase;
@@ -671,7 +682,45 @@ namespace GoldRush
 
                     string concatenatedNames = String.Join(",", names);
 
-                    return concatenatedNames + " craft an additional " + increase +" recipes per iteration.";
+                    return concatenatedNames + " craft an additional " + increase + " recipes per iteration.";
+                }
+            }
+        }
+
+        class ProcessorUnlockUpgradeEffect : UpgradeEffect
+        {
+            Processing.Processor[] processors;
+
+            public ProcessorUnlockUpgradeEffect(GameObjects game, Processing.Processor[] processors)
+                : base(game)
+            {
+                this.processors = processors;
+            }
+
+            public override void Activate()
+            {
+                foreach (var processor in processors)
+                    processor.Quantity = 1;
+            }
+
+            public override void Deactivate()
+            {
+                foreach (var processor in processors)
+                    processor.Quantity = 0;
+            }
+
+            public override string Tooltip
+            {
+                get
+                {
+                    List<string> names = new List<string>();
+
+                    foreach (var processor in processors)
+                        names.Add(processor.Name);
+
+                    string concatenatedNames = String.Join(",", names);
+
+                    return "Unlocks "+concatenatedNames+".";
                 }
             }
         }

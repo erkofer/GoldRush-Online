@@ -153,7 +153,7 @@ module Equipment {
             if (!gatherer) return;
 
             gatherer.rarityBonus = rarityBonus;
-            gatherer.rarityBonusElm.textContent = 'Rarity multiplier: x' + Utils.formatNumber(rarityBonus);
+            gatherer.rarityBonusElm.textContent = 'Rarity multi: x' + Utils.formatNumber(rarityBonus);
         });
     }
 }

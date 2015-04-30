@@ -119,6 +119,10 @@ namespace GoldRush
             Processors[processorId].Start(recipeIndex, iterations);
         }
 
+
+        /// <summary>
+        /// Has an array of recipes that it can produce over a period of time.
+        /// </summary>
         internal class Processor : GameObjects.GameObject
         {
             public Processor(GameConfig.Processors.ProcessorConfig config)
@@ -204,16 +208,21 @@ namespace GoldRush
 
             public void Start(int recipeIndex, int iterations)
             {
+                // stop if we do not have this processor unlocked.
+                if (Requires != null && !Requires.Active) return;
+
+                // stop if no recipe is selected or there are none left to craft.
                 if (Recipes[recipeIndex] == null || recipesLeftToCraft != 0) return;
 
                 selectedRecipe = Recipes[recipeIndex];
-                iterations = Math.Min(iterations, Capacity);
+                iterations = Math.Min(iterations, Capacity); // limit the iterations to the max capacity.
 
-                if (!selectedRecipe.Has(iterations)) return;
+                if (!selectedRecipe.Has(iterations)) return; // stop if we do not have the required ingredients.
 
-                foreach (var ingredient in selectedRecipe.Ingredients)
+                foreach (var ingredient in selectedRecipe.Ingredients) // consume ingredients.
                     ingredient.Consume(iterations);
 
+                // reset the processor
                 recipesToCraft = iterations;
                 recipesCrafted = 0;
                 recipeProgress = 0;
@@ -240,12 +249,12 @@ namespace GoldRush
 
             private void Craft(int iterations)
             {
-                recipeProgress %= selectedRecipe.Duration;
+                recipeProgress %= selectedRecipe.Duration; // store excess recipe progress.
 
-                if (iterations > recipesLeftToCraft)
+                if (iterations > recipesLeftToCraft) // limit iterations to the number of iterations we have left.
                     iterations = recipesLeftToCraft;
 
-                foreach (var resultant in selectedRecipe.Resultants)
+                foreach (var resultant in selectedRecipe.Resultants) // provide each resultant
                     resultant.Provide(iterations * RecipesCraftedPerIteration);
 
                 recipesCrafted += iterations;

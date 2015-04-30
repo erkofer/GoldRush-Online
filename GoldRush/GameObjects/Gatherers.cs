@@ -66,9 +66,16 @@ namespace GoldRush
 
         public void Update(int ms)
         {
-            foreach (var gatherer in All)
+            List<Gatherer> fuelConsumingGatherers = new List<Gatherer>();
+            foreach (var gatherer in All)// gatherer with machines that do not consume fuel first.
             {
-                gatherer.Value.Mine(ms);
+                if(gatherer.Value.Fuel != null) fuelConsumingGatherers.Add(gatherer.Value);
+                else gatherer.Value.Mine(ms);
+            }
+
+            foreach (var gatherer in fuelConsumingGatherers)
+            {
+                gatherer.Mine(ms);
             }
         }
 
