@@ -66,6 +66,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\JetBrains.Annotations.8.0.5.0\lib\net20\JetBrains.Annotations.dll</HintPath>
     </Reference>
+    <Reference Include="log4net">
+      <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.AspNet.SignalR.Core">
       <HintPath>..\packages\Microsoft.AspNet.SignalR.Core.2.1.2\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
     </Reference>
@@ -217,7 +220,7 @@
     <Compile Include="Areas\Api\Controllers\AccountController.cs" />
     <Compile Include="Areas\Api\Models\AccountViewModel.cs" />
     <Compile Include="Areas\Api\Models\SuccessViewModel.cs" />
-    <Compile Include="Connections\GameConnection.cs" />
+    <Compile Include="Connections\KomodoConnection.cs" />
     <Compile Include="Controllers\GameController.cs" />
     <Compile Include="Areas\Api\Controllers\StatsController.cs" />
     <Compile Include="Controllers\VersionController.cs" />
@@ -481,22 +484,13 @@
     <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
   </Target>
   <Target Name="BeforeBuild">
-	<Message Importance="high" Text="Compiling TypeScript files - $(TypeScriptSourceMap)" />
+    <Message Importance="high" Text="Compiling TypeScript files - $(TypeScriptSourceMap)" />
     <Message Importance="high" Text="Executing tsc $(TypeScriptSourceMap) @(TypeScriptCompile ->'&quot;%(fullpath)&quot;', ' ')" />
     <Exec Command="tsc$(TypeScriptSourceMap) -target ES5 --module amd --out Scripts/game.js" />
     <Exec Command="java -jar &quot;$(SolutionDir)Build\compiler.jar&quot; --js &quot;$(SolutionDir)Caroline\Scripts\game.js&quot; --js_output_file &quot;$(SolutionDir)Caroline\Scripts\game.min.js&quot;" />
     <Message Importance="high" Text="Building spritesheet." />
-    <Exec Command="&quot;$(SolutionDir)Build\Python27\Scripts\glue.exe&quot; --source &quot;$(SolutionDir)Caroline\Content\Sprites&quot; --output &quot;$(SolutionDir)Caroline\Content&quot; --css=&quot;$(SolutionDir)Caroline\Content&quot; --sprite-namespace= --namespace= --force">
-      <Output TaskParameter="ExitCode" PropertyName="TestGlueExitCode" />
-    </Exec>
     <Message Importance="high" Text="$(TestGlueExitCode)" />
-    <Exec Command="&quot;$(SolutionDir)Build\SpriteRatio.exe&quot; -source &quot;$(SolutionDir)Caroline\Content\sprites.css&quot; -out &quot;$(SolutionDir)Caroline\Content\sprites.css&quot; -ratio 1,0.5,0.35,0.25 -rnames ,Half,Third,Quarter">
-      <Output TaskParameter="ExitCode" PropertyName="TestExitCode" />
-	</Exec>
     <Message Importance="high" Text="$(TestExitCode)" />
-    <Exec Command="&quot;$(SolutionDir)Build\pngquant.exe&quot; &quot;$(SolutionDir)Caroline\Content\sprites.png&quot; --ext .png --force">
-      <Output TaskParameter="ExitCode" PropertyName="TestPNGExitCode" />
-    </Exec>
     <Message Importance="high" Text="$(TestGlueExitCode)" />
     <Message Importance="high" Text="$(TestExitCode)" />
     <Message Importance="high" Text="$(TestPNGExitCode)" />

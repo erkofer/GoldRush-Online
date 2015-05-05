@@ -49,13 +49,6 @@ namespace Caroline.Persistence.Redis
             return Deserialize(result, id, field);
         }
 
-        private TEntity Deserialize(RedisValue result, TId id, TField field)
-        {
-            var ent = Deserialize(result, id);
-            _fieldIdentifier.SetId(ent, field);
-            return ent;
-        }
-
         public async Task<TEntity[]> Get(TId id, TField[] members)
         {
             var tid = KeySerializer.Serialize(id);
@@ -129,6 +122,15 @@ namespace Caroline.Persistence.Redis
             for (var i = 0; i < result.Length; i++)
                 ret[i] = Deserialize(result[i], id);
             return ret;
+        }
+
+        private TEntity Deserialize(RedisValue result, TId id, TField field)
+        {
+            if (result.IsNull)
+                return default(TEntity);
+            var ent = Deserialize(result, id);
+            _fieldIdentifier.SetId(ent, field);
+            return ent;
         }
     }
 }

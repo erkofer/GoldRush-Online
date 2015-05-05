@@ -16,6 +16,7 @@ message GameSession
 
 	optional GameState CachedGameState = 1;
 	optional RateLimit RateLimit = 2;
+	optional int64 LastChatMessageRecieved = 3;
 }
 
 message RateLimit

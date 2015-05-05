@@ -79,6 +79,12 @@ namespace Caroline.Persistence.Redis.Extensions
             return new RedisStringTable(db, defaultExpiry);
         }
 
+        public static RedisLongTable Long(this IDatabaseArea area, RedisKey id, TimeSpan? defualtExpiry = null)
+        {
+            var db = area.CreateSubArea(id);
+            return new RedisLongTable(db, defualtExpiry);
+        }
+
         public static IEntityListTable<TEntity, TId> SetList<TEntity, TId>(this IDatabaseArea area, RedisKey id, ISerializer<TEntity> serializer, ISerializer<TId> keySerializer, IIdentifier<TEntity, TId> identifier)
         {
             // there is no defaultExpiry, as redis creates lists randomly during operations such as LPUSH,
@@ -115,6 +121,13 @@ namespace Caroline.Persistence.Redis.Extensions
             return new RedisSortedSetTable<TEntity, TId>(db, serializer, keySerializer, identifier, scoreIdentifier);
         }
 
+        public static ISortedSetTable<TEntity, string> SetSortedListString<TEntity>(this IDatabaseArea area, RedisKey id)
+            where TEntity : IIdentifiableEntity<string>, IIdentifiableEntity<double>
+        {
+            var db = area.CreateSubArea(id);
+            return new RedisSortedSetTable<TEntity, string>(db, Objects<TEntity>.Serializer, Objects.StringSerializer, Objects<TEntity, string>.Identifier, Objects<TEntity, double>.Identifier);
+        }
+
         public static ISortedSetTable<TEntity, long> SetSortedListLong<TEntity>(this IDatabaseArea area, RedisKey id)
             where TEntity : IIdentifiableEntity<long>, IIdentifiableEntity<double>
         {
@@ -133,17 +146,22 @@ namespace Caroline.Persistence.Redis.Extensions
             var db = area.CreateSubArea(id);
             return new RedisEntityHashTable<TEntity, TId, TField>(db, serializer, keySerializer, identifier, fieldSerializer, fieldIdentifier);
         }
-
-        public static IEntityHashTable<TEntity, long, string> SetHashLongString<TEntity>(this IDatabaseArea area, RedisKey id)
-            where TEntity : IIdentifiableEntity<long>, IIdentifiableEntity<string>
+        public static IEntityHashTable<TEntity, string, TField> SetHashString<TEntity, TField>(this IDatabaseArea area, RedisKey id)
+            where TEntity : IIdentifiableEntity<string>, IIdentifiableEntity<TField>
         {
-            return SetHash(area, id, Objects<TEntity>.Serializer, Objects.LongSerializer, Objects<TEntity, long>.Identifier, Objects.StringSerializer, Objects<TEntity, string>.Identifier);
+            return SetHash(area, id, Objects<TEntity>.Serializer, Objects.StringSerializer, Objects<TEntity, string>.Identifier, Objects<TField>.Serializer, Objects<TEntity, TField>.Identifier);
         }
 
         public static IEntityHashTable<TEntity, string, long> SetHashStringLong<TEntity>(this IDatabaseArea area, RedisKey id)
             where TEntity : IIdentifiableEntity<long>, IIdentifiableEntity<string>
         {
             return SetHash(area, id, Objects<TEntity>.Serializer, Objects.StringSerializer, Objects<TEntity, string>.Identifier, Objects.LongSerializer, Objects<TEntity, long>.Identifier);
+        }
+
+        public static IEntityHashTable<TEntity, long, string> SetHashLongString<TEntity>(this IDatabaseArea area, RedisKey id)
+            where TEntity : IIdentifiableEntity<long>, IIdentifiableEntity<string>
+        {
+            return SetHash(area, id, Objects<TEntity>.Serializer, Objects.LongSerializer, Objects<TEntity, long>.Identifier, Objects.StringSerializer, Objects<TEntity, string>.Identifier);
         }
 
         public static IRateLimitTable<TId> SetRateLimit<TId>(this IDatabaseArea area, RedisKey id, TimeSpan duration, int maxRequests, ISerializer<TId> keySerializer)

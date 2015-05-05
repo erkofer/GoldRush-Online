@@ -35,5 +35,10 @@ namespace Caroline.Persistence.Redis
                 ? _db.IncrementExpiryAsync(_scripts, id, incrementValue, expiry.Value)
                 : _db.StringIncrementAsync(id, incrementValue);
         }
+
+        public async Task<long> Get(RedisKey id)
+        {
+            return (long)await _db.StringGetAsync(id);
+        }
     }
 }

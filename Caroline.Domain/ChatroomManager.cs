@@ -1,71 +1,142 @@
 ﻿using System;
 using System.Threading.Tasks;
+using System.Web.Configuration;
 using Caroline.Domain.Models;
 using Caroline.Persistence;
 using Caroline.Persistence.Models;
 using Caroline.Persistence.Redis;
+using StackExchange.Redis;
 
 namespace Caroline.Domain
 {
-    class ChatroomManager : IChatroomManager
+    public class ChatroomManager : IChatroomManager
     {
+        static readonly log4net.ILog Log = log4net.LogManager.GetLogger
+            (System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+        private static readonly long TransientChatroomMaxMessages;
+        private static readonly TimeSpan transientChatroomSecondsToLive;
         const long ChatroomMessageCapacity = 25;
         const int MaxMessageLength = 200;
+
         readonly CarolineRedisDb _db;
+
+        static ChatroomManager()
+        {
+            long messages = 25;
+            var messagesString = WebConfigurationManager.AppSettings["transientChatroomMaxMessages"];
+            if (messagesString != null)
+            {
+                if (!long.TryParse(messagesString, out messages) || messages <= 0)
+                    throw new Exception("transientChatroomMaxMessages in Web.config must be a whole number greater than 0.");
+            }
+            TransientChatroomMaxMessages = messages;
+
+            var secondsToLive = TimeSpan.FromSeconds(600);
+            var secondsToLiveString = WebConfigurationManager.AppSettings["transientChatroomSecondsToLive"];
+            if (secondsToLiveString != null)
+            {
+                long secondsToLiveLong;
+                if (!long.TryParse(secondsToLiveString, out secondsToLiveLong) || secondsToLiveLong <= 0)
+                    throw new Exception("transientChatroomSecondsToLive in Web.config must be a whole number greater than 0.");
+                secondsToLive = TimeSpan.FromSeconds(secondsToLiveLong);
+            }
+            transientChatroomSecondsToLive = secondsToLive;
+        }
 
         ChatroomManager(CarolineRedisDb db)
         {
             _db = db;
         }
 
-        public static async Task<ChatroomManager> Create()
+        public static async Task<ChatroomManager> CreateAsync()
         {
             return new ChatroomManager(await CarolineRedisDb.CreateAsync());
         }
 
-        public async Task<SendMessageResult> SendMessage(Message message)
+        public async Task<SendMessageResult> SendMessage(string message, string chatroom, User sender, string permissions, bool messagesExpire = true)
         {
-            if (!message.IsValid())
-                return SendMessageResult.BadArguments;
+            if (sender == null)
+                throw new ArgumentNullException();
 
-            if (await _db.ChatroomSubscribers.Get(message.Chatroom, message.UserId) == null)
-                return SendMessageResult.NotSubscribed;
+            if (string.IsNullOrWhiteSpace(message))
+                return SendMessageResult.BlankMessage;
 
-            var body = message.Body;
-            if (body.Length > MaxMessageLength)
-                body = body.Substring(0, MaxMessageLength);
+            var options = await _db.ChatroomOptions.Get(chatroom);
+            if (options != null && options.IsPrivate)
+                if (await _db.ChatroomSubscribers.Get(chatroom, sender.Id) == null)
+                    return SendMessageResult.NotSubscribed;
+
+            if (message.Length > MaxMessageLength)
+                message = message.Substring(0, MaxMessageLength);
             // todo: chat swear filtering and shitty fuck tits
 
             // update message list in chatroom
-            var numMessages = await _db.ChatroomMessages.Push(new ChatroomMessage { Id = message.Chatroom, Message = body, UserId = message.UserId }, IndexSide.Left);
-            if (numMessages > ChatroomMessageCapacity * 2)
+            var messageIndex = await _db.ChatroomMessagesIdIncrement.IncrementAsync(chatroom);
+            var messageDto = new ChatroomMessage { Id = chatroom, Message = message, UserName = sender.UserName, UserId = sender.Id, Index = messageIndex, Permissions = permissions , Time = DateTime.UtcNow.ToShortTimeString()};
+            if (!await _db.ChatroomMessages.Add(messageDto))
             {
-                var numToRemove = numMessages - ChatroomMessageCapacity;
-                await _db.ChatroomMessages.Pop(message.Chatroom, IndexSide.Right, numToRemove);
-                // TODO: move old messages from the result of the pop operation to a persistent nosql store
+                // an existing message was overwritten, should never happen
+                Log.Warn("Chatroom message with a unique id was overwritten!");
             }
 
+            if (messagesExpire)
+                // trim messages
+                await _db.ChatroomMessages.RemoveRangeByRank(messageDto.Id, 0, -TransientChatroomMaxMessages);
+
             // message fanout
-            var subscribers = await _db.ChatroomSubscribers.GetAll(message.Chatroom);
+            var subscribers = await _db.ChatroomSubscribers.GetAll(chatroom);
             for (var i = 0; i < subscribers.Length; i++)
             {
                 var subscriber = subscribers[i];
                 var numNotifications = await _db.UserChatroomNotifications.Push(new ChatroomNotification
                 {
                     Id = subscriber.UserId,
-                    ChatroomId = message.Chatroom,
-                    Message = body,
-                    SenderUserId = message.UserId
+                    ChatroomId = chatroom,
+                    Message = message,
+                    SenderUserId = sender.Id
                 }, IndexSide.Left);
 
                 if (numNotifications < ChatroomMessageCapacity * 2)
                     continue;
+
                 // we dont store older notifications, as we can generate it by looking at what chatrooms the user is subscribed to
-                var numToRemove = numMessages - ChatroomMessageCapacity;
+                var numToRemove = numNotifications - ChatroomMessageCapacity;
                 await _db.UserChatroomNotifications.Pop(numNotifications - ChatroomMessageCapacity, IndexSide.Right, numToRemove);
             }
 
             return SendMessageResult.Success;
+        }
+
+        public Task<long> GetChatroomMessageIndex(string chatroom)
+        {
+            return _db.ChatroomMessagesIdIncrement.Get(chatroom);
+        }
+
+        public async Task<GameState.ChatMessage[]> GetRecentMessages(string chatroom, long lastMessageRecieved)
+        {
+            //if(start < 0)
+            //    throw new ArgumentException("start must be equal to or greater than 0.", "start");
+            //if(count <= 0)
+            //    throw new ArgumentException("count must be greater than 0", "count");
+            if (lastMessageRecieved < 0)
+                throw new ArgumentException("lastMessageRecieved must be equal to or greater than 0.", "lastMessageRecieved");
+
+            var messages = await _db.ChatroomMessages.Range(chatroom, lastMessageRecieved, -1, Order.Descending);
+            Array.Reverse(messages);
+            var ret = new GameState.ChatMessage[messages.Length];
+            for (var i = 0; i < ret.Length; i++)
+            {
+                var mes = messages[i];
+                ret[i] = new GameState.ChatMessage
+                {
+                    Text = mes.Message,
+                    Permissions = mes.Permissions,
+                    Time = mes.Time,
+                    Sender = mes.UserName
+                };
+            }
+            return ret;
         }
 
         public async Task<InviteResult> InviteUser(string chatroom, long inviter, long invited)
@@ -88,8 +159,8 @@ namespace Caroline.Domain
                     if (await _db.ChatroomSubscribers.Exists(chatroom, invited))
                         return InviteResult.AlreadyJoined;
 
-                    await _db.ChatroomInvitations.Set(new ChatroomInvitation{Id = chatroom, InviterUserId = inviter, UserId = invited});
-                    await _db.UserChatroomNotifications.Push(new ChatroomNotification{ Id = invited, ChatroomId = chatroom, SenderUserId = inviter}, IndexSide.Left);
+                    await _db.ChatroomInvitations.Set(new ChatroomInvitation { Id = chatroom, InviterUserId = inviter, UserId = invited });
+                    await _db.UserChatroomNotifications.Push(new ChatroomNotification { Id = invited, ChatroomId = chatroom, SenderUserId = inviter }, IndexSide.Left);
                     return InviteResult.Success;
                 case ChatroomOptions.InvitePrivilege.Locked:
                     return InviteResult.InsufficientPermissions;
