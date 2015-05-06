@@ -148,6 +148,7 @@ namespace GoldRush
                     schemaItem.MaxQuantity = item.Value.MaxQuantity;
                     schemaItem.Category = (GameState.Schematic.SchemaStoreItem.Section)item.Value.Category;
                     schemaItem.Tooltip = item.Value.Item.Tooltip;
+                    schemaItem.RequiredId = item.Value.Item.Requires != null ? item.Value.Item.Requires.Id : 0;
 
                     schema.StoreItems.Add(schemaItem);
                 }
@@ -183,6 +184,7 @@ namespace GoldRush
                     var schemaItem = new GameState.Schematic.SchemaProcessor();
                     schemaItem.Id = processor.Value.Id;
                     schemaItem.Name = processor.Value.Name;
+                    schemaItem.RequiredId = processor.Value.Requires != null ? processor.Value.Requires.Id : 0;
 
                     foreach (var recipe in processor.Value.Recipes)
                     {
@@ -307,6 +309,9 @@ namespace GoldRush
 
                 stateGatherer.Id = gatherer.Id;
                 stateGatherer.Enabled = gatherer.Enabled;
+                stateGatherer.FuelConsumed = gatherer.FuelConsumption;
+                stateGatherer.Efficiency = gatherer.ResourcesPerSecond;
+                stateGatherer.RarityBonus = gatherer.ProbabilityModifier;
                 state.Gatherers.Add(stateGatherer);
             }
 

@@ -128,11 +128,32 @@ namespace Caroline.Persistence.Models
         {
             public Gatherer Compress(Gatherer oldItem)
             {
+                Gatherer gatherer=null;
                 if (_Enabled != oldItem._Enabled)
                 {
-                    return new Gatherer() {_Id = _Id, _Enabled = _Enabled};
+                    if(gatherer == null)
+                        gatherer = new Gatherer(){ _Id = _Id};
+                    gatherer._Enabled = _Enabled;
                 }
-                return null;
+                if (_Efficiency != oldItem._Efficiency)
+                {
+                    if (gatherer == null)
+                        gatherer = new Gatherer() { _Id = _Id };
+                    gatherer._Efficiency = _Efficiency;
+                }
+                if (_FuelConsumed != oldItem._FuelConsumed)
+                {
+                    if (gatherer == null)
+                        gatherer = new Gatherer() { _Id = _Id };
+                    gatherer._FuelConsumed = _FuelConsumed;
+                }
+                if (_RarityBonus != oldItem._RarityBonus)
+                {
+                    if (gatherer == null)
+                        gatherer = new Gatherer() { _Id = _Id };
+                    gatherer._RarityBonus = _RarityBonus;
+                }
+                return gatherer;
             } 
         }
 
@@ -323,7 +344,7 @@ namespace Caroline.Persistence.Models
                         storeItem = new StoreItem() {_Id = _Id};
                     storeItem._Price = _Price;
                 }
-                return null;
+                return storeItem;
             }
         }
 

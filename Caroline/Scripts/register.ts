@@ -18,7 +18,7 @@ module Account {
 
     class LeaderboardAjaxService {
         constructor() {
-            
+
         }
 
         private failed(request) {
@@ -26,11 +26,12 @@ module Account {
         }
 
         private succeeded(request) {
+
             while (this.resultsElement.firstChild)
                 this.resultsElement.removeChild(this.resultsElement.firstChild);
 
             var leaderboardTable: HTMLTableElement = document.createElement('table');
-            var thead:HTMLTableElement = <HTMLTableElement>leaderboardTable.createTHead();
+            var thead: HTMLTableElement = <HTMLTableElement>leaderboardTable.createTHead();
             var subheader = <HTMLTableRowElement>thead.insertRow(0);
             subheader.classList.add('table-subheader');
 
@@ -43,7 +44,7 @@ module Account {
             var rank = subheader.insertCell(0);
             rank.textContent = 'Rank';
             rank.style.width = '10%';
-            
+
             var tbody: HTMLTableElement = <HTMLTableElement>leaderboardTable.createTBody();
 
 
@@ -57,7 +58,7 @@ module Account {
                 var rScore = row.insertCell(0);
                 rScore.textContent = Utils.formatNumber(leaderboardEntry.Score);
                 rScore.style.width = '65%';
-                rScore.addEventListener('click', function(event) {
+                rScore.addEventListener('click', function (event) {
                     var score;
                     var cell = <HTMLElement>event.target;
 
@@ -91,7 +92,7 @@ module Account {
         }
 
         resultsElement: HTMLElement;
-        
+
         sendRequest(lowerbound: number, upperbound: number) {
             var self = this;
 
@@ -105,7 +106,7 @@ module Account {
                     request = JSON.parse(request);
                     self.succeeded(request);
                 },
-                failure: function(request) {
+                failure: function (request) {
                     self.failed(request);
                 }
             });
@@ -122,7 +123,7 @@ module Account {
         }
 
         container.onmouseleave = function () {
-            mouseTimeout= setTimeout(hideMenu,250);
+            mouseTimeout = setTimeout(hideMenu, 250);
         }
         // Anon stuff.
         var loginButton = document.createElement('DIV');
@@ -175,6 +176,7 @@ module Account {
         highscoresLink.addEventListener('click', function () {
             leaderboardsModal();
         });
+        highscoresLink.style.cursor = 'pointer';
         document.getElementsByClassName('header-links')[0].appendChild(highscoresLink);
 
         info();
@@ -205,13 +207,13 @@ module Account {
         leaderboardModal.title = 'Leaderboards';
         var leaderboardList = document.createElement('DIV');
         leaderboardList.style.width = '400px';
-        leaderboardList.textContent = 'Loading...';
+        leaderboardList.appendChild(Ajax.createLoader());
         leaderboardModal.addElement(leaderboardList);
 
 
         var leaderboardService = new LeaderboardAjaxService();
         leaderboardService.resultsElement = leaderboardList;
-        leaderboardService.sendRequest(0, 19);
+        leaderboardService.sendRequest(0, 20);
 
         leaderboardModal.show();
     }
@@ -320,7 +322,7 @@ module Account {
         registerModal.addElement(formControlsContainer);
         registrationErrors = document.createElement('div');
         registerModal.addElement(registrationErrors);
-        
+
         registerModal.title = "Register";
 
         var no = registerModal.addNegativeOption("Cancel");

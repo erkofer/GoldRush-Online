@@ -891,9 +891,20 @@ td {
     color: white;
 }
 
+.header-links > * {
+    padding-right: 7px;
+}
+
 .equipment-gatherer-container {
     width: 150px;
     height: 150px;
     display: inline-block;
-    margin: 3px;
+    margin: 5px;
+    border-radius: 10px;
+}
+
+.loader {
+    margin: 0 auto;
+    padding: 5px;
+    text-align: center;
 }

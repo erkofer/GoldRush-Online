@@ -6,6 +6,7 @@ using System.Web;
 using System.Web.Security;
 using Caroline.Domain;
 using Caroline.Models;
+using Caroline.Persistence;
 using Caroline.Persistence.Models;
 using JetBrains.Annotations;
 using Microsoft.AspNet.Identity;
@@ -78,7 +79,7 @@ namespace Caroline.Api
 
         static async Task RegisterAnonymouslyIfLoggedOff(HttpContextBase context)
         {
-            if (IsSignedIn(context))
+            if (await IsSignedIn(context))
                 return;
 
             // Check if the user has an anonymous account and needs to sign in again
@@ -88,9 +89,13 @@ namespace Caroline.Api
             await GenerateAnonymousProfile(context);
         }
 
-        static bool IsSignedIn(HttpContextBase context)
+        static async Task<bool> IsSignedIn(HttpContextBase context)
         {
-            return context.User.Identity.IsAuthenticated;
+            if (!context.User.Identity.IsAuthenticated)
+                return false;
+
+            var db = await CarolineRedisDb.CreateAsync();
+            return await db.Users.Get(context.User.Identity.GetUserId<long>()) != null;
         }
 
         static async Task<bool> TrySignInAnonymous(HttpContextBase context)

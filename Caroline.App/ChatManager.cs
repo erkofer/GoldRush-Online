@@ -36,15 +36,23 @@ namespace Caroline.App
                 case SendMessageResult.BadArguments:
                     break;
                 case SendMessageResult.NotSubscribed:
+                    Log.Warn("SendMessage.NotSubscribed result from sending a public message.");
+                    break;
+                case SendMessageResult.BlankMessage:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        public Task<GameState.ChatMessage[]> GetRecentMessages(long lastMessageRecieved = 0)
+        public async Task<GameState.ChatMessage[]> GetRecentMessages(long lastMessageRecieved = 0)
         {
-            return _rooms.GetRecentMessages(PublicChatroom, lastMessageRecieved);
+            const long maxMessagesReturned = 50;
+            var chatroomIndex = await _rooms.GetChatroomMessageIndex(PublicChatroom);
+            var index = Math.Max(chatroomIndex - maxMessagesReturned, lastMessageRecieved);
+
+            var ret = await _rooms.GetRecentMessages(PublicChatroom, index);
+            return ret;
         }
 
         static readonly HashSet<string> Developers = new HashSet<string> { "Tristyn", "Hunter" };

@@ -14,6 +14,14 @@
     var rockGrowth = 4;
     var rockIsBig = false;
     var mouseDown = false;
+
+    var notTouched = true;
+    var growing = true;
+    var currentNotifier = 0;
+    var growRate = 8;
+    var notifierGrowth = 4;
+    var gsLastTick = Date.now();
+
     export var particles = new Array<Particle>();
 
     export class Particle {
@@ -91,6 +99,31 @@
         }, false);
     }
 
+    function growAndShrink() {
+        if (!stoneLoaded) {
+            setTimeout(growAndShrink, 10);
+            return;
+        }
+
+        var time = Date.now();
+        var timePassed = time - gsLastTick;
+        timePassed /= 1000;
+        gsLastTick = time;
+
+        if (growing) { currentNotifier += growRate * timePassed; }
+        else {currentNotifier -= growRate * timePassed;}
+
+        if (currentNotifier > notifierGrowth || currentNotifier < -notifierGrowth) {
+            growing = !growing;
+        }
+
+        drawRock(lastX, lastY, rockSize + currentNotifier, rockSize + currentNotifier);
+
+        if (notTouched)
+            setTimeout(growAndShrink, 10);
+    }
+    growAndShrink();
+
     function getMousePos(canvas, evt) {
         var rect = canvas.getBoundingClientRect();
         return {
@@ -100,26 +133,28 @@
     }
 
     var released = true;
+
     function isOverRock(x: number, y: number) {
         if (x > lastX && x < (lastX + rockSize) && y > lastY && y < (lastY + rockSize)) {
-            if (!mouseDown) {
+            if (!mouseDown) { // mouse is hovering but not clicking
                 drawRock(lastX - (rockGrowth / 2), lastY - (rockGrowth / 2), rockSize + rockGrowth, rockSize + rockGrowth);
                 released = true;
-            } else {
+                notTouched = false;
+            } else { // mouse is clicking
                 drawRock(lastX + (rockGrowth / 2), lastY + (rockGrowth / 2), rockSize - rockGrowth, rockSize - rockGrowth);
                 if (released)
                     addParticles(x, y);
                 released = false;
+                notTouched = false;
             }
-
             rockIsBig = true;
-        }
-        else if (rockIsBig) {
+        } else if (rockIsBig) {
             drawRock(lastX, lastY, rockSize, rockSize);
             rockIsBig = false;
             released = true;
         }
     }
+
 
     export function moveRock(x: number, y: number) {
         if (x != lastX && y != lastY) {
@@ -128,7 +163,7 @@
         if (stoneLoaded)
             drawRock(x, y, rockSize, rockSize);
         else 
-                setTimeout(function () { moveRock(x, y); }, 10);
+            setTimeout(function () { moveRock(x, y); }, 10);
         }
     }
 

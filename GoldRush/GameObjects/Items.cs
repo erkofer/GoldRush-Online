@@ -32,6 +32,7 @@ namespace GoldRush
 
             // Assign item recipes here.
 
+            // Coins.Quantity = 1000000000000000000L;
 
             // Potion buffs should be assigned in the upgrades class.
 
@@ -39,7 +40,6 @@ namespace GoldRush
 
             /*foreach (var item in items)
                 item.Quantity = 100;*/
-            Coins.Quantity = 5000000000;
 
         }
         private List<Item> items = new List<Item>();

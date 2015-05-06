@@ -104,13 +104,13 @@ namespace GoldRush
                 public double FuelConsumption;
             }
 
-            public static GathererConfig Player = new GathererConfig() { Name = "Player", BaseResourcesPerSecond = 1};
+            public static GathererConfig Player = new GathererConfig() { Name = "Player", BaseResourcesPerSecond = 1 };
             public static GathererConfig Miner = new GathererConfig() { Name = "Miner", BaseResourcesPerSecond = 0.5 };
             public static GathererConfig Lumberjack = new GathererConfig() { Name = "Lumberjack", BaseResourcesPerSecond = 0.5 };
-            public static GathererConfig Drill = new GathererConfig() { Name = "Drill", BaseResourcesPerSecond = 2.5, FuelConsumption = 1};
-            public static GathererConfig Crusher = new GathererConfig() { Name = "Crusher", BaseResourcesPerSecond = 5, FuelConsumption = 2};
-            public static GathererConfig Excavator = new GathererConfig() { Name = "Excavator", BaseResourcesPerSecond = 10, FuelConsumption = 4};
-            public static GathererConfig MegaDrill = new GathererConfig() { Name = "Mega Drill", BaseResourcesPerSecond = 20, FuelConsumption = 8};
+            public static GathererConfig Drill = new GathererConfig() { Name = "Drill", BaseResourcesPerSecond = 2.5, FuelConsumption = 1 };
+            public static GathererConfig Crusher = new GathererConfig() { Name = "Crusher", BaseResourcesPerSecond = 5, FuelConsumption = 2 };
+            public static GathererConfig Excavator = new GathererConfig() { Name = "Excavator", BaseResourcesPerSecond = 10, FuelConsumption = 4 };
+            public static GathererConfig MegaDrill = new GathererConfig() { Name = "Mega Drill", BaseResourcesPerSecond = 20, FuelConsumption = 8 };
             public static GathererConfig Pumpjack = new GathererConfig() { Name = "Pumpjack", BaseResourcesPerSecond = 0.2 };
             public static GathererConfig BigTexan = new GathererConfig() { Name = "Big Texan", BaseResourcesPerSecond = 0.5 };
         }
@@ -130,8 +130,8 @@ namespace GoldRush
                 public int BaseCapacity;
             }
 
-            public static ProcessorConfig Furnace = new ProcessorConfig() { Name = "Furnace", BaseCapacity=100 };
-            public static ProcessorConfig Cauldron = new ProcessorConfig() { Name = "Cauldron", BaseCapacity=1 };
+            public static ProcessorConfig Furnace = new ProcessorConfig() { Name = "Furnace", BaseCapacity = 100 };
+            public static ProcessorConfig Cauldron = new ProcessorConfig() { Name = "Cauldron", BaseCapacity = 1 };
         }
 
         // no ids
@@ -152,17 +152,17 @@ namespace GoldRush
                 public double Factor = 1;
             }
 
-            public static StoreItemConfig EmptyVial = new StoreItemConfig() { BasePrice = 1000, Category = Store.Category.ITEMS, MaxQuantity = 0};
+            public static StoreItemConfig EmptyVial = new StoreItemConfig() { BasePrice = 1000, Category = Store.Category.ITEMS, MaxQuantity = 0 };
             public static StoreItemConfig Gunpowder = new StoreItemConfig() { BasePrice = 2500, Category = Store.Category.ITEMS, MaxQuantity = 0 };
-            public static StoreItemConfig Researcher = new StoreItemConfig() { BasePrice = 1000*1000, Category = Store.Category.GATHERING };
+            public static StoreItemConfig Researcher = new StoreItemConfig() { BasePrice = 1000 * 1000, Category = Store.Category.GATHERING };
             public static StoreItemConfig Foreman = new StoreItemConfig() { BasePrice = 250000, Category = Store.Category.GATHERING };
-            public static StoreItemConfig Botanist = new StoreItemConfig() { BasePrice = 1000*1000*100, Category = Store.Category.GATHERING };
+            public static StoreItemConfig Botanist = new StoreItemConfig() { BasePrice = 1000 * 1000 * 100, Category = Store.Category.GATHERING };
 
             public static StoreItemConfig Miner = new StoreItemConfig() { BasePrice = 1000, Category = Store.Category.MACHINES, MaxQuantity = 10, Factor = 1.15 };
             public static StoreItemConfig Lumberjack = new StoreItemConfig() { BasePrice = 20000, Category = Store.Category.MACHINES, MaxQuantity = 10, Factor = 1.15 };
-            public static StoreItemConfig Drill = new StoreItemConfig() { BasePrice = 1000*1000, Category = Store.Category.MACHINES, MaxQuantity = 10, Factor = 1.15 };
-            public static StoreItemConfig Crusher = new StoreItemConfig() { BasePrice = 1000*1000*5, Category = Store.Category.MACHINES, MaxQuantity = 10, Factor = 1.15 };
-            public static StoreItemConfig Excavator = new StoreItemConfig() { BasePrice = 1000*1000*500, Category = Store.Category.MACHINES, MaxQuantity = 10, Factor = 1.15 };
+            public static StoreItemConfig Drill = new StoreItemConfig() { BasePrice = 1000 * 1000, Category = Store.Category.MACHINES, MaxQuantity = 10, Factor = 1.15 };
+            public static StoreItemConfig Crusher = new StoreItemConfig() { BasePrice = 1000 * 1000 * 5, Category = Store.Category.MACHINES, MaxQuantity = 10, Factor = 1.15 };
+            public static StoreItemConfig Excavator = new StoreItemConfig() { BasePrice = 1000 * 1000 * 500, Category = Store.Category.MACHINES, MaxQuantity = 10, Factor = 1.15 };
             public static StoreItemConfig Pumpjack = new StoreItemConfig() { BasePrice = 100000, Category = Store.Category.MACHINES, MaxQuantity = 100, Factor = 1.15 };
             public static StoreItemConfig BigTexan = new StoreItemConfig() { BasePrice = 2500000, Category = Store.Category.MACHINES, MaxQuantity = 100, Factor = 1.15 };
 
@@ -185,7 +185,10 @@ namespace GoldRush
             public static StoreItemConfig IronPickaxe = new StoreItemConfig() { BasePrice = 1000, Category = Store.Category.MINING };
             public static StoreItemConfig SteelPickaxe = new StoreItemConfig() { BasePrice = 20000, Category = Store.Category.MINING };
             public static StoreItemConfig GoldPickaxe = new StoreItemConfig() { BasePrice = 100000, Category = Store.Category.MINING };
-            public static StoreItemConfig DiamondPickaxe = new StoreItemConfig() { BasePrice = 1000*1000, Category = Store.Category.MINING };
+            public static StoreItemConfig DiamondPickaxe = new StoreItemConfig() { BasePrice = 1000 * 1000, Category = Store.Category.MINING };
+
+            public static StoreItemConfig Furnace = new StoreItemConfig() { BasePrice = 1000 * 1000, Category = Store.Category.PROCESSING };
+            public static StoreItemConfig Cauldron = new StoreItemConfig() { BasePrice = 1000 * 1000 * 25, Category = Store.Category.PROCESSING };
         }
         // 300-600
         public static class Upgrades
@@ -230,14 +233,17 @@ namespace GoldRush
             public static UpgradeConfig LargerCauldron = new UpgradeConfig() { Name = "Larger Cauldron" };
 
             public static BuffConfig ClickingBuff = new BuffConfig() { Name = "Clicking Potion", Duration = 45 };
-            public static BuffConfig SmeltingBuff = new BuffConfig() {Name = "Smelting Potion", Duration = 60*5};
-            public static BuffConfig AlchemyBuff = new BuffConfig() {Name = "Alchemy Potion", Duration = 60*3};
+            public static BuffConfig SmeltingBuff = new BuffConfig() { Name = "Smelting Potion", Duration = 60 * 5 };
+            public static BuffConfig AlchemyBuff = new BuffConfig() { Name = "Alchemy Potion", Duration = 60 * 3 };
 
-            public static UpgradeConfig DeeperTunnels = new UpgradeConfig() {Name = "Deeper Tunnels"};
-            public static UpgradeConfig IronPickaxe = new UpgradeConfig() {Name = "Iron Pickaxe"};
+            public static UpgradeConfig DeeperTunnels = new UpgradeConfig() { Name = "Deeper Tunnels" };
+            public static UpgradeConfig IronPickaxe = new UpgradeConfig() { Name = "Iron Pickaxe" };
             public static UpgradeConfig SteelPickaxe = new UpgradeConfig() { Name = "Steel Pickaxe" };
             public static UpgradeConfig GoldPickaxe = new UpgradeConfig() { Name = "Gold Pickaxe" };
             public static UpgradeConfig DiamondPickaxe = new UpgradeConfig() { Name = "Diamond Pickaxe" };
+
+            public static UpgradeConfig Furnace = new UpgradeConfig() {Name = "Furnace Unlock"};
+            public static UpgradeConfig Cauldron = new UpgradeConfig() {Name = "Cauldron Unlock"};
         }
     }
 }

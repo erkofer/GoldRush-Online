@@ -130,6 +130,101 @@
     }
     Utils.convertServerTimeToLocal = convertServerTimeToLocal;
 })(Utils || (Utils = {}));
+var Ajax;
+(function (Ajax) {
+    var loaders = new Array();
+
+    var Loader = (function () {
+        function Loader() {
+            this.notDisplayed = 20;
+            this.notches = 40;
+            this.space = 0.02;
+            this.spawned = false;
+            this.spinPos = 0;
+            this.spinSpeed = 30;
+            this.squareSize = 50;
+            this.timeSinceLastTick = Date.now();
+            this.thickness = 3;
+            this.dead = false;
+            this.container = document.createElement('div');
+            this.container.classList.add('loader');
+            this.canvasElement = document.createElement('canvas');
+            this.canvasElement.width = this.squareSize;
+            this.canvasElement.height = this.squareSize;
+            this.container.appendChild(this.canvasElement);
+            this.context = this.canvasElement.getContext('2d');
+        }
+        Loader.prototype.update = function () {
+            var time = Date.now();
+
+            if (this.canvasElement.parentElement)
+                this.spawned = true;
+
+            var timePassed = time - this.timeSinceLastTick;
+            timePassed /= 1000;
+            this.spinPos += this.spinSpeed * timePassed;
+            this.timeSinceLastTick = time;
+
+            if (this.spawned && !this.canvasElement.parentElement)
+                this.dead = true;
+
+            this.draw();
+        };
+
+        Loader.prototype.draw = function () {
+            var x = this.squareSize / 2;
+            var y = x;
+            var adjustedSpinPosStart = this.spinPos % 2;
+            var adjustedSpinPosEnd = (this.spinPos + 1) % 2;
+
+            var radius = (this.squareSize / 2) - 5;
+            var lengthEach = (2 - (this.space * this.notches)) / this.notches;
+            var selected = this.spinPos % this.notches;
+            var shown = selected - this.notDisplayed;
+
+            this.context.clearRect(0, 0, this.canvasElement.width, this.canvasElement.height);
+            for (var i = 0; i < this.notches; i++) {
+                var start = 0 + (i * lengthEach) + (this.space * i);
+                var end = start + lengthEach;
+                var inverse = i - this.notches;
+
+                if (i <= selected && i >= shown) {
+                    this.context.beginPath();
+                    this.context.arc(x, y, radius, start * Math.PI, end * Math.PI);
+                    this.context.lineWidth = this.thickness;
+                    this.context.strokeStyle = 'rgba(113,142,164,' + (1 - (selected - i) / (this.notches - this.notDisplayed)) + ')';
+                    this.context.stroke();
+                } else if (inverse <= selected && inverse >= shown) {
+                    this.context.beginPath();
+                    this.context.arc(x, y, radius, start * Math.PI, end * Math.PI);
+                    this.context.lineWidth = this.thickness;
+                    this.context.strokeStyle = 'rgba(113,142,164,' + (1 - (selected - inverse) / (this.notches - this.notDisplayed)) + ')';
+                    this.context.stroke();
+                }
+            }
+        };
+        return Loader;
+    })();
+
+    function createLoader() {
+        var loader = new Loader();
+        loaders.push(loader);
+        return loader.container;
+    }
+    Ajax.createLoader = createLoader;
+
+    function update() {
+        for (var i = 0; i < loaders.length; i++) {
+            var loader = loaders[i];
+            if (loader.dead)
+                loaders.splice(i, 1);
+            else
+                loader.update();
+        }
+        setTimeout(update, 10);
+    }
+    update();
+})(Ajax || (Ajax = {}));
 var modal;
 (function (modal) {
     var timeOpened = 0;
@@ -290,7 +385,11 @@ var Objects;
     Objects.setQuantity = setQuantity;
 
     function getQuantity(id) {
-        return gameobjects[id].quantity;
+        var gameobject = gameobjects[id];
+        if (gameobject)
+            return gameobject.quantity;
+
+        return 0;
     }
     Objects.getQuantity = getQuantity;
 
@@ -492,6 +591,7 @@ var Account;
         highscoresLink.addEventListener('click', function () {
             leaderboardsModal();
         });
+        highscoresLink.style.cursor = 'pointer';
         document.getElementsByClassName('header-links')[0].appendChild(highscoresLink);
 
         info();
@@ -521,12 +621,12 @@ var Account;
         leaderboardModal.title = 'Leaderboards';
         var leaderboardList = document.createElement('DIV');
         leaderboardList.style.width = '400px';
-        leaderboardList.textContent = 'Loading...';
+        leaderboardList.appendChild(Ajax.createLoader());
         leaderboardModal.addElement(leaderboardList);
 
         var leaderboardService = new LeaderboardAjaxService();
         leaderboardService.resultsElement = leaderboardList;
-        leaderboardService.sendRequest(0, 19);
+        leaderboardService.sendRequest(0, 20);
 
         leaderboardModal.show();
     }
@@ -749,6 +849,14 @@ var Rock;
     var rockGrowth = 4;
     var rockIsBig = false;
     var mouseDown = false;
+
+    var notTouched = true;
+    var growing = true;
+    var currentNotifier = 0;
+    var growRate = 8;
+    var notifierGrowth = 4;
+    var gsLastTick = Date.now();
+
     Rock.particles = new Array();
 
     var Particle = (function () {
@@ -819,6 +927,34 @@ var Rock;
         }, false);
     }
 
+    function growAndShrink() {
+        if (!stoneLoaded) {
+            setTimeout(growAndShrink, 10);
+            return;
+        }
+
+        var time = Date.now();
+        var timePassed = time - gsLastTick;
+        timePassed /= 1000;
+        gsLastTick = time;
+
+        if (growing) {
+            currentNotifier += growRate * timePassed;
+        } else {
+            currentNotifier -= growRate * timePassed;
+        }
+
+        if (currentNotifier > notifierGrowth || currentNotifier < -notifierGrowth) {
+            growing = !growing;
+        }
+
+        drawRock(lastX, lastY, rockSize + currentNotifier, rockSize + currentNotifier);
+
+        if (notTouched)
+            setTimeout(growAndShrink, 10);
+    }
+    growAndShrink();
+
     function getMousePos(canvas, evt) {
         var rect = canvas.getBoundingClientRect();
         return {
@@ -828,18 +964,20 @@ var Rock;
     }
 
     var released = true;
+
     function isOverRock(x, y) {
         if (x > lastX && x < (lastX + rockSize) && y > lastY && y < (lastY + rockSize)) {
             if (!mouseDown) {
                 drawRock(lastX - (rockGrowth / 2), lastY - (rockGrowth / 2), rockSize + rockGrowth, rockSize + rockGrowth);
                 released = true;
+                notTouched = false;
             } else {
                 drawRock(lastX + (rockGrowth / 2), lastY + (rockGrowth / 2), rockSize - rockGrowth, rockSize - rockGrowth);
                 if (released)
                     addParticles(x, y);
                 released = false;
+                notTouched = false;
             }
-
             rockIsBig = true;
         } else if (rockIsBig) {
             drawRock(lastX, lastY, rockSize, rockSize);
@@ -1830,502 +1968,92 @@ var Inventory;
     }
     Inventory.update = update;
 })(Inventory || (Inventory = {}));
-///<reference path="chat.ts"/>
-///<reference path="inventory.ts"/>
-var Connection;
-(function (Connection) {
-    var conInterval;
-    var disconInterval;
-    var notificationElm;
-    var networkErrorElm;
-    var rateLimitedElm;
-
-    function init() {
-        notificationElm = document.createElement('div');
-        notificationElm.classList.add('error-notification-tray');
-        notificationElm.style.display = 'none';
-
-        networkErrorElm = document.createElement('div');
-        networkErrorElm.classList.add('network-error');
-        var networkErrorText = document.createElement('div');
-        networkErrorText.classList.add('network-error-text');
-        networkErrorText.textContent = 'No connection';
-        networkErrorElm.appendChild(networkErrorText);
-
-        rateLimitedElm = document.createElement('div');
-        rateLimitedElm.classList.add('rate-limited');
-        var rateLimitText = document.createElement('div');
-        rateLimitText.classList.add('network-error-text');
-        rateLimitText.textContent = 'You have exceeded your allotted requests';
-        rateLimitedElm.appendChild(rateLimitText);
-
-        var game = document.getElementById('game');
-        notificationElm.appendChild(networkErrorElm);
-        notificationElm.appendChild(rateLimitedElm);
-        game.insertBefore(notificationElm, game.childNodes[0]);
-    }
-    init();
-
-    Komodo.connection.received(function (msg) {
-        Chat.log("Recieved " + roughSizeOfObject(msg) + " bytes from komodo.");
-        Chat.log("Encoded: ");
-        Chat.log(msg);
-        Chat.log("Decoded: ");
-        Chat.log(JSON.stringify(Komodo.decode(msg)));
-        Chat.log(roughSizeOfObject(JSON.stringify(Komodo.decode(msg))) - roughSizeOfObject(msg) + " bytes saved.");
-        msg = Komodo.decode(msg);
-
-        // CHAT MESSAGES
-        if (msg.Messages != null) {
-            receiveGlobalMessages(msg.Messages);
+var Statistics;
+(function (Statistics) {
+    var statsPane;
+    var itemsBody;
+    var items = new Array();
+    var Item = (function () {
+        function Item() {
         }
-
-        // GAME SCHEMA
-        if (msg.GameSchema != null) {
-            loadSchema(msg.GameSchema);
-        }
-
-        // INVENTORY UPDATES
-        if (msg.Items != null) {
-            updateInventory(msg.Items);
-        }
-
-        // STORE UPDATES
-        if (msg.StoreItemsUpdate != null) {
-            updateStore(msg.StoreItemsUpdate);
-        }
-        if (msg.StatItemsUpdate != null) {
-            updateStats(msg.StatItemsUpdate);
-        }
-        if (msg.ConfigItems != null) {
-            updateInventoryConfigurations(msg.ConfigItems);
-        }
-
-        // PROCESSOR UPDATES
-        if (msg.Processors != null) {
-            updateProcessors(msg.Processors);
-        }
-
-        // Anti cheat
-        if (msg.AntiCheatCoordinates != null) {
-            antiCheat(msg.AntiCheatCoordinates);
-        }
-
-        // Buffs
-        if (msg.Buffs != null) {
-            updateBuffs(msg.Buffs);
-        }
-        if (msg.IsRateLimited != null) {
-            rateLimit(msg.IsRateLimited);
-        }
-        if (msg.Gatherers != null) {
-            updateGatherers(msg.Gatherers);
-        }
-    });
-
-    function restart() {
-        Komodo.restart();
-    }
-    Connection.restart = restart;
-
-    var actions = new Komodo.ClientActions();
-
-    Komodo.connection.stateChanged(function (change) {
-        if (change.newState === $.signalR.connectionState.connected) {
-            connected();
-            networkErrorElm.style.display = 'none';
-        }
-        if (change.newState === $.signalR.connectionState.disconnected) {
-            clearInterval(conInterval);
-            networkErrorElm.style.display = 'block';
-        }
-        if (change.newState === $.signalR.connectionState.reconnecting) {
-            networkErrorElm.style.display = 'block';
-        }
-    });
-
-    function connected() {
-        console.log('Connection opened');
-        var encoded = actions.encode64();
-        send(encoded);
-        actions = new Komodo.ClientActions();
-
-        conInterval = setInterval(function () {
-            var encoded = actions.encode64();
-
-            // if (encoded!='') {
-            send(encoded);
-
-            //}
-            actions = new Komodo.ClientActions();
-        }, 1000);
-    }
-
-    function disconnected() {
-        console.log('Connection lost');
-        networkErrorElm.style.top = '0px';
-        disconInterval = setTimeout(function () {
-            Komodo.restart();
-        }, 5000);
-    }
-
-    function loadSchema(schema) {
-        if (schema.Items) {
-            for (var i = 0; i < schema.Items.length; i++) {
-                Inventory.addItem(schema.Items[i].Id, schema.Items[i].Name, schema.Items[i].Worth, schema.Items[i].Category);
-                Statistics.addItem(schema.Items[i].Id, schema.Items[i].Name);
-            }
-        }
-
-        if (schema.StoreItems) {
-            for (var i = 0; i < schema.StoreItems.length; i++) {
-                var item = schema.StoreItems[i];
-                Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.MaxQuantity, item.Tooltip);
-            }
-        }
-
-        if (schema.Processors) {
-            for (var i = 0; i < schema.Processors.length; i++) {
-                var processor = schema.Processors[i];
-                Crafting.addProcessor(processor.Id, processor.Name);
-                for (var r = 0; r < processor.Recipes.length; r++) {
-                    Crafting.addProcessorRecipe(processor.Id, processor.Recipes[r].Ingredients, processor.Recipes[r].Resultants);
-                }
-            }
-        }
-        if (schema.CraftingItems) {
-            for (var i = 0; i < schema.CraftingItems.length; i++) {
-                var item = schema.CraftingItems[i];
-                Crafting.addRecipe(item.Id, item.Ingredients, item.Resultants, item.IsItem);
-            }
-        }
-        if (schema.Buffs) {
-            for (var i = 0; i < schema.Buffs.length; i++) {
-                var buff = schema.Buffs[i];
-                Buffs.register(buff.Id, buff.Name, buff.Description, buff.Duration);
-            }
-        }
-    }
-
-    function rateLimit(limited) {
-        rateLimitedElm.style.display = limited ? 'block' : 'none';
-    }
-
-    function toggleGatherer(id, enabled) {
-        var gathererAction = new Komodo.ClientActions.GathererAction();
-        gathererAction.Id = id;
-        gathererAction.Enabled = enabled;
-        actions.GathererActions.push(gathererAction);
-    }
-    Connection.toggleGatherer = toggleGatherer;
-
-    function updateGatherers(gatherers) {
-        for (var i = 0; i < gatherers.length; i++) {
-            var gatherer = gatherers[i];
-            Equipment.toggleGatherer(gatherer.Id, gatherer.Enabled);
-        }
-    }
-
-    function updateBuffs(buffs) {
-        for (var i = 0; i < buffs.length; i++) {
-            var buff = buffs[i];
-            Buffs.update(buff.Id, buff.TimeActive);
-        }
-    }
-
-    function receiveGlobalMessages(messages) {
-        for (var i = 0; i < messages.length; i++) {
-            var msg = messages[i];
-            Chat.receiveGlobalMessage(msg.Sender, msg.Text, msg.Time, msg.Permissions);
-        }
-    }
-
-    function updateProcessors(processors) {
-        for (var i = 0; i < processors.length; i++) {
-            var processor = processors[i];
-            Crafting.updateProcessor(processor.Id, processor.SelectedRecipe, processor.OperationDuration, processor.CompletedOperations, processor.TotalOperations, processor.Capacity);
-        }
-    }
-
-    function antiCheat(ac) {
-        Rock.moveRock(ac.X, ac.Y);
-    }
-
-    function updateStats(items) {
-        for (var i = 0; i < items.length; i++)
-            Statistics.changeStats(items[i].Id, items[i].PrestigeQuantity, items[i].LifeTimeQuantity);
-    }
-
-    function updateInventory(items) {
-        for (var i = 0; i < items.length; i++) {
-            Inventory.changeQuantity(items[i].Id, items[i].Quantity);
-            Inventory.changePrice(items[i].Id, items[i].Worth);
-        }
-    }
-
-    function updateInventoryConfigurations(items) {
-        for (var i = 0; i < items.length; i++)
-            Inventory.modifyConfig(items[i].Id, items[i].Enabled);
-    }
-
-    function updateStore(items) {
-        for (var i = 0; i < items.length; i++)
-            Store.changeQuantity(items[i].Id, items[i].Quantity, items[i].MaxQuantity, items[i].Price);
-    }
-
-    function drink(id) {
-        var potionAction = new Komodo.ClientActions.PotionAction();
-        potionAction.Id = id;
-        actions.PotionActions.push(potionAction);
-    }
-    Connection.drink = drink;
-
-    function mine(x, y) {
-        var miningAction = new Komodo.ClientActions.MiningAction();
-        miningAction.X = x;
-        miningAction.Y = y;
-        actions.MiningActions.push(miningAction);
-    }
-    Connection.mine = mine;
-
-    function sellItem(id, quantity) {
-        var inventoryAction = new Komodo.ClientActions.InventoryAction();
-        var sellAction = new Komodo.ClientActions.InventoryAction.SellAction();
-        sellAction.Id = id;
-        sellAction.Quantity = quantity;
-        inventoryAction.Sell = sellAction;
-        actions.InventoryActions.push(inventoryAction);
-    }
-    Connection.sellItem = sellItem;
-
-    function configureItem(id, enabled) {
-        var inventoryAction = new Komodo.ClientActions.InventoryAction();
-        var configAction = new Komodo.ClientActions.InventoryAction.ConfigAction();
-        configAction.Id = id;
-        configAction.Enabled = enabled;
-        inventoryAction.Config = configAction;
-        actions.InventoryActions.push(inventoryAction);
-        //ConfigAction
-    }
-    Connection.configureItem = configureItem;
-
-    function purchaseItem(id, quantity) {
-        var storeAction = new Komodo.ClientActions.StoreAction();
-        var purchaseAction = new Komodo.ClientActions.StoreAction.PurchaseAction();
-        purchaseAction.Id = id;
-        purchaseAction.Quantity = (quantity ? quantity : 1);
-        storeAction.Purchase = purchaseAction;
-        actions.StoreActions.push(storeAction);
-    }
-    Connection.purchaseItem = purchaseItem;
-
-    function sellAllItems() {
-        var inventoryAction = new Komodo.ClientActions.InventoryAction();
-        inventoryAction.SellAll = true;
-        actions.InventoryActions.push(inventoryAction);
-    }
-    Connection.sellAllItems = sellAllItems;
-
-    function craftRecipe(id, quantity) {
-        var craftingAction = new Komodo.ClientActions.CraftingAction();
-        craftingAction.Id = id;
-        craftingAction.Quantity = quantity;
-        actions.CraftingActions.push(craftingAction);
-    }
-    Connection.craftRecipe = craftRecipe;
-
-    function processRecipe(id, recipeIndex, iterations) {
-        var processingAction = new Komodo.ClientActions.ProcessingAction();
-        processingAction.Id = id;
-        processingAction.RecipeIndex = recipeIndex;
-        processingAction.Iterations = iterations;
-        actions.ProcessingActions.push(processingAction);
-    }
-    Connection.processRecipe = processRecipe;
-
-    function sendGlobalMessage(message) {
-        /*var clientActions = new Komodo.ClientActions();
-        var socialAction = new Komodo.ClientActions.SocialAction();
-        var chatAction = new Komodo.ClientActions.SocialAction.ChatAction();
-        chatAction.GlobalMessage = message;
-        socialAction.Chat = chatAction;
-        clientActions.SocialActions.push(socialAction);
-        
-        Connection.send(clientActions);*/
-        var socialAction = new Komodo.ClientActions.SocialAction();
-        var chatAction = new Komodo.ClientActions.SocialAction.ChatAction();
-        chatAction.GlobalMessage = message;
-        socialAction.Chat = chatAction;
-        actions.SocialActions.push(socialAction);
-    }
-    Connection.sendGlobalMessage = sendGlobalMessage;
-
-    function send(message) {
-        if (message.encode64) {
-            var encoded = message.encode64();
-            Chat.log("Sent " + roughSizeOfObject(encoded) + " bytes to komodo.");
-            Chat.log("Decoded: ");
-            Chat.log(JSON.stringify(message));
-            Chat.log("Encoded: ");
-            Chat.log(message.encode64());
-            Komodo.send(message.encode64());
-        } else {
-            Chat.log("Sent " + roughSizeOfObject(message) + " bytes to komodo.");
-            Komodo.send(message);
-        }
-    }
-    Connection.send = send;
-
-    function roughSizeOfObject(object) {
-        var objectList = [];
-        var stack = [object];
-        var bytes = 0;
-
-        while (stack.length) {
-            var value = stack.pop();
-
-            if (typeof value === 'boolean') {
-                bytes += 4;
-            } else if (typeof value === 'string') {
-                bytes += value.length * 2;
-            } else if (typeof value === 'number') {
-                bytes += 8;
-            } else if (typeof value === 'object' && objectList.indexOf(value) === -1) {
-                objectList.push(value);
-
-                for (var i in value) {
-                    stack.push(value[i]);
-                }
-            }
-        }
-        return bytes;
-    }
-})(Connection || (Connection = {}));
-var Buffs;
-(function (Buffs) {
-    var buffs = new Array();
-    var sidebar = document.getElementById('sidebarInformation');
-    var buffContainer;
-
-    var Buff = (function () {
-        function Buff() {
-        }
-        return Buff;
+        return Item;
     })();
 
-    function init() {
-        buffContainer = document.createElement('div');
-        sidebar.appendChild(buffContainer);
+    function changeStats(id, prestige, lifetime) {
+        var item = items[id];
+
+        Utils.ifNotDefault(prestige, function () {
+            item.prestigeQuantity = prestige;
+            item.prestigeRow.textContent = Utils.formatNumber(prestige);
+        });
+
+        Utils.ifNotDefault(lifetime, function () {
+            item.lifetimeQuantity = lifetime;
+            Objects.setLifeTimeTotal(id, lifetime);
+            item.alltimeRow.textContent = Utils.formatNumber(lifetime);
+        });
     }
+    Statistics.changeStats = changeStats;
 
-    function register(id, name, description, duration) {
-        if (buffs[id])
-            return;
+    function addItem(id, name) {
+        if (!statsPane)
+            draw();
 
-        var buff = new Buff();
-        buff.name = name;
-        buff.description = description;
-        buff.duration = duration;
-        buffs[id] = buff;
+        if (!items[id]) {
+            var item = new Item();
+            items[id] = item;
 
-        draw(buff);
-    }
-    Buffs.register = register;
-
-    function draw(buff) {
-        var container = document.createElement('div');
-        container.classList.add('buff-container');
-        tooltip.create(container, buff.description);
-
-        var header = document.createElement('div');
-        header.textContent = buff.name;
-        header.classList.add('buff-header');
-        container.appendChild(header);
-
-        var imageContainer = document.createElement('div');
-        imageContainer.classList.add('buff-image-container');
-        container.appendChild(imageContainer);
-
-        var image = document.createElement('div');
-        image.classList.add(Utils.cssifyName(buff.name));
-        imageContainer.appendChild(image);
-
-        var duration = document.createElement('div');
-        duration.classList.add('buff-header');
-        container.appendChild(duration);
-
-        buffContainer.appendChild(container);
-        buff.container = container;
-        buff.durationElm = duration;
-    }
-
-    function update(id, timeActive) {
-        var buff = buffs[id];
-        buff.timeActive = timeActive;
-        buff.durationElm.textContent = '(' + Utils.formatTime(buff.duration - timeActive) + ')';
-        buff.container.style.display = timeActive == 0 ? 'none' : 'inline-block';
-    }
-    Buffs.update = update;
-    init();
-})(Buffs || (Buffs = {}));
-var Equipment;
-(function (Equipment) {
-    var gatherers = new Array();
-    var equipmentPane;
-
-    var Gatherer = (function () {
-        function Gatherer() {
+            var row = itemsBody.insertRow(itemsBody.rows.length);
+            row.classList.add('table-row');
+            item.alltimeRow = row.insertCell(0);
+            item.alltimeRow.style.width = '40%';
+            item.prestigeRow = row.insertCell(0);
+            item.prestigeRow.style.width = '40%';
+            var imageRow = row.insertCell(0);
+            imageRow.style.width = '20%';
+            var image = document.createElement('DIV');
+            image.classList.add('Third-' + Utils.cssifyName(name));
+            image.style.display = 'inline-block';
+            imageRow.appendChild(image);
         }
-        return Gatherer;
-    })();
+    }
+    Statistics.addItem = addItem;
 
     function draw() {
-        if (equipmentPane)
-            return;
+        statsPane = document.createElement('DIV');
+        document.getElementById('paneContainer').appendChild(statsPane);
+        Tabs.registerGameTab(statsPane, 'Statistics');
 
-        equipmentPane = document.createElement('div');
-        document.getElementById('paneContainer').appendChild(equipmentPane);
-        Tabs.registerGameTab(equipmentPane, 'Equipment');
-    }
-    Equipment.draw = draw;
-
-    function registerGatherer(id) {
-        if (gatherers[id])
-            return;
-
-        var gatherer = new Gatherer();
-        gatherers[id] = gatherer;
-        drawGatherer(id);
-    }
-    Equipment.registerGatherer = registerGatherer;
-
-    function drawGatherer(id) {
-        var gatherer = gatherers[id];
-        var container = document.createElement('div');
-        container.classList.add('equipment-gatherer-container');
-        var header = document.createElement('div');
-        header.textContent = Objects.lookupName(id);
-        var toggle = Utils.createButton('Disable', '');
-        toggle.addEventListener('click', function () {
-            Connection.toggleGatherer(id, !gatherer.enabled);
-        });
-        container.appendChild(header);
-        container.appendChild(toggle);
-        gatherer.toggleElm = toggle.firstChild;
-
-        equipmentPane.appendChild(container);
+        statsPane.appendChild(drawItemsTable());
     }
 
-    function toggleGatherer(id, enabled) {
-        var gatherer = gatherers[id];
-        if (!gatherer)
-            return;
-        console.log(enabled);
-        gatherer.enabled = enabled;
-        gatherer.toggleElm.textContent = enabled ? 'Disable' : 'Enable';
+    function drawItemsTable() {
+        var itemsTable = document.createElement('TABLE');
+
+        var header = itemsTable.createTHead();
+        var titleRow = header.insertRow(0);
+        titleRow.classList.add('table-header');
+        var titleCell = titleRow.insertCell(0);
+        titleCell.textContent = 'Item Statistics';
+        titleCell.setAttribute('colspan', '3');
+
+        var descriptionsRow = header.insertRow(1);
+        descriptionsRow.classList.add('table-subheader');
+        var lifetime = descriptionsRow.insertCell(0);
+        lifetime.textContent = 'Lifetime Quantity';
+        lifetime.style.width = '40%';
+        var prestige = descriptionsRow.insertCell(0);
+        prestige.textContent = 'Prestige Quantity';
+        prestige.style.width = '40%';
+        var item = descriptionsRow.insertCell(0);
+        item.textContent = 'Item';
+        item.style.width = '20%';
+
+        itemsBody = itemsTable.createTBody();
+
+        return itemsTable;
     }
-    Equipment.toggleGatherer = toggleGatherer;
-})(Equipment || (Equipment = {}));
+})(Statistics || (Statistics = {}));
 var Store;
 (function (Store) {
     var storePane;
@@ -2422,6 +2150,7 @@ var Store;
         Utils.ifNotDefault(maxQuantity, function () {
             if (maxQuantity != 0) {
                 try  {
+                    Equipment.changeMaxQuantity(id, maxQuantity);
                     item.maxQuantity = maxQuantity;
                     item.maxQuantityElm.textContent = maxQuantity.toString();
                 } catch (err) {
@@ -2433,6 +2162,7 @@ var Store;
             Objects.setQuantity(id, quantity);
             item.quantity = quantity;
             Crafting.update();
+            Equipment.changeQuantity(id, quantity);
 
             if (maxQuantity != 0) {
                 if (item.category == 6 /* CRAFTING */)
@@ -2551,92 +2281,162 @@ var Store;
         return itemContainer;
     }
 })(Store || (Store = {}));
-var Statistics;
-(function (Statistics) {
-    var statsPane;
-    var itemsBody;
-    var items = new Array();
-    var Item = (function () {
-        function Item() {
+var Equipment;
+(function (Equipment) {
+    var gatherers = new Array();
+    var equipmentPane;
+    var gathererCategory;
+
+    var Gatherer = (function () {
+        function Gatherer() {
         }
-        return Item;
+        return Gatherer;
     })();
 
-    function changeStats(id, prestige, lifetime) {
-        var item = items[id];
-
-        Utils.ifNotDefault(prestige, function () {
-            item.prestigeQuantity = prestige;
-            item.prestigeRow.textContent = Utils.formatNumber(prestige);
-        });
-
-        Utils.ifNotDefault(lifetime, function () {
-            item.lifetimeQuantity = lifetime;
-            Objects.setLifeTimeTotal(id, lifetime);
-            item.alltimeRow.textContent = Utils.formatNumber(lifetime);
-        });
-    }
-    Statistics.changeStats = changeStats;
-
-    function addItem(id, name) {
-        if (!statsPane)
-            draw();
-
-        if (!items[id]) {
-            var item = new Item();
-            items[id] = item;
-
-            var row = itemsBody.insertRow(itemsBody.rows.length);
-            row.classList.add('table-row');
-            item.alltimeRow = row.insertCell(0);
-            item.alltimeRow.style.width = '40%';
-            item.prestigeRow = row.insertCell(0);
-            item.prestigeRow.style.width = '40%';
-            var imageRow = row.insertCell(0);
-            imageRow.style.width = '20%';
-            var image = document.createElement('DIV');
-            image.classList.add('Third-' + Utils.cssifyName(name));
-            image.style.display = 'inline-block';
-            imageRow.appendChild(image);
-        }
-    }
-    Statistics.addItem = addItem;
-
     function draw() {
-        statsPane = document.createElement('DIV');
-        document.getElementById('paneContainer').appendChild(statsPane);
-        Tabs.registerGameTab(statsPane, 'Statistics');
+        if (equipmentPane)
+            return;
 
-        statsPane.appendChild(drawItemsTable());
+        equipmentPane = document.createElement('div');
+        document.getElementById('paneContainer').appendChild(equipmentPane);
+        Tabs.registerGameTab(equipmentPane, 'Equipment');
+    }
+    Equipment.draw = draw;
+
+    function registerGatherer(id) {
+        if (gatherers[id])
+            return;
+
+        var gatherer = new Gatherer();
+        gatherers[id] = gatherer;
+        drawGatherer(id);
+    }
+    Equipment.registerGatherer = registerGatherer;
+
+    function drawGathererCategory() {
+        gathererCategory = document.createElement('div');
+        gathererCategory.classList.add('store-category');
+        var header = document.createElement('div');
+        header.classList.add('store-category-header');
+        header.textContent = 'Gatherers';
+        gathererCategory.appendChild(header);
+        equipmentPane.appendChild(gathererCategory);
     }
 
-    function drawItemsTable() {
-        var itemsTable = document.createElement('TABLE');
+    function drawGatherer(id) {
+        if (!gathererCategory)
+            drawGathererCategory();
 
-        var header = itemsTable.createTHead();
-        var titleRow = header.insertRow(0);
-        titleRow.classList.add('table-header');
-        var titleCell = titleRow.insertCell(0);
-        titleCell.textContent = 'Item Statistics';
-        titleCell.setAttribute('colspan', '3');
+        var gatherer = gatherers[id];
+        gatherer.container = document.createElement('div');
+        gatherer.container.classList.add('equipment-gatherer-container');
+        var header = document.createElement('div');
+        header.classList.add('store-item-header');
+        var headerText = document.createElement('div');
+        headerText.classList.add('store-item-header-text');
+        headerText.textContent = Objects.lookupName(id);
+        header.appendChild(headerText);
+        var toggle = Utils.createButton('Disable', '');
+        toggle.addEventListener('click', function () {
+            Connection.toggleGatherer(id, !gatherer.enabled);
+        });
+        var quantityContainer = document.createElement('div');
+        quantityContainer.classList.add('store-item-header-quantity-container');
 
-        var descriptionsRow = header.insertRow(1);
-        descriptionsRow.classList.add('table-subheader');
-        var lifetime = descriptionsRow.insertCell(0);
-        lifetime.textContent = 'Lifetime Quantity';
-        lifetime.style.width = '40%';
-        var prestige = descriptionsRow.insertCell(0);
-        prestige.textContent = 'Prestige Quantity';
-        prestige.style.width = '40%';
-        var item = descriptionsRow.insertCell(0);
-        item.textContent = 'Item';
-        item.style.width = '20%';
+        gatherer.quantityElm = document.createElement('span');
+        var dividerSpan = document.createElement('span');
+        dividerSpan.textContent = '/';
+        gatherer.maxQuantityElm = document.createElement('span');
 
-        itemsBody = itemsTable.createTBody();
+        quantityContainer.appendChild(gatherer.quantityElm);
+        quantityContainer.appendChild(dividerSpan);
+        quantityContainer.appendChild(gatherer.maxQuantityElm);
 
-        return itemsTable;
+        header.appendChild(quantityContainer);
+
+        gatherer.container.appendChild(header);
+        gatherer.efficiencyElm = document.createElement('div');
+        gatherer.container.appendChild(gatherer.efficiencyElm);
+        gatherer.fuelConsumptionElm = document.createElement('div');
+        gatherer.container.appendChild(gatherer.fuelConsumptionElm);
+        gatherer.rarityBonusElm = document.createElement('div');
+        gatherer.container.appendChild(gatherer.rarityBonusElm);
+        gatherer.container.appendChild(toggle);
+        gatherer.toggleElm = toggle.firstChild;
+
+        gathererCategory.appendChild(gatherer.container);
     }
-})(Statistics || (Statistics = {}));
+
+    function toggleGatherer(id, enabled) {
+        var gatherer = gatherers[id];
+        if (!gatherer)
+            return;
+        gatherer.enabled = enabled;
+        gatherer.toggleElm.textContent = enabled ? 'Disable' : 'Enable';
+    }
+    Equipment.toggleGatherer = toggleGatherer;
+
+    function changeQuantity(id, quantity) {
+        Utils.ifNotDefault(quantity, function () {
+            var gatherer = gatherers[id];
+            if (!gatherer)
+                return;
+
+            gatherer.quantity = quantity;
+            gatherer.container.style.display = (quantity > -1) ? 'inline-block' : 'none';
+            gatherer.quantityElm.textContent = Utils.formatNumber(quantity);
+        });
+    }
+    Equipment.changeQuantity = changeQuantity;
+
+    function changeMaxQuantity(id, maxQuantity) {
+        Utils.ifNotDefault(maxQuantity, function () {
+            var gatherer = gatherers[id];
+            if (!gatherer)
+                return;
+
+            gatherer.maxQuantity = maxQuantity;
+            gatherer.maxQuantityElm.textContent = Utils.formatNumber(maxQuantity);
+        });
+    }
+    Equipment.changeMaxQuantity = changeMaxQuantity;
+
+    function changeFuelConsumption(id, fuelConsumed) {
+        Utils.ifNotDefault(fuelConsumed, function () {
+            var gatherer = gatherers[id];
+            if (!gatherer)
+                return;
+
+            gatherer.fuelConsumption = fuelConsumed;
+            gatherer.fuelConsumptionElm.textContent = 'Fuel consumed: ' + Utils.formatNumber(fuelConsumed);
+        });
+    }
+    Equipment.changeFuelConsumption = changeFuelConsumption;
+
+    function changeEfficiency(id, efficiency) {
+        Utils.ifNotDefault(efficiency, function () {
+            var gatherer = gatherers[id];
+            if (!gatherer)
+                return;
+
+            gatherer.efficiency = efficiency;
+            gatherer.efficiencyElm.textContent = 'Resources/s: ' + Utils.formatNumber(efficiency);
+        });
+    }
+    Equipment.changeEfficiency = changeEfficiency;
+
+    function changeRarityBonus(id, rarityBonus) {
+        Utils.ifNotDefault(rarityBonus, function () {
+            var gatherer = gatherers[id];
+            if (!gatherer)
+                return;
+
+            gatherer.rarityBonus = rarityBonus;
+            gatherer.rarityBonusElm.textContent = 'Rarity multi: x' + Utils.formatNumber(rarityBonus);
+        });
+    }
+    Equipment.changeRarityBonus = changeRarityBonus;
+})(Equipment || (Equipment = {}));
 var Crafting;
 (function (Crafting) {
     var storePane;
@@ -2768,7 +2568,7 @@ var Crafting;
     }
     Crafting.addRecipe = addRecipe;
 
-    function addProcessor(id, name) {
+    function addProcessor(id, name, required) {
         if (!storePane)
             draw();
 
@@ -2776,6 +2576,7 @@ var Crafting;
             var processor = new Processor();
             processor.id = id;
             processor.name = name;
+            processor.requiredId = required;
             Crafting.processors[id] = processor;
 
             drawProcessor(processor);
@@ -2859,6 +2660,7 @@ var Crafting;
     function drawProcessor(processor) {
         var processorTable = document.createElement('TABLE');
         processorTable.classList.add('block-table');
+        processor.container = processorTable;
 
         var header = processorTable.createTHead();
         var titleRow = header.insertRow(0);
@@ -3080,6 +2882,9 @@ var Crafting;
                 processor.sidebarProgressBar.style.width = totalCompletionPerc + '%';
                 processor.sidebarProgressText.textContent = Utils.formatTime(totalTimeToFinish / 1000);
             }
+
+            if (processor.requiredId != 0)
+                processor.container.style.display = Objects.getQuantity(processor.requiredId) > 0 ? 'block' : 'none';
         });
     }
     setInterval(processorBars, 10);
@@ -3242,3 +3047,475 @@ var Crafting;
         }
     }
 })(Crafting || (Crafting = {}));
+var Buffs;
+(function (Buffs) {
+    var buffs = new Array();
+    var sidebar = document.getElementById('sidebarInformation');
+    var buffContainer;
+
+    var Buff = (function () {
+        function Buff() {
+        }
+        return Buff;
+    })();
+
+    function init() {
+        buffContainer = document.createElement('div');
+        sidebar.appendChild(buffContainer);
+    }
+
+    function register(id, name, description, duration) {
+        if (buffs[id])
+            return;
+
+        var buff = new Buff();
+        buff.name = name;
+        buff.description = description;
+        buff.duration = duration;
+        buffs[id] = buff;
+
+        draw(buff);
+    }
+    Buffs.register = register;
+
+    function draw(buff) {
+        var container = document.createElement('div');
+        container.classList.add('buff-container');
+        tooltip.create(container, buff.description);
+
+        var header = document.createElement('div');
+        header.textContent = buff.name;
+        header.classList.add('buff-header');
+        container.appendChild(header);
+
+        var imageContainer = document.createElement('div');
+        imageContainer.classList.add('buff-image-container');
+        container.appendChild(imageContainer);
+
+        var image = document.createElement('div');
+        image.classList.add(Utils.cssifyName(buff.name));
+        imageContainer.appendChild(image);
+
+        var duration = document.createElement('div');
+        duration.classList.add('buff-header');
+        container.appendChild(duration);
+
+        buffContainer.appendChild(container);
+        buff.container = container;
+        buff.durationElm = duration;
+    }
+
+    function update(id, timeActive) {
+        var buff = buffs[id];
+        buff.timeActive = timeActive;
+        buff.durationElm.textContent = '(' + Utils.formatTime(buff.duration - timeActive) + ')';
+        buff.container.style.display = timeActive == 0 ? 'none' : 'inline-block';
+    }
+    Buffs.update = update;
+    init();
+})(Buffs || (Buffs = {}));
+///<reference path="chat.ts"/>
+///<reference path="inventory.ts"/>
+///<reference path="stats.ts"/>
+///<reference path="store.ts"/>
+///<reference path="rock.ts"/>
+///<reference path="equipment.ts"/>
+///<reference path="crafting.ts"/>
+///<reference path="typings/jquery/jquery.d.ts"/>
+///<reference path="buffs.ts"/>
+///<reference path="register.ts"/>
+///<reference path="modal.ts"/>
+///<reference path="tooltip.ts"/>
+///<reference path="ajax.ts"/>
+var Connection;
+(function (Connection) {
+    var conInterval;
+    var disconInterval;
+    var notificationElm;
+    var networkErrorElm;
+    var rateLimitedElm;
+    var playerCounter;
+
+    function init() {
+        var headerLinks = document.getElementsByClassName('header-links')[0];
+        var versionHistory = document.createElement('div');
+        versionHistory.style.display = 'inline-block';
+        versionHistory.textContent = 'Version History';
+        versionHistory.addEventListener('click', function () {
+            window.open('/version');
+        });
+        versionHistory.style.cursor = 'pointer';
+        headerLinks.appendChild(versionHistory);
+
+        playerCounter = document.createElement('div');
+        playerCounter.style.display = 'inline-block';
+        playerCounter.textContent = 'There are 0 players mining.';
+        headerLinks.appendChild(playerCounter);
+
+        notificationElm = document.createElement('div');
+        notificationElm.classList.add('error-notification-tray');
+
+        networkErrorElm = document.createElement('div');
+        networkErrorElm.classList.add('network-error');
+        var networkErrorText = document.createElement('div');
+        networkErrorText.classList.add('network-error-text');
+        networkErrorText.textContent = 'No connection';
+        networkErrorElm.appendChild(networkErrorText);
+
+        rateLimitedElm = document.createElement('div');
+        rateLimitedElm.classList.add('rate-limited');
+        var rateLimitText = document.createElement('div');
+        rateLimitText.classList.add('network-error-text');
+        rateLimitedElm.style.display = 'none';
+        ;
+        rateLimitText.textContent = 'You have exceeded your allotted requests';
+        rateLimitedElm.appendChild(rateLimitText);
+
+        var game = document.getElementById('game');
+        notificationElm.appendChild(networkErrorElm);
+        notificationElm.appendChild(rateLimitedElm);
+        game.insertBefore(notificationElm, game.childNodes[0]);
+    }
+    init();
+
+    Komodo.connection.received(function (msg) {
+        Chat.log("Recieved " + roughSizeOfObject(msg) + " bytes from komodo.");
+        Chat.log("Encoded: ");
+        Chat.log(msg);
+        Chat.log("Decoded: ");
+        Chat.log(JSON.stringify(Komodo.decode(msg)));
+        Chat.log(roughSizeOfObject(JSON.stringify(Komodo.decode(msg))) - roughSizeOfObject(msg) + " bytes saved.");
+        msg = Komodo.decode(msg);
+
+        // CHAT MESSAGES
+        if (msg.Messages != null) {
+            receiveGlobalMessages(msg.Messages);
+        }
+
+        // GAME SCHEMA
+        if (msg.GameSchema != null) {
+            loadSchema(msg.GameSchema);
+        }
+
+        // INVENTORY UPDATES
+        if (msg.Items != null) {
+            updateInventory(msg.Items);
+        }
+
+        // STORE UPDATES
+        if (msg.StoreItemsUpdate != null) {
+            updateStore(msg.StoreItemsUpdate);
+        }
+        if (msg.StatItemsUpdate != null) {
+            updateStats(msg.StatItemsUpdate);
+        }
+        if (msg.ConfigItems != null) {
+            updateInventoryConfigurations(msg.ConfigItems);
+        }
+
+        // PROCESSOR UPDATES
+        if (msg.Processors != null) {
+            updateProcessors(msg.Processors);
+        }
+
+        // Anti cheat
+        if (msg.AntiCheatCoordinates != null) {
+            antiCheat(msg.AntiCheatCoordinates);
+        }
+
+        // Buffs
+        if (msg.Buffs != null) {
+            updateBuffs(msg.Buffs);
+        }
+        if (msg.IsRateLimited != null) {
+            rateLimit(msg.IsRateLimited);
+        }
+        if (msg.Gatherers != null) {
+            updateGatherers(msg.Gatherers);
+        }
+        if (msg.ConnectedUsers) {
+            playerCounter.textContent = 'There are ' + msg.ConnectedUsers + ' players mining.';
+        }
+    });
+
+    function restart() {
+        Komodo.restart();
+    }
+    Connection.restart = restart;
+
+    var actions = new Komodo.ClientActions();
+
+    Komodo.connection.stateChanged(function (change) {
+        if (change.newState === $.signalR.connectionState.connected) {
+            connected();
+            networkErrorElm.style.display = 'none';
+        }
+        if (change.newState === $.signalR.connectionState.disconnected) {
+            clearInterval(conInterval);
+            networkErrorElm.style.display = 'block';
+        }
+        if (change.newState === $.signalR.connectionState.reconnecting) {
+            networkErrorElm.style.display = 'block';
+        }
+    });
+
+    function connected() {
+        console.log('Connection opened');
+        var encoded = actions.encode64();
+        send(encoded);
+        actions = new Komodo.ClientActions();
+
+        conInterval = setInterval(function () {
+            var encoded = actions.encode64();
+
+            // if (encoded!='') {
+            send(encoded);
+
+            //}
+            actions = new Komodo.ClientActions();
+        }, 1000);
+    }
+
+    function disconnected() {
+        console.log('Connection lost');
+        networkErrorElm.style.top = '0px';
+        disconInterval = setTimeout(function () {
+            Komodo.restart();
+        }, 5000);
+    }
+
+    function loadSchema(schema) {
+        if (schema.Items) {
+            for (var i = 0; i < schema.Items.length; i++) {
+                Inventory.addItem(schema.Items[i].Id, schema.Items[i].Name, schema.Items[i].Worth, schema.Items[i].Category);
+                Statistics.addItem(schema.Items[i].Id, schema.Items[i].Name);
+            }
+        }
+
+        if (schema.StoreItems) {
+            for (var i = 0; i < schema.StoreItems.length; i++) {
+                var item = schema.StoreItems[i];
+                Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.MaxQuantity, item.Tooltip);
+            }
+        }
+
+        if (schema.Processors) {
+            for (var i = 0; i < schema.Processors.length; i++) {
+                var processor = schema.Processors[i];
+                Crafting.addProcessor(processor.Id, processor.Name, processor.RequiredId);
+                for (var r = 0; r < processor.Recipes.length; r++) {
+                    Crafting.addProcessorRecipe(processor.Id, processor.Recipes[r].Ingredients, processor.Recipes[r].Resultants);
+                }
+            }
+        }
+        if (schema.CraftingItems) {
+            for (var i = 0; i < schema.CraftingItems.length; i++) {
+                var item = schema.CraftingItems[i];
+                Crafting.addRecipe(item.Id, item.Ingredients, item.Resultants, item.IsItem);
+            }
+        }
+        if (schema.Buffs) {
+            for (var i = 0; i < schema.Buffs.length; i++) {
+                var buff = schema.Buffs[i];
+                Buffs.register(buff.Id, buff.Name, buff.Description, buff.Duration);
+            }
+        }
+    }
+
+    function rateLimit(limited) {
+        rateLimitedElm.style.display = limited ? 'block' : 'none';
+    }
+
+    function toggleGatherer(id, enabled) {
+        var gathererAction = new Komodo.ClientActions.GathererAction();
+        gathererAction.Id = id;
+        gathererAction.Enabled = enabled;
+        actions.GathererActions.push(gathererAction);
+    }
+    Connection.toggleGatherer = toggleGatherer;
+
+    function updateGatherers(gatherers) {
+        for (var i = 0; i < gatherers.length; i++) {
+            var gatherer = gatherers[i];
+            Equipment.toggleGatherer(gatherer.Id, gatherer.Enabled);
+            Equipment.changeEfficiency(gatherer.Id, gatherer.Efficiency);
+            Equipment.changeFuelConsumption(gatherer.Id, gatherer.FuelConsumed);
+            Equipment.changeRarityBonus(gatherer.Id, gatherer.RarityBonus);
+        }
+    }
+
+    function updateBuffs(buffs) {
+        for (var i = 0; i < buffs.length; i++) {
+            var buff = buffs[i];
+            Buffs.update(buff.Id, buff.TimeActive);
+        }
+    }
+
+    function receiveGlobalMessages(messages) {
+        for (var i = 0; i < messages.length; i++) {
+            var msg = messages[i];
+            Chat.receiveGlobalMessage(msg.Sender, msg.Text, msg.Time, msg.Permissions);
+        }
+    }
+
+    function updateProcessors(processors) {
+        for (var i = 0; i < processors.length; i++) {
+            var processor = processors[i];
+            Crafting.updateProcessor(processor.Id, processor.SelectedRecipe, processor.OperationDuration, processor.CompletedOperations, processor.TotalOperations, processor.Capacity);
+        }
+    }
+
+    function antiCheat(ac) {
+        Rock.moveRock(ac.X, ac.Y);
+    }
+
+    function updateStats(items) {
+        for (var i = 0; i < items.length; i++)
+            Statistics.changeStats(items[i].Id, items[i].PrestigeQuantity, items[i].LifeTimeQuantity);
+    }
+
+    function updateInventory(items) {
+        for (var i = 0; i < items.length; i++) {
+            Inventory.changeQuantity(items[i].Id, items[i].Quantity);
+            Inventory.changePrice(items[i].Id, items[i].Worth);
+        }
+    }
+
+    function updateInventoryConfigurations(items) {
+        for (var i = 0; i < items.length; i++)
+            Inventory.modifyConfig(items[i].Id, items[i].Enabled);
+    }
+
+    function updateStore(items) {
+        for (var i = 0; i < items.length; i++)
+            Store.changeQuantity(items[i].Id, items[i].Quantity, items[i].MaxQuantity, items[i].Price);
+    }
+
+    function drink(id) {
+        var potionAction = new Komodo.ClientActions.PotionAction();
+        potionAction.Id = id;
+        actions.PotionActions.push(potionAction);
+    }
+    Connection.drink = drink;
+
+    function mine(x, y) {
+        var miningAction = new Komodo.ClientActions.MiningAction();
+        miningAction.X = x;
+        miningAction.Y = y;
+        actions.MiningActions.push(miningAction);
+    }
+    Connection.mine = mine;
+
+    function sellItem(id, quantity) {
+        var inventoryAction = new Komodo.ClientActions.InventoryAction();
+        var sellAction = new Komodo.ClientActions.InventoryAction.SellAction();
+        sellAction.Id = id;
+        sellAction.Quantity = quantity;
+        inventoryAction.Sell = sellAction;
+        actions.InventoryActions.push(inventoryAction);
+    }
+    Connection.sellItem = sellItem;
+
+    function configureItem(id, enabled) {
+        var inventoryAction = new Komodo.ClientActions.InventoryAction();
+        var configAction = new Komodo.ClientActions.InventoryAction.ConfigAction();
+        configAction.Id = id;
+        configAction.Enabled = enabled;
+        inventoryAction.Config = configAction;
+        actions.InventoryActions.push(inventoryAction);
+        //ConfigAction
+    }
+    Connection.configureItem = configureItem;
+
+    function purchaseItem(id, quantity) {
+        var storeAction = new Komodo.ClientActions.StoreAction();
+        var purchaseAction = new Komodo.ClientActions.StoreAction.PurchaseAction();
+        purchaseAction.Id = id;
+        purchaseAction.Quantity = (quantity ? quantity : 1);
+        storeAction.Purchase = purchaseAction;
+        actions.StoreActions.push(storeAction);
+    }
+    Connection.purchaseItem = purchaseItem;
+
+    function sellAllItems() {
+        var inventoryAction = new Komodo.ClientActions.InventoryAction();
+        inventoryAction.SellAll = true;
+        actions.InventoryActions.push(inventoryAction);
+    }
+    Connection.sellAllItems = sellAllItems;
+
+    function craftRecipe(id, quantity) {
+        var craftingAction = new Komodo.ClientActions.CraftingAction();
+        craftingAction.Id = id;
+        craftingAction.Quantity = quantity;
+        actions.CraftingActions.push(craftingAction);
+    }
+    Connection.craftRecipe = craftRecipe;
+
+    function processRecipe(id, recipeIndex, iterations) {
+        var processingAction = new Komodo.ClientActions.ProcessingAction();
+        processingAction.Id = id;
+        processingAction.RecipeIndex = recipeIndex;
+        processingAction.Iterations = iterations;
+        actions.ProcessingActions.push(processingAction);
+    }
+    Connection.processRecipe = processRecipe;
+
+    function sendGlobalMessage(message) {
+        /*var clientActions = new Komodo.ClientActions();
+        var socialAction = new Komodo.ClientActions.SocialAction();
+        var chatAction = new Komodo.ClientActions.SocialAction.ChatAction();
+        chatAction.GlobalMessage = message;
+        socialAction.Chat = chatAction;
+        clientActions.SocialActions.push(socialAction);
+        
+        Connection.send(clientActions);*/
+        var socialAction = new Komodo.ClientActions.SocialAction();
+        var chatAction = new Komodo.ClientActions.SocialAction.ChatAction();
+        chatAction.GlobalMessage = message;
+        socialAction.Chat = chatAction;
+        actions.SocialActions.push(socialAction);
+    }
+    Connection.sendGlobalMessage = sendGlobalMessage;
+
+    function send(message) {
+        if (message.encode64) {
+            var encoded = message.encode64();
+            Chat.log("Sent " + roughSizeOfObject(encoded) + " bytes to komodo.");
+            Chat.log("Decoded: ");
+            Chat.log(JSON.stringify(message));
+            Chat.log("Encoded: ");
+            Chat.log(message.encode64());
+            Komodo.send(message.encode64());
+        } else {
+            Chat.log("Sent " + roughSizeOfObject(message) + " bytes to komodo.");
+            Komodo.send(message);
+        }
+    }
+    Connection.send = send;
+
+    function roughSizeOfObject(object) {
+        var objectList = [];
+        var stack = [object];
+        var bytes = 0;
+
+        while (stack.length) {
+            var value = stack.pop();
+
+            if (typeof value === 'boolean') {
+                bytes += 4;
+            } else if (typeof value === 'string') {
+                bytes += value.length * 2;
+            } else if (typeof value === 'number') {
+                bytes += 8;
+            } else if (typeof value === 'object' && objectList.indexOf(value) === -1) {
+                objectList.push(value);
+
+                for (var i in value) {
+                    stack.push(value[i]);
+                }
+            }
+        }
+        return bytes;
+    }
+})(Connection || (Connection = {}));

@@ -31,6 +31,7 @@
         capacityElm: HTMLElement;
         recipeList: HTMLElement;
         quantityTextbox: HTMLElement;
+        container: HTMLElement;
 
         completedOperations: number;
         totalOperations: number;
@@ -39,6 +40,7 @@
         operationDuration: number;
         operationStartTime: number;
         operationCompletionTime: number;
+        requiredId : number;
 
         sidebarContainer: HTMLElement;
         sidebarJobBar: HTMLElement;
@@ -159,13 +161,14 @@
         }
     }
 
-    export function addProcessor(id: number, name: string) {
+    export function addProcessor(id: number, name: string, required: number) {
         if (!storePane) draw();
 
         if (!processors[id]) {
             var processor = new Processor();
             processor.id = id;
             processor.name = name;
+            processor.requiredId = required;
             processors[id] = processor;
 
             drawProcessor(processor);
@@ -242,6 +245,7 @@
     function drawProcessor(processor: Processor) {
         var processorTable = document.createElement('TABLE');
         processorTable.classList.add('block-table');
+        processor.container = processorTable;
 
         var header = (<HTMLTableElement>processorTable).createTHead();
         var titleRow = (<HTMLTableElement>header).insertRow(0);
@@ -363,6 +367,7 @@
         if (!processor) return;
 
         var progressChanged = false;
+        
 
         Utils.ifNotDefault(selectedRecipe, function () {
             processor.selectedRecipe = selectedRecipe;
@@ -461,6 +466,9 @@
                 processor.sidebarProgressBar.style.width = totalCompletionPerc + '%';
                 processor.sidebarProgressText.textContent = Utils.formatTime(totalTimeToFinish / 1000);
             }
+
+            if (processor.requiredId != 0) //if it requires something
+                processor.container.style.display = Objects.getQuantity(processor.requiredId) > 0 ? 'block' : 'none';
         });
     }
     setInterval(processorBars, 10);

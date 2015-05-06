@@ -15,91 +15,96 @@ namespace GoldRush
             
             // Items
 
-            EmptyVial = new StoreItem(game.Items.EmptyVial, GameConfig.StoreItems.EmptyVial);
-            All.Add(EmptyVial.Item.Id, EmptyVial);
+            var emptyVial = new StoreItem(game.Items.EmptyVial, GameConfig.StoreItems.EmptyVial);
+            All.Add(emptyVial.Item.Id, emptyVial);
 
-            Gunpowder = new StoreItem(game.Items.Gunpowder, GameConfig.StoreItems.Gunpowder);
-            All.Add(Gunpowder.Item.Id, Gunpowder);
+            var gunpowder = new StoreItem(game.Items.Gunpowder, GameConfig.StoreItems.Gunpowder);
+            All.Add(gunpowder.Item.Id, gunpowder);
 
             // Upgrades
 
-            Backpack = new StoreItem(game.Upgrades.Backpack, GameConfig.StoreItems.Backpack);
-            All.Add(Backpack.Item.Id, Backpack);
+            var backpack = new StoreItem(game.Upgrades.Backpack, GameConfig.StoreItems.Backpack);
+            All.Add(backpack.Item.Id, backpack);
 
-            Researcher = new StoreItem(game.Upgrades.Researcher, GameConfig.StoreItems.Researcher);
-            All.Add(Researcher.Item.Id, Researcher);
+            var researcher = new StoreItem(game.Upgrades.Researcher, GameConfig.StoreItems.Researcher);
+            All.Add(researcher.Item.Id, researcher);
 
-            // ENABLE AFTER BACKPACK CRAFTING.
-            Botanist = new StoreItem(game.Upgrades.Botanist, GameConfig.StoreItems.Botanist);
-            All.Add(Botanist.Item.Id, Botanist);
+            var botanist = new StoreItem(game.Upgrades.Botanist, GameConfig.StoreItems.Botanist);
+            All.Add(botanist.Item.Id, botanist);
 
-            Foreman = new StoreItem(game.Upgrades.Foreman, GameConfig.StoreItems.Foreman);
-            All.Add(Foreman.Item.Id, Foreman);
+            var foreman = new StoreItem(game.Upgrades.Foreman, GameConfig.StoreItems.Foreman);
+            All.Add(foreman.Item.Id, foreman);
 
-            ChainsawsT1 = new StoreItem(game.Upgrades.ChainsawsT1, GameConfig.StoreItems.ChainsawsT1);
-            All.Add(ChainsawsT1.Item.Id, ChainsawsT1);
+            var chainsawsT1 = new StoreItem(game.Upgrades.ChainsawsT1, GameConfig.StoreItems.ChainsawsT1);
+            All.Add(chainsawsT1.Item.Id, chainsawsT1);
 
-            ChainsawsT2 = new StoreItem(game.Upgrades.ChainsawsT2, GameConfig.StoreItems.ChainsawsT2);
-            All.Add(ChainsawsT2.Item.Id, ChainsawsT2);
+            var chainsawsT2 = new StoreItem(game.Upgrades.ChainsawsT2, GameConfig.StoreItems.ChainsawsT2);
+            All.Add(chainsawsT2.Item.Id, chainsawsT2);
             
-            ClickUpgradeT1 = new StoreItem(game.Upgrades.ClickUpgradeT1, GameConfig.StoreItems.ClickUpgradeT1);
-            All.Add(ClickUpgradeT1.Item.Id, ClickUpgradeT1);
+            var clickUpgradeT1 = new StoreItem(game.Upgrades.ClickUpgradeT1, GameConfig.StoreItems.ClickUpgradeT1);
+            All.Add(clickUpgradeT1.Item.Id, clickUpgradeT1);
 
-            ClickUpgradeT2 = new StoreItem(game.Upgrades.ClickUpgradeT2, GameConfig.StoreItems.ClickUpgradeT2);
-            All.Add(ClickUpgradeT2.Item.Id, ClickUpgradeT2);
+            var clickUpgradeT2 = new StoreItem(game.Upgrades.ClickUpgradeT2, GameConfig.StoreItems.ClickUpgradeT2);
+            All.Add(clickUpgradeT2.Item.Id, clickUpgradeT2);
 
-            ClickUpgradeT3 = new StoreItem(game.Upgrades.ClickUpgradeT3, GameConfig.StoreItems.ClickUpgradeT3);
-            All.Add(ClickUpgradeT3.Item.Id, ClickUpgradeT3);
+            var clickUpgradeT3 = new StoreItem(game.Upgrades.ClickUpgradeT3, GameConfig.StoreItems.ClickUpgradeT3);
+            All.Add(clickUpgradeT3.Item.Id, clickUpgradeT3);
 
-            ChainsawsT3 = new StoreItem(game.Upgrades.ChainsawsT3, GameConfig.StoreItems.ChainsawsT3);
-            All.Add(ChainsawsT3.Item.Id, ChainsawsT3);
+            var chainsawsT3 = new StoreItem(game.Upgrades.ChainsawsT3, GameConfig.StoreItems.ChainsawsT3);
+            All.Add(chainsawsT3.Item.Id, chainsawsT3);
 
-            ChainsawsT4 = new StoreItem(game.Upgrades.ChainsawsT4, GameConfig.StoreItems.ChainsawsT4);
-            All.Add(ChainsawsT4.Item.Id, ChainsawsT4);
+            var chainsawsT4 = new StoreItem(game.Upgrades.ChainsawsT4, GameConfig.StoreItems.ChainsawsT4);
+            All.Add(chainsawsT4.Item.Id, chainsawsT4);
 
-            ReinforcedFurnace = new StoreItem(game.Upgrades.ReinforcedFurnace,GameConfig.StoreItems.ReinforcedFurnace);
-            All.Add(ReinforcedFurnace.Item.Id, ReinforcedFurnace);
+            var reinforcedFurnace = new StoreItem(game.Upgrades.ReinforcedFurnace,GameConfig.StoreItems.ReinforcedFurnace);
+            All.Add(reinforcedFurnace.Item.Id, reinforcedFurnace);
 
-            LargerCauldron = new StoreItem(game.Upgrades.LargerCauldron,GameConfig.StoreItems.LargerCauldron);
-            All.Add(LargerCauldron.Item.Id, LargerCauldron);
+            var largerCauldron = new StoreItem(game.Upgrades.LargerCauldron,GameConfig.StoreItems.LargerCauldron);
+            All.Add(largerCauldron.Item.Id, largerCauldron);
 
-            DeeperTunnels = new StoreItem(game.Upgrades.DeeperTunnels,GameConfig.StoreItems.DeeperTunnels);
-            All.Add(DeeperTunnels.Item.Id,DeeperTunnels);
+            var deeperTunnels = new StoreItem(game.Upgrades.DeeperTunnels,GameConfig.StoreItems.DeeperTunnels);
+            All.Add(deeperTunnels.Item.Id,deeperTunnels);
 
-            IronPickaxe = new StoreItem(game.Upgrades.IronPickaxe,GameConfig.StoreItems.IronPickaxe);
-            All.Add(IronPickaxe.Item.Id,IronPickaxe);
+            var ironPickaxe = new StoreItem(game.Upgrades.IronPickaxe,GameConfig.StoreItems.IronPickaxe);
+            All.Add(ironPickaxe.Item.Id,ironPickaxe);
 
-            SteelPickaxe = new StoreItem(game.Upgrades.SteelPickaxe, GameConfig.StoreItems.SteelPickaxe);
-            All.Add(SteelPickaxe.Item.Id, SteelPickaxe);
+            var steelPickaxe = new StoreItem(game.Upgrades.SteelPickaxe, GameConfig.StoreItems.SteelPickaxe);
+            All.Add(steelPickaxe.Item.Id, steelPickaxe);
 
-            GoldPickaxe = new StoreItem(game.Upgrades.GoldPickaxe, GameConfig.StoreItems.GoldPickaxe);
-            All.Add(GoldPickaxe.Item.Id, GoldPickaxe);
+            var goldPickaxe = new StoreItem(game.Upgrades.GoldPickaxe, GameConfig.StoreItems.GoldPickaxe);
+            All.Add(goldPickaxe.Item.Id, goldPickaxe);
 
-            DiamondPickaxe = new StoreItem(game.Upgrades.DiamondPickaxe, GameConfig.StoreItems.DiamondPickaxe);
-            All.Add(DiamondPickaxe.Item.Id, DiamondPickaxe);
+            var diamondPickaxe = new StoreItem(game.Upgrades.DiamondPickaxe, GameConfig.StoreItems.DiamondPickaxe);
+            All.Add(diamondPickaxe.Item.Id, diamondPickaxe);
+
+            var furnace = new StoreItem(game.Upgrades.Furnace, GameConfig.StoreItems.Furnace);
+            All.Add(furnace.Item.Id,furnace);
+
+            var cauldron = new StoreItem(game.Upgrades.Cauldron, GameConfig.StoreItems.Cauldron);
+            All.Add(cauldron.Item.Id,cauldron);
 
             // Gatherers
 
-            Miner = new StoreItem(game.Gatherers.Miner, GameConfig.StoreItems.Miner);
-            All.Add(Miner.Item.Id, Miner);
+            var miner = new StoreItem(game.Gatherers.Miner, GameConfig.StoreItems.Miner);
+            All.Add(miner.Item.Id, miner);
 
-            Lumberjack = new StoreItem(game.Gatherers.Lumberjack, GameConfig.StoreItems.Lumberjack);
-            All.Add(Lumberjack.Item.Id, Lumberjack);
+            var lumberjack = new StoreItem(game.Gatherers.Lumberjack, GameConfig.StoreItems.Lumberjack);
+            All.Add(lumberjack.Item.Id, lumberjack);
 
-            Drill = new StoreItem(game.Gatherers.Drill, GameConfig.StoreItems.Drill);
-            All.Add(Drill.Item.Id, Drill);
+            var drill = new StoreItem(game.Gatherers.Drill, GameConfig.StoreItems.Drill);
+            All.Add(drill.Item.Id, drill);
 
-            Crusher = new StoreItem(game.Gatherers.Crusher, GameConfig.StoreItems.Crusher);
-            All.Add(Crusher.Item.Id, Crusher);
+            var crusher = new StoreItem(game.Gatherers.Crusher, GameConfig.StoreItems.Crusher);
+            All.Add(crusher.Item.Id, crusher);
 
-            Excavator = new StoreItem(game.Gatherers.Excavator, GameConfig.StoreItems.Excavator);
-            All.Add(Excavator.Item.Id, Excavator);
+            var excavator = new StoreItem(game.Gatherers.Excavator, GameConfig.StoreItems.Excavator);
+            All.Add(excavator.Item.Id, excavator);
 
-            Pumpjack = new StoreItem(game.Gatherers.Pumpjack, GameConfig.StoreItems.Pumpjack);
-            All.Add(Pumpjack.Item.Id, Pumpjack);
+            var pumpjack = new StoreItem(game.Gatherers.Pumpjack, GameConfig.StoreItems.Pumpjack);
+            All.Add(pumpjack.Item.Id, pumpjack);
 
-            BigTexan = new StoreItem(game.Gatherers.BigTexan, GameConfig.StoreItems.BigTexan);
-            All.Add(BigTexan.Item.Id, BigTexan);
+            var bigTexan = new StoreItem(game.Gatherers.BigTexan, GameConfig.StoreItems.BigTexan);
+            All.Add(bigTexan.Item.Id, bigTexan);
 
 
             // If you want an item to be purchased with a different currency define it above.
@@ -111,40 +116,6 @@ namespace GoldRush
         }
 
         public Dictionary<int, StoreItem> All = new Dictionary<int, StoreItem>();
-
-        StoreItem EmptyVial;
-        StoreItem Gunpowder;
-        StoreItem Researcher;
-        StoreItem Botanist;
-        private StoreItem Backpack;
-        StoreItem Foreman;
-
-        StoreItem Miner;
-        StoreItem Lumberjack;
-        StoreItem Drill;
-        StoreItem Crusher;
-        StoreItem Excavator;
-        StoreItem Pumpjack;
-        StoreItem BigTexan;
-
-        StoreItem ClickUpgradeT1;
-        StoreItem ClickUpgradeT2;
-        StoreItem ClickUpgradeT3;
-
-        StoreItem ChainsawsT1;
-        StoreItem ChainsawsT2;
-        StoreItem ChainsawsT3;
-        StoreItem ChainsawsT4;
-
-        StoreItem ReinforcedFurnace;
-        StoreItem LargerCauldron;
-
-        private StoreItem DeeperTunnels;
-
-        private StoreItem IronPickaxe;
-        private StoreItem SteelPickaxe;
-        private StoreItem GoldPickaxe;
-        private StoreItem DiamondPickaxe;
 
         internal class StoreItem
         {
@@ -165,7 +136,7 @@ namespace GoldRush
 
             public long GetPrice()
             {
-                return (int)Math.Ceiling((Math.Pow(Factor, Item.Quantity))*Convert.ToDouble(BasePrice));
+                return (long)Math.Ceiling((Math.Pow(Factor, Item.Quantity))*Convert.ToDouble(BasePrice));
             }
 
             public void Purchase()

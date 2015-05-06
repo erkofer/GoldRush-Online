@@ -122,8 +122,7 @@ namespace Caroline.Domain
             if (lastMessageRecieved < 0)
                 throw new ArgumentException("lastMessageRecieved must be equal to or greater than 0.", "lastMessageRecieved");
 
-            var messages = await _db.ChatroomMessages.Range(chatroom, lastMessageRecieved, -1, Order.Descending);
-            Array.Reverse(messages);
+            var messages = await _db.ChatroomMessages.Range(chatroom, lastMessageRecieved);
             var ret = new GameState.ChatMessage[messages.Length];
             for (var i = 0; i < ret.Length; i++)
             {

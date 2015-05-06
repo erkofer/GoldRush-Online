@@ -104,6 +104,7 @@
         Utils.ifNotDefault(maxQuantity, function () {
             if (maxQuantity != 0) {
                 try {
+                    Equipment.changeMaxQuantity(id, maxQuantity);
                     item.maxQuantity = maxQuantity;
                     item.maxQuantityElm.textContent = maxQuantity.toString();
                    
@@ -117,6 +118,7 @@
             Objects.setQuantity(id, quantity);
             item.quantity = quantity;
             Crafting.update();
+            Equipment.changeQuantity(id, quantity);
 
             if (maxQuantity != 0) {
                 if (item.category == Category.CRAFTING) return;

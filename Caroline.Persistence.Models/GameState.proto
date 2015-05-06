@@ -57,6 +57,7 @@ message GameState {
 			optional int32 Id=5 [default = -100];
 			optional int32 MaxQuantity=6 [default = -100];
 			optional string Tooltip=7;
+			optional int32 RequiredId=8 [default = -100];
 		}
 		repeated SchemaStoreItem StoreItems=2;
 
@@ -87,6 +88,7 @@ message GameState {
 			optional int32 Id = 1 [default = -100];
 			repeated Recipe Recipes=2;
 			optional string Name=3;
+			optional int32 RequiredId = 4 [default = -100];
 		}
 		repeated SchemaProcessor Processors = 4;
 
@@ -149,6 +151,9 @@ message GameState {
 	message Gatherer {
 		optional int32 Id=1;
 		optional bool Enabled=2;
+		optional double Efficiency=3;
+		optional double FuelConsumed=4;
+		optional double RarityBonus=5;
 	}
 	repeated Gatherer Gatherers = 13;
 } 

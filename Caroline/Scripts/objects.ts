@@ -31,7 +31,10 @@
     }
 
     export function getQuantity(id: number) {
-        return gameobjects[id].quantity;
+        var gameobject = gameobjects[id];
+        if (gameobject) return gameobject.quantity;
+
+        return 0;
     }
 
     export function setMaxQuantity(id: number, maxQuantity: number) {

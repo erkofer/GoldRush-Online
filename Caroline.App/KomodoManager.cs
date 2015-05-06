@@ -25,6 +25,7 @@ namespace Caroline.App
                 return new GameState { IsError = true, IsRateLimited = true };
 
             var user = await userDto.GetUser();
+                
             // get game save
             var save = await userDto.GetGame();
 

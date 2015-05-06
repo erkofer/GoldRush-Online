@@ -1,5 +1,16 @@
 ﻿///<reference path="chat.ts"/>
 ///<reference path="inventory.ts"/>
+///<reference path="stats.ts"/>
+///<reference path="store.ts"/>
+///<reference path="rock.ts"/>
+///<reference path="equipment.ts"/>
+///<reference path="crafting.ts"/>
+///<reference path="typings/jquery/jquery.d.ts"/>
+///<reference path="buffs.ts"/>
+///<reference path="register.ts"/>
+///<reference path="modal.ts"/>
+///<reference path="tooltip.ts"/>
+///<reference path="ajax.ts"/>
 
 module Connection {
     declare var Komodo: { connection: any; ClientActions: any; decode: any; send: any; restart: any };
@@ -8,11 +19,26 @@ module Connection {
     var notificationElm;
     var networkErrorElm;
     var rateLimitedElm;
+    var playerCounter;
     
     function init() {
+        var headerLinks = document.getElementsByClassName('header-links')[0];
+        var versionHistory = document.createElement('div');
+        versionHistory.style.display = 'inline-block';
+        versionHistory.textContent = 'Version History';
+        versionHistory.addEventListener('click', function () {
+            window.open('/version');
+        });
+        versionHistory.style.cursor = 'pointer';
+        headerLinks.appendChild(versionHistory);
+
+        playerCounter = document.createElement('div');
+        playerCounter.style.display = 'inline-block';
+        playerCounter.textContent = 'There are 0 players mining.';
+        headerLinks.appendChild(playerCounter);
+
         notificationElm = document.createElement('div');
         notificationElm.classList.add('error-notification-tray');
-        notificationElm.style.display = 'none';
 
         networkErrorElm = document.createElement('div');
         networkErrorElm.classList.add('network-error');
@@ -25,6 +51,7 @@ module Connection {
         rateLimitedElm.classList.add('rate-limited');
         var rateLimitText = document.createElement('div');
         rateLimitText.classList.add('network-error-text');
+        rateLimitedElm.style.display = 'none';;
         rateLimitText.textContent = 'You have exceeded your allotted requests';
         rateLimitedElm.appendChild(rateLimitText);
 
@@ -83,6 +110,9 @@ module Connection {
         }
         if (msg.Gatherers != null) {
             updateGatherers(msg.Gatherers);
+        }
+        if (msg.ConnectedUsers) {
+            playerCounter.textContent = 'There are ' + msg.ConnectedUsers + ' players mining.';
         }
     });
 
@@ -150,7 +180,7 @@ module Connection {
         if (schema.Processors) {
             for (var i = 0; i < schema.Processors.length; i++) {
                 var processor = schema.Processors[i];
-                Crafting.addProcessor(processor.Id, processor.Name);
+                Crafting.addProcessor(processor.Id, processor.Name,processor.RequiredId);
                 for (var r = 0; r < processor.Recipes.length; r++) {
                     Crafting.addProcessorRecipe(processor.Id, processor.Recipes[r].Ingredients, processor.Recipes[r].Resultants);
                 }
@@ -185,6 +215,9 @@ module Connection {
         for (var i = 0; i < gatherers.length; i++) {
             var gatherer = gatherers[i];
             Equipment.toggleGatherer(gatherer.Id, gatherer.Enabled);
+            Equipment.changeEfficiency(gatherer.Id, gatherer.Efficiency);
+            Equipment.changeFuelConsumption(gatherer.Id, gatherer.FuelConsumed);
+            Equipment.changeRarityBonus(gatherer.Id, gatherer.RarityBonus);
         }
     }
 
