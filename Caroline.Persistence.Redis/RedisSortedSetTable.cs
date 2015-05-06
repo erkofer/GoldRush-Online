@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using StackExchange.Redis;
 
 namespace Caroline.Persistence.Redis
@@ -46,6 +47,7 @@ namespace Caroline.Persistence.Redis
             var id = KeySerializer.Serialize(key);
             return _db.SortedSetLengthAsync(id, min, max, exclude);
         }
+
         //lengthByValue doesnt make sense when sorting by the serialized format of an entity
         //public Task<long> LengthByValue(TId key, TEntity min, TEntity max, Exclude exclude = Exclude.None)
         //{

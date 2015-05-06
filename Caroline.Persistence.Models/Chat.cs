@@ -2,9 +2,17 @@
 
 namespace Caroline.Persistence.Models
 {
-    public partial class ChatroomMessage : IIdentifiableEntity<string>
+    public partial class ChatroomMessage : IIdentifiableEntity<string>, IIdentifiableEntity<double>
     {
         public string Id { get; set; }
+
+        public double Index { get; set; }
+
+        double IIdentifiableEntity<double>.Id
+        {
+            get { return Index; }
+            set { Index = value; }
+        }
     }
 
     public partial class ChatroomSubscriber 

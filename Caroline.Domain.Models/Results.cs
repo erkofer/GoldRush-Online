@@ -4,7 +4,8 @@
     {
         Success,
         BadArguments,
-        NotSubscribed
+        NotSubscribed,
+        BlankMessage
     }
 
     public enum JoinChatroomResult

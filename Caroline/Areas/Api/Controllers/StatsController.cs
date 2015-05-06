@@ -30,7 +30,7 @@ namespace Caroline.Areas.Api.Controllers
                 {
                     Rank = start + i,
                     Score = (long)entries[i].Score,
-                    UserId = await db.GetUsername(entries[i].UserId) // TODO: log(count) round trips, batch db.GetUsername calls
+                    UserId = await db.GetUsername(entries[i].UserId) // TODO: O(N) round trips, batch db.GetUsername calls
                 };
             return JsonConvert.SerializeObject(ret);
         }

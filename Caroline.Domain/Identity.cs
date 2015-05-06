@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Net.Mail;
 using System.Security.Claims;
@@ -20,27 +19,29 @@ namespace Caroline.Domain
     // Configure the application user manager used in this application. UserManager is defined in ASP.NET Identity and is used by the application.
     public class UserManager : UserManager<User, long>
     {
-        private readonly CarolineRedisDb _db;
+        readonly CarolineRedisDb _redis;
+        readonly CarolineMongoDb _mongo;
 
         public static async Task<UserManager> CreateAsync()
         {
             var db = await CarolineRedisDb.CreateAsync();
-            return new UserManager(db, new RedisUserStore(db));
+            var mongo = CarolineMongoDb.Create();
+            return new UserManager(db, mongo, new RedisUserStore(db));
         }
 
-        UserManager(CarolineRedisDb db, IUserStore<User, long> store)
+        UserManager(CarolineRedisDb redis, CarolineMongoDb mongo, IUserStore<User, long> store)
             : base(store)
         {
-            _db = db;
+            _redis = redis;
+            _mongo = mongo;
         }
 
         public async Task<UserDto> GetUser(long id)
         {
-            var ulock = await _db.UserLocks.Lock(id);
+            var ulock = await _redis.UserLocks.Lock(id);
             if (ulock == null)
                 throw new TimeoutException();
-            return new UserDto(ulock, _db, id);
-            
+            return new UserDto(ulock, _redis, _mongo, id);
         }
 
         public async Task<IdentityResult> SetPassword(User user, string password)
@@ -61,24 +62,25 @@ namespace Caroline.Domain
 
         public Task<ScoreEntry[]> GetLeaderboardEntries(long start = 0, long end = long.MaxValue)
         {
-            return _db.HighScores.Range("lb", start, end, Order.Descending);
+            return _redis.HighScores.Range("lb", start, end, Order.Descending);
         }
 
         public Task SetLeaderboardEntry(long userId, long value)
         {
-            return _db.HighScores.Add(new ScoreEntry {ListName = "lb", UserId = userId, Score = value});
+            return _redis.HighScores.Add(new ScoreEntry {ListName = "lb", UserId = userId, Score = value});
         }
 
         public Task<string> GetUsername(long userid)
         {
-            return _db.UserIds.Get(userid.ToStringInvariant());
+            return _redis.UserIds.Get(userid.ToStringInvariant());
         }
 
         public static UserManager Create(IdentityFactoryOptions<UserManager> options, IOwinContext context)
         {
             var db = CarolineRedisDb.Create();
+            var mongo = CarolineMongoDb.Create();
             var store = new RedisUserStore(db);
-            var manager = new UserManager(db, store);
+            var manager = new UserManager(db, mongo, store);
             // Configure validation logic for usernames
             manager.UserValidator = new GoldRushUserValidator(manager, store)
             {

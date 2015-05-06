@@ -75,7 +75,8 @@ namespace Caroline.Persistence
                     DatabaseAreaEx.Objects.StringSerializer,
                     DatabaseAreaEx.Objects<ScoreEntry, string>.Identifier, DatabaseAreaEx.Objects<ScoreEntry, double>.Identifier),
 
-                ChatroomMessages = db.SetListString<ChatroomMessage>("cm"),
+                ChatroomMessages = db.SetSortedListString<ChatroomMessage>("cm"),
+                ChatroomMessagesIdIncrement = db.Long("cm-lng"),
                 ChatroomSubscribers = db.SetHashStringLong<ChatroomSubscriber>("cs"),
                 ChatroomInvitations = db.SetHashStringLong<ChatroomInvitation>("ci"),
                 ChatroomOptions = db.SetString<ChatroomOptions>("co"),
@@ -85,13 +86,18 @@ namespace Caroline.Persistence
             return ret;
         }
 
-        public IEntityListTable<ChatroomMessage, string> ChatroomMessages { get; private set; }
+        public ISortedSetTable<ChatroomMessage, string> ChatroomMessages { get; private set; }
+        public RedisLongTable ChatroomMessagesIdIncrement { get; private set; }
 
         public IEntityHashTable<ChatroomSubscriber, string, long> ChatroomSubscribers { get; private set; }
 
         public IEntityHashTable<ChatroomInvitation, string, long> ChatroomInvitations { get; private set; }
 
         public IEntityTable<ChatroomOptions, string> ChatroomOptions { get; private set; }
+
+        public IEntityHashTable<ChatroomSubscription, long, string> UserChatroomSubscriptions { get; private set; }
+
+        public IEntityListTable<ChatroomNotification, long> UserChatroomNotifications { get; private set; }
 
         public ISortedSetTable<ScoreEntry, string> HighScores { get; private set; }
 
@@ -109,8 +115,6 @@ namespace Caroline.Persistence
         public IStringTable UserIds { get; private set; }
         public IStringTable Logins { get; private set; }
         public IStringTable Emails { get; private set; }
-        public IEntityHashTable<ChatroomSubscription, long, string> UserChatroomSubscriptions { get; private set; }
-        public IEntityListTable<ChatroomNotification, long> UserChatroomNotifications { get; private set; }
 
         static readonly ScoreUserIdSerializer ScoreIdSerializer = new ScoreUserIdSerializer();
         class ScoreUserIdSerializer : ISerializer<ScoreEntry>
