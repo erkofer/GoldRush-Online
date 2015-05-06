@@ -230,7 +230,9 @@ module Connection {
 
     function receiveGlobalMessages(messages: any) {
         for (var i = 0; i < messages.length; i++) {
+
             var msg = messages[i];
+            console.log(msg);
             Chat.receiveGlobalMessage(msg.Sender, msg.Text, msg.Time, msg.Permissions);
         }
     }

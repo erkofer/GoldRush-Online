@@ -50,6 +50,7 @@
     <Compile Include="APIs\IKomodoSession.cs" />
     <Compile Include="APIs\KomodoDtos.cs" />
     <Compile Include="Game.cs" />
+    <Compile Include="GameObjects\Achievements.cs" />
     <Compile Include="GameObjects\Crafting.cs" />
     <Compile Include="GameObjects\GameConfig.cs" />
     <Compile Include="APIs\KomodoSessionFactory.cs" />

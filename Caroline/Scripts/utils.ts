@@ -83,34 +83,32 @@
     }
 
     export function convertServerTimeToLocal(time: string): string {
+        var localDate = new Date();
+
+        var year = localDate.toISOString().split('-')[0];
+        var month = localDate.toISOString().split('-')[1];
+        var day = localDate.toISOString().split('-')[2].split('T')[0];
+
         var hours = +time.split(':')[0];
         var minutes = +(time.split(':')[1]).split(' ')[0];
-        var amOrPm = (time.split(':')[1]).split(' ')[1];
+        var amOrPm = time.split(':')[1].split(' ')[1];
 
-        if (amOrPm == 'PM')
-            hours += 12;
 
-        var offset = new Date().getTimezoneOffset();
-        hours -= ((offset / 60) - offset % 60);
-        minutes -= offset % 60;
+        var dateString = month + '/'
+            + day + '/'
+            + year+ ' '
+            + ((hours < 10 ? '0' : '') + hours) + ':'
+            + ((minutes < 10 ? '0' : '') + minutes) + ':'
+            + '00 ' 
+            + amOrPm + ' UTC';
+        var toConvertDate = new Date(dateString);
 
-        if (hours < 0)
-            hours = 24 - hours;
-      
-        if (minutes < 0) {
-            minutes = 60 - minutes;
-            hours--;
-        }
+        console.log(dateString);
+        console.log(toConvertDate);
 
-        if (hours > 23) {
-            hours = hours - 24;
-        }
-
-        if (minutes > 59) {
-            minutes = minutes - 60;
-            hours++;
-        }
-
+        hours = toConvertDate.getHours();
+        minutes = toConvertDate.getMinutes();
+        
         return (hours < 10 ? '0' : '') + hours + ':' + (minutes < 10 ? '0' : '') + minutes;
     }
 } 

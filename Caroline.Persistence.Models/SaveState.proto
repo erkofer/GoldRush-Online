@@ -58,4 +58,6 @@ message SaveState
 		optional double TimeActive=2;
 	}
 	repeated Buff Buffs=8;
+
+	optional int64 TimePlayed=9;
 }

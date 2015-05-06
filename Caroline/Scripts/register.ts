@@ -5,111 +5,87 @@ module Account {
     var userSpan;
     var contextMenu;
 
+    export var signedIn = false;
+
     var registrationErrors;
     var loginErrors;
 
     var mouseTimeout;
 
-    interface ILeaderboardEntry {
-        Score: number;
-        Rank: number;
-        UserId: string;
-    }
+    module Leaderboard {
+        export var currentlyInspecting = 0;
 
-    class LeaderboardAjaxService {
-        constructor() {
+        function load(lower: number, upper: number, element: HTMLElement) {
+            currentlyInspecting = lower;
 
+            var leaderboardService = new Ajax.LeaderboardAjaxService();
+            leaderboardService.resultsElement = element;
+            leaderboardService.sendRequest(lower, upper);
         }
 
-        private failed(request) {
-            this.resultsElement.textContent = 'Loading failed...';
-        }
-
-        private succeeded(request) {
-
-            while (this.resultsElement.firstChild)
-                this.resultsElement.removeChild(this.resultsElement.firstChild);
-
-            var leaderboardTable: HTMLTableElement = document.createElement('table');
-            var thead: HTMLTableElement = <HTMLTableElement>leaderboardTable.createTHead();
-            var subheader = <HTMLTableRowElement>thead.insertRow(0);
-            subheader.classList.add('table-subheader');
-
-            var score = subheader.insertCell(0);
-            score.textContent = 'Score';
-            score.style.width = '65%';
-            var player = subheader.insertCell(0);
-            player.textContent = 'Name';
-            player.style.width = '25%';
-            var rank = subheader.insertCell(0);
-            rank.textContent = 'Rank';
-            rank.style.width = '10%';
-
-            var tbody: HTMLTableElement = <HTMLTableElement>leaderboardTable.createTBody();
-
-
-            for (var i = 0; i < request.length; i++) {
-                var leaderboardEntry: ILeaderboardEntry = request[i];
-                console.log(leaderboardEntry);
-
-                var row = <HTMLTableRowElement>tbody.insertRow(tbody.rows.length);
-                row.classList.add('table-row');
-
-                var rScore = row.insertCell(0);
-                rScore.textContent = Utils.formatNumber(leaderboardEntry.Score);
-                rScore.style.width = '65%';
-                rScore.addEventListener('click', function (event) {
-                    var score;
-                    var cell = <HTMLElement>event.target;
-
-                    if (cell.dataset) {
-                        score = cell.dataset['tooltip'];
-                    } else {
-                        score = cell.getAttribute('data-tooltip');
-                    }
-
-                    if (cell.textContent.indexOf(',') > 0) { // this number is detailed and filled with commas.
-                        cell.textContent = Utils.formatNumber(score);
-                    } else {
-                        cell.textContent = Utils.formatNumber(score, true);
-                    }
-                });
-
-                if (rScore.dataset) {
-                    rScore.dataset['tooltip'] = leaderboardEntry.Score;
-                } else {
-                    rScore.setAttribute('data-tooltip', leaderboardEntry.Score.toString());
-                }
-
-                var rPlayer = row.insertCell(0);
-                rPlayer.textContent = leaderboardEntry.UserId;
-                player.style.width = '25%';
-                var rRank = row.insertCell(0);
-                rRank.textContent = Utils.formatNumber(leaderboardEntry.Rank);
-                rRank.style.width = '10%';
+        export function open() {
+            var leaderboardModal = new modal.Window();
+            leaderboardModal.title = 'Leaderboards';
+            if (!signedIn) {
+                var signInNotification = document.createElement('div');
+                signInNotification.style.fontSize = '18px';
+                signInNotification.style.background = 'darkred';
+                signInNotification.style.color = 'white';
+                signInNotification.style.fontWeight = 'bold';
+                signInNotification.style.textAlign = 'center';
+                signInNotification.style.border = '1px solid white';
+                signInNotification.textContent = "Sign in to see where you rank.";
+                leaderboardModal.addElement(signInNotification);
             }
-            this.resultsElement.appendChild(leaderboardTable);
-        }
+            var leaderboardList = document.createElement('DIV');
+            leaderboardList.style.width = '400px';
+            leaderboardList.appendChild(Ajax.createLoader());
+            leaderboardModal.addElement(leaderboardList);
+            // Navigation controls.
+            var controlContainer = document.createElement('div');
+            controlContainer.style.textAlign = 'center';
+            controlContainer.style.marginTop = '5px';
+            var navigateUp = Utils.createButton('<<', '');
+            var navigateSpecific = document.createElement('input');
+            navigateSpecific.type = 'TEXT';
+            var navigateDown = Utils.createButton('>>', '');
 
-        resultsElement: HTMLElement;
+            navigateUp.addEventListener('click', function () {
+                currentlyInspecting -= 20;
+                if (currentlyInspecting < 0) currentlyInspecting = 0;
+                currentlyInspecting = currentlyInspecting - (currentlyInspecting % 20);
 
-        sendRequest(lowerbound: number, upperbound: number) {
-            var self = this;
+                load(currentlyInspecting, currentlyInspecting + 20, leaderboardList);
+            });
 
-            var request = $.ajax({
-                asyn: true,
-                type: 'POST',
-                url: '/Api/Stats/LeaderBoard/',
-                data: $.param({ Lower: lowerbound, Upper: upperbound }),
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                success: function (request) {
-                    request = JSON.parse(request);
-                    self.succeeded(request);
-                },
-                failure: function (request) {
-                    self.failed(request);
+            navigateSpecific.addEventListener('keyup', function(e) {
+                if (e.keyCode == 13) { // if they pressed enter.
+                    var text = (<HTMLInputElement>e.currentTarget).value;
+                    if (!Utils.isNumber(text)) return;
+
+                    currentlyInspecting = +text;
+                    currentlyInspecting = currentlyInspecting - (currentlyInspecting % 20);
+                    load(currentlyInspecting, currentlyInspecting + 20, leaderboardList);
                 }
             });
+
+            navigateDown.addEventListener('click', function () {
+                currentlyInspecting += 20;
+                currentlyInspecting = currentlyInspecting - (currentlyInspecting % 20);
+
+                load(currentlyInspecting, currentlyInspecting + 20, leaderboardList);
+            });
+
+            controlContainer.appendChild(navigateUp);
+            controlContainer.appendChild(navigateSpecific);
+            controlContainer.appendChild(navigateDown);
+            leaderboardModal.addElement(controlContainer);
+            // options
+            var close = leaderboardModal.addOption("Close");
+            close.addEventListener('click', function () { modal.close() });
+
+            leaderboardModal.show();
+            load(0, 20, leaderboardList);
         }
     }
 
@@ -174,7 +150,7 @@ module Account {
         var highscoresLink = document.createElement('SPAN');
         highscoresLink.textContent = 'Leaderboards';
         highscoresLink.addEventListener('click', function () {
-            leaderboardsModal();
+            Leaderboard.open();
         });
         highscoresLink.style.cursor = 'pointer';
         document.getElementsByClassName('header-links')[0].appendChild(highscoresLink);
@@ -197,26 +173,13 @@ module Account {
     function updateUser(name: string, isAnon: boolean) {
         userSpan.textContent = isAnon ? 'Guest' : name;
         // styles the container depending on the status of the account.
+        signedIn = !isAnon;
         Utils.cssSwap(container,
             isAnon ? 'registered' : 'anonymous',
             isAnon ? 'anonymous' : 'registered');
     }
 
-    function leaderboardsModal() {
-        var leaderboardModal = new modal.Window();
-        leaderboardModal.title = 'Leaderboards';
-        var leaderboardList = document.createElement('DIV');
-        leaderboardList.style.width = '400px';
-        leaderboardList.appendChild(Ajax.createLoader());
-        leaderboardModal.addElement(leaderboardList);
-
-
-        var leaderboardService = new LeaderboardAjaxService();
-        leaderboardService.resultsElement = leaderboardList;
-        leaderboardService.sendRequest(0, 20);
-
-        leaderboardModal.show();
-    }
+    
 
     function loginModal() {
         var loginModal = new modal.Window();

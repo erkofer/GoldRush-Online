@@ -17,7 +17,7 @@ namespace GoldRush
         bool sendSchema;
         public GameObjects objs;
         long lastUpdate;
-        public long Score=0;
+        public long Score;
 
         public long UnixTimeNow()
         {
@@ -39,7 +39,7 @@ namespace GoldRush
                 lastUpdate = currentTime;
                 objs.Update((int) timeSinceLastUpdate*1000);
             }
-
+            objs.Achievements.TimePlayed += timeSinceLastUpdate;
 
 
             // CLIENT ACTIONS
@@ -397,6 +397,7 @@ namespace GoldRush
 
                 saveState.Buffs.Add(saveStateBuff);
             }
+            saveState.TimePlayed = objs.Achievements.TimePlayed;
 
             return saveState;
         }
@@ -471,6 +472,7 @@ namespace GoldRush
                     }
                 }
                 Score = objs.Items.Coins.LifeTimeTotal;
+                objs.Achievements.TimePlayed = save.TimePlayed;
             }
         }
     }

@@ -98,33 +98,24 @@
     Utils.formatTime = formatTime;
 
     function convertServerTimeToLocal(time) {
+        var localDate = new Date();
+
+        var year = localDate.toISOString().split('-')[0];
+        var month = localDate.toISOString().split('-')[1];
+        var day = localDate.toISOString().split('-')[2].split('T')[0];
+
         var hours = +time.split(':')[0];
         var minutes = +(time.split(':')[1]).split(' ')[0];
-        var amOrPm = (time.split(':')[1]).split(' ')[1];
+        var amOrPm = time.split(':')[1].split(' ')[1];
 
-        if (amOrPm == 'PM')
-            hours += 12;
+        var dateString = month + '/' + day + '/' + year + ' ' + ((hours < 10 ? '0' : '') + hours) + ':' + ((minutes < 10 ? '0' : '') + minutes) + ':' + '00 ' + amOrPm + ' UTC';
+        var toConvertDate = new Date(dateString);
 
-        var offset = new Date().getTimezoneOffset();
-        hours -= ((offset / 60) - offset % 60);
-        minutes -= offset % 60;
+        console.log(dateString);
+        console.log(toConvertDate);
 
-        if (hours < 0)
-            hours = 24 - hours;
-
-        if (minutes < 0) {
-            minutes = 60 - minutes;
-            hours--;
-        }
-
-        if (hours > 23) {
-            hours = hours - 24;
-        }
-
-        if (minutes > 59) {
-            minutes = minutes - 60;
-            hours++;
-        }
+        hours = toConvertDate.getHours();
+        minutes = toConvertDate.getMinutes();
 
         return (hours < 10 ? '0' : '') + hours + ':' + (minutes < 10 ? '0' : '') + minutes;
     }
@@ -2489,102 +2480,97 @@ var Account;
     var userSpan;
     var contextMenu;
 
+    Account.signedIn = false;
+
     var registrationErrors;
     var loginErrors;
 
     var mouseTimeout;
 
-    var LeaderboardAjaxService = (function () {
-        function LeaderboardAjaxService() {
+    var Leaderboard;
+    (function (Leaderboard) {
+        Leaderboard.currentlyInspecting = 0;
+
+        function load(lower, upper, element) {
+            Leaderboard.currentlyInspecting = lower;
+
+            var leaderboardService = new Ajax.LeaderboardAjaxService();
+            leaderboardService.resultsElement = element;
+            leaderboardService.sendRequest(lower, upper);
         }
-        LeaderboardAjaxService.prototype.failed = function (request) {
-            this.resultsElement.textContent = 'Loading failed...';
-        };
 
-        LeaderboardAjaxService.prototype.succeeded = function (request) {
-            while (this.resultsElement.firstChild)
-                this.resultsElement.removeChild(this.resultsElement.firstChild);
-
-            var leaderboardTable = document.createElement('table');
-            var thead = leaderboardTable.createTHead();
-            var subheader = thead.insertRow(0);
-            subheader.classList.add('table-subheader');
-
-            var score = subheader.insertCell(0);
-            score.textContent = 'Score';
-            score.style.width = '65%';
-            var player = subheader.insertCell(0);
-            player.textContent = 'Name';
-            player.style.width = '25%';
-            var rank = subheader.insertCell(0);
-            rank.textContent = 'Rank';
-            rank.style.width = '10%';
-
-            var tbody = leaderboardTable.createTBody();
-
-            for (var i = 0; i < request.length; i++) {
-                var leaderboardEntry = request[i];
-                console.log(leaderboardEntry);
-
-                var row = tbody.insertRow(tbody.rows.length);
-                row.classList.add('table-row');
-
-                var rScore = row.insertCell(0);
-                rScore.textContent = Utils.formatNumber(leaderboardEntry.Score);
-                rScore.style.width = '65%';
-                rScore.addEventListener('click', function (event) {
-                    var score;
-                    var cell = event.target;
-
-                    if (cell.dataset) {
-                        score = cell.dataset['tooltip'];
-                    } else {
-                        score = cell.getAttribute('data-tooltip');
-                    }
-
-                    if (cell.textContent.indexOf(',') > 0) {
-                        cell.textContent = Utils.formatNumber(score);
-                    } else {
-                        cell.textContent = Utils.formatNumber(score, true);
-                    }
-                });
-
-                if (rScore.dataset) {
-                    rScore.dataset['tooltip'] = leaderboardEntry.Score;
-                } else {
-                    rScore.setAttribute('data-tooltip', leaderboardEntry.Score.toString());
-                }
-
-                var rPlayer = row.insertCell(0);
-                rPlayer.textContent = leaderboardEntry.UserId;
-                player.style.width = '25%';
-                var rRank = row.insertCell(0);
-                rRank.textContent = Utils.formatNumber(leaderboardEntry.Rank);
-                rRank.style.width = '10%';
+        function open() {
+            var leaderboardModal = new modal.Window();
+            leaderboardModal.title = 'Leaderboards';
+            if (!Account.signedIn) {
+                var signInNotification = document.createElement('div');
+                signInNotification.style.fontSize = '18px';
+                signInNotification.style.background = 'darkred';
+                signInNotification.style.color = 'white';
+                signInNotification.style.fontWeight = 'bold';
+                signInNotification.style.textAlign = 'center';
+                signInNotification.style.border = '1px solid white';
+                signInNotification.textContent = "Sign in to see where you rank.";
+                leaderboardModal.addElement(signInNotification);
             }
-            this.resultsElement.appendChild(leaderboardTable);
-        };
+            var leaderboardList = document.createElement('DIV');
+            leaderboardList.style.width = '400px';
+            leaderboardList.appendChild(Ajax.createLoader());
+            leaderboardModal.addElement(leaderboardList);
 
-        LeaderboardAjaxService.prototype.sendRequest = function (lowerbound, upperbound) {
-            var self = this;
+            // Navigation controls.
+            var controlContainer = document.createElement('div');
+            controlContainer.style.textAlign = 'center';
+            controlContainer.style.marginTop = '5px';
+            var navigateUp = Utils.createButton('<<', '');
+            var navigateSpecific = document.createElement('input');
+            navigateSpecific.type = 'TEXT';
+            var navigateDown = Utils.createButton('>>', '');
 
-            var request = $.ajax({
-                asyn: true,
-                type: 'POST',
-                url: '/Api/Stats/LeaderBoard/',
-                data: $.param({ Lower: lowerbound, Upper: upperbound }),
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                success: function (request) {
-                    request = JSON.parse(request);
-                    self.succeeded(request);
-                },
-                failure: function (request) {
-                    self.failed(request);
+            navigateUp.addEventListener('click', function () {
+                Leaderboard.currentlyInspecting -= 20;
+                if (Leaderboard.currentlyInspecting < 0)
+                    Leaderboard.currentlyInspecting = 0;
+                Leaderboard.currentlyInspecting = Leaderboard.currentlyInspecting - (Leaderboard.currentlyInspecting % 20);
+
+                load(Leaderboard.currentlyInspecting, Leaderboard.currentlyInspecting + 20, leaderboardList);
+            });
+
+            navigateSpecific.addEventListener('keyup', function (e) {
+                if (e.keyCode == 13) {
+                    var text = e.currentTarget.value;
+                    if (!Utils.isNumber(text))
+                        return;
+
+                    Leaderboard.currentlyInspecting = +text;
+                    Leaderboard.currentlyInspecting = Leaderboard.currentlyInspecting - (Leaderboard.currentlyInspecting % 20);
+                    load(Leaderboard.currentlyInspecting, Leaderboard.currentlyInspecting + 20, leaderboardList);
                 }
             });
-        };
-        return LeaderboardAjaxService;
-    })();
+
+            navigateDown.addEventListener('click', function () {
+                Leaderboard.currentlyInspecting += 20;
+                Leaderboard.currentlyInspecting = Leaderboard.currentlyInspecting - (Leaderboard.currentlyInspecting % 20);
+
+                load(Leaderboard.currentlyInspecting, Leaderboard.currentlyInspecting + 20, leaderboardList);
+            });
+
+            controlContainer.appendChild(navigateUp);
+            controlContainer.appendChild(navigateSpecific);
+            controlContainer.appendChild(navigateDown);
+            leaderboardModal.addElement(controlContainer);
+
+            // options
+            var close = leaderboardModal.addOption("Close");
+            close.addEventListener('click', function () {
+                modal.close();
+            });
+
+            leaderboardModal.show();
+            load(0, 20, leaderboardList);
+        }
+        Leaderboard.open = open;
+    })(Leaderboard || (Leaderboard = {}));
 
     function draw() {
         container = document.createElement('DIV');
@@ -2648,7 +2634,7 @@ var Account;
         var highscoresLink = document.createElement('SPAN');
         highscoresLink.textContent = 'Leaderboards';
         highscoresLink.addEventListener('click', function () {
-            leaderboardsModal();
+            Leaderboard.open();
         });
         highscoresLink.style.cursor = 'pointer';
         document.getElementsByClassName('header-links')[0].appendChild(highscoresLink);
@@ -2672,22 +2658,8 @@ var Account;
         userSpan.textContent = isAnon ? 'Guest' : name;
 
         // styles the container depending on the status of the account.
+        Account.signedIn = !isAnon;
         Utils.cssSwap(container, isAnon ? 'registered' : 'anonymous', isAnon ? 'anonymous' : 'registered');
-    }
-
-    function leaderboardsModal() {
-        var leaderboardModal = new modal.Window();
-        leaderboardModal.title = 'Leaderboards';
-        var leaderboardList = document.createElement('DIV');
-        leaderboardList.style.width = '400px';
-        leaderboardList.appendChild(Ajax.createLoader());
-        leaderboardModal.addElement(leaderboardList);
-
-        var leaderboardService = new LeaderboardAjaxService();
-        leaderboardService.resultsElement = leaderboardList;
-        leaderboardService.sendRequest(0, 20);
-
-        leaderboardModal.show();
     }
 
     function loginModal() {
@@ -3023,6 +2995,98 @@ var Ajax;
 (function (Ajax) {
     var loaders = new Array();
 
+    var LeaderboardAjaxService = (function () {
+        function LeaderboardAjaxService() {
+        }
+        LeaderboardAjaxService.prototype.failed = function (request) {
+            this.resultsElement.textContent = 'Loading failed...';
+        };
+
+        LeaderboardAjaxService.prototype.succeeded = function (request) {
+            while (this.resultsElement.firstChild)
+                this.resultsElement.removeChild(this.resultsElement.firstChild);
+
+            var leaderboardTable = document.createElement('table');
+            var thead = leaderboardTable.createTHead();
+            var subheader = thead.insertRow(0);
+            subheader.classList.add('table-subheader');
+
+            var score = subheader.insertCell(0);
+            score.textContent = 'Score';
+            score.style.width = '65%';
+            var player = subheader.insertCell(0);
+            player.textContent = 'Name';
+            player.style.width = '25%';
+            var rank = subheader.insertCell(0);
+            rank.textContent = 'Rank';
+            rank.style.width = '10%';
+
+            var tbody = leaderboardTable.createTBody();
+
+            for (var i = 0; i < request.length; i++) {
+                var leaderboardEntry = request[i];
+
+                var row = tbody.insertRow(tbody.rows.length);
+                row.classList.add('table-row');
+
+                var rScore = row.insertCell(0);
+                rScore.textContent = Utils.formatNumber(leaderboardEntry.Score);
+                rScore.style.width = '65%';
+                rScore.addEventListener('click', function (event) {
+                    var score;
+                    var cell = event.target;
+
+                    if (cell.dataset) {
+                        score = cell.dataset['tooltip'];
+                    } else {
+                        score = cell.getAttribute('data-tooltip');
+                    }
+
+                    if (cell.textContent.indexOf(',') > 0) {
+                        cell.textContent = Utils.formatNumber(score);
+                    } else {
+                        cell.textContent = Utils.formatNumber(score, true);
+                    }
+                });
+
+                if (rScore.dataset) {
+                    rScore.dataset['tooltip'] = leaderboardEntry.Score;
+                } else {
+                    rScore.setAttribute('data-tooltip', leaderboardEntry.Score.toString());
+                }
+
+                var rPlayer = row.insertCell(0);
+                rPlayer.textContent = leaderboardEntry.UserId;
+                player.style.width = '25%';
+                var rRank = row.insertCell(0);
+                rRank.textContent = Utils.formatNumber(leaderboardEntry.Rank);
+                rRank.style.width = '10%';
+            }
+            this.resultsElement.appendChild(leaderboardTable);
+        };
+
+        LeaderboardAjaxService.prototype.sendRequest = function (lowerbound, upperbound) {
+            var self = this;
+
+            var request = $.ajax({
+                asyn: true,
+                type: 'POST',
+                url: '/Api/Stats/LeaderBoard/',
+                data: $.param({ Lower: lowerbound, Upper: upperbound }),
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                success: function (request) {
+                    request = JSON.parse(request);
+                    self.succeeded(request);
+                },
+                failure: function (request) {
+                    self.failed(request);
+                }
+            });
+        };
+        return LeaderboardAjaxService;
+    })();
+    Ajax.LeaderboardAjaxService = LeaderboardAjaxService;
+
     var Loader = (function () {
         function Loader() {
             this.notDisplayed = 20;
@@ -3354,6 +3418,7 @@ var Connection;
     function receiveGlobalMessages(messages) {
         for (var i = 0; i < messages.length; i++) {
             var msg = messages[i];
+            console.log(msg);
             Chat.receiveGlobalMessage(msg.Sender, msg.Text, msg.Time, msg.Permissions);
         }
     }

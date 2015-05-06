@@ -242,8 +242,42 @@ namespace GoldRush
             public static UpgradeConfig GoldPickaxe = new UpgradeConfig() { Name = "Gold Pickaxe" };
             public static UpgradeConfig DiamondPickaxe = new UpgradeConfig() { Name = "Diamond Pickaxe" };
 
-            public static UpgradeConfig Furnace = new UpgradeConfig() {Name = "Furnace Unlock"};
-            public static UpgradeConfig Cauldron = new UpgradeConfig() {Name = "Cauldron Unlock"};
+            public static UpgradeConfig Furnace = new UpgradeConfig() { Name = "Furnace Unlock" };
+            public static UpgradeConfig Cauldron = new UpgradeConfig() { Name = "Cauldron Unlock" };
+        }
+        //1200-1500
+        public static class Achievements
+        {
+            public class AchievementConfig : Config
+            {
+                public AchievementConfig()
+                {
+                    if (LowestId < 1200 || LowestId > 1500)
+                    {
+                        LowestId = 1201;
+                        Id = 1201;
+                    }
+                }
+
+                public int Goal;
+                public int Points;
+            }
+
+            public static AchievementConfig TimePlayedT1 = new AchievementConfig() { Name = "Hour Waster", Goal = 60 * 60, Points = 1 };
+            public static AchievementConfig TimePlayedT2 = new AchievementConfig() { Name = "Day Waster", Goal = 60 * 60 * 24, Points = 1 };
+            public static AchievementConfig TimePlayedT3 = new AchievementConfig() { Name = "Week Waster", Goal = 60 * 60 * 24 * 7, Points = 1 };
+            public static AchievementConfig TimePlayedT4 = new AchievementConfig() { Name = "Month Waster", Goal = 60 * 60 * 24 * 7 * 4, Points = 2 };
+            public static AchievementConfig TimePlayedT5 = new AchievementConfig() { Name = "Life Waster", Goal = 60 * 60 * 24 * 7 * 4 * 3, Points = 2 };
+
+            public static AchievementConfig MoneyT1 = new AchievementConfig() { Name = "Thousandaire", Goal = 1000, Points = 1 };
+            public static AchievementConfig MoneyT2 = new AchievementConfig() { Name = "Millionaire", Goal = 1000 * 1000, Points = 2 };
+            public static AchievementConfig MoneyT3 = new AchievementConfig() { Name = "Billionaire", Goal = 1000 * 1000 * 1000, Points = 3 };
+
+            public static AchievementConfig MinerT1 = new AchievementConfig() { Name = "Mouse Miner", Goal = 100, Points = 1 };
+            public static AchievementConfig MinerT2 = new AchievementConfig() { Name = "Click Cave In", Goal = 1000, Points = 1 };
+            public static AchievementConfig MinerT3 = new AchievementConfig() { Name = "Carpal Tunneling", Goal = 1000 * 10, Points = 2 };
+
+            public static AchievementConfig OilT1 = new AchievementConfig() { Name = "Eminent Domain", Goal = 1, Points = 1 };
         }
     }
 }
