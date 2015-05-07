@@ -121,1223 +121,6 @@
     }
     Utils.convertServerTimeToLocal = convertServerTimeToLocal;
 })(Utils || (Utils = {}));
-var Ajax;
-(function (Ajax) {
-    var loaders = new Array();
-
-    var Loader = (function () {
-        function Loader() {
-            this.notDisplayed = 20;
-            this.notches = 40;
-            this.space = 0.02;
-            this.spawned = false;
-            this.spinPos = 0;
-            this.spinSpeed = 30;
-            this.squareSize = 50;
-            this.timeSinceLastTick = Date.now();
-            this.thickness = 3;
-            this.dead = false;
-            this.container = document.createElement('div');
-            this.container.classList.add('loader');
-            this.canvasElement = document.createElement('canvas');
-            this.canvasElement.width = this.squareSize;
-            this.canvasElement.height = this.squareSize;
-            this.container.appendChild(this.canvasElement);
-            this.context = this.canvasElement.getContext('2d');
-        }
-        Loader.prototype.update = function () {
-            var time = Date.now();
-
-            if (this.canvasElement.parentElement)
-                this.spawned = true;
-
-            var timePassed = time - this.timeSinceLastTick;
-            timePassed /= 1000;
-            this.spinPos += this.spinSpeed * timePassed;
-            this.timeSinceLastTick = time;
-
-            if (this.spawned && !this.canvasElement.parentElement)
-                this.dead = true;
-
-            this.draw();
-        };
-
-        Loader.prototype.draw = function () {
-            var x = this.squareSize / 2;
-            var y = x;
-            var adjustedSpinPosStart = this.spinPos % 2;
-            var adjustedSpinPosEnd = (this.spinPos + 1) % 2;
-
-            var radius = (this.squareSize / 2) - 5;
-            var lengthEach = (2 - (this.space * this.notches)) / this.notches;
-            var selected = this.spinPos % this.notches;
-            var shown = selected - this.notDisplayed;
-
-            this.context.clearRect(0, 0, this.canvasElement.width, this.canvasElement.height);
-            for (var i = 0; i < this.notches; i++) {
-                var start = 0 + (i * lengthEach) + (this.space * i);
-                var end = start + lengthEach;
-                var inverse = i - this.notches;
-
-                if (i <= selected && i >= shown) {
-                    this.context.beginPath();
-                    this.context.arc(x, y, radius, start * Math.PI, end * Math.PI);
-                    this.context.lineWidth = this.thickness;
-                    this.context.strokeStyle = 'rgba(113,142,164,' + (1 - (selected - i) / (this.notches - this.notDisplayed)) + ')';
-                    this.context.stroke();
-                } else if (inverse <= selected && inverse >= shown) {
-                    this.context.beginPath();
-                    this.context.arc(x, y, radius, start * Math.PI, end * Math.PI);
-                    this.context.lineWidth = this.thickness;
-                    this.context.strokeStyle = 'rgba(113,142,164,' + (1 - (selected - inverse) / (this.notches - this.notDisplayed)) + ')';
-                    this.context.stroke();
-                }
-            }
-        };
-        return Loader;
-    })();
-
-    function createLoader() {
-        var loader = new Loader();
-        loaders.push(loader);
-        return loader.container;
-    }
-    Ajax.createLoader = createLoader;
-
-    function update() {
-        for (var i = 0; i < loaders.length; i++) {
-            var loader = loaders[i];
-            if (loader.dead)
-                loaders.splice(i, 1);
-            else
-                loader.update();
-        }
-        setTimeout(update, 10);
-    }
-    update();
-})(Ajax || (Ajax = {}));
-var modal;
-(function (modal) {
-    var timeOpened = 0;
-    var modalPane;
-    modal.activeWindow;
-    modal.intervalIdentifier;
-
-    function hide() {
-        if (modal.activeWindow) {
-            modal.activeWindow.hide();
-        }
-        modal.activeWindow = null;
-    }
-    modal.hide = hide;
-
-    function close() {
-        if (modal.activeWindow) {
-            var a = modal.activeWindow;
-            hide();
-            a.container.parentNode.removeChild(a.container);
-        }
-    }
-    modal.close = close;
-
-    var Window = (function () {
-        function Window() {
-            this.container = document.createElement("div");
-            this.container.addEventListener("click", function (e) {
-                e.stopPropagation();
-            }, false);
-            this.container.classList.add("modal-window");
-            if (!modalPane) {
-                var pane = document.createElement("div");
-                modalPane = pane;
-                pane.classList.add("modal-wrapper");
-                pane.addEventListener("click", function (e) {
-                    e.stopPropagation();
-                    if ((Date.now() - timeOpened) > 3000)
-                        modal.close();
-                }, false);
-                document.body.appendChild(pane);
-            }
-            modalPane.appendChild(this.container);
-
-            this.titleEl = document.createElement("div");
-            this.titleEl.classList.add("modal-header");
-            this.bodyEl = document.createElement("div");
-
-            this.container.appendChild(this.titleEl);
-            this.container.appendChild(this.bodyEl);
-        }
-        Object.defineProperty(Window.prototype, "title", {
-            get: function () {
-                return this._title;
-            },
-            set: function (s) {
-                this._title = s;
-                this.titleEl.textContent = this._title;
-            },
-            enumerable: true,
-            configurable: true
-        });
-
-        Window.prototype.addElement = function (el) {
-            this.bodyEl.appendChild(el);
-        };
-
-        // intended for the bottom bar of controls.
-        Window.prototype.addOption = function (opt) {
-            if (!this.options) {
-                this.options = document.createElement("div");
-                this.options.classList.add("modal-options");
-                this.container.appendChild(this.options);
-            }
-            var optionContainer = document.createElement("span");
-            optionContainer.classList.add("modal-option");
-
-            var option = document.createElement("span");
-            option.textContent = opt;
-
-            optionContainer.appendChild(option);
-            this.options.appendChild(optionContainer);
-            return optionContainer;
-        };
-
-        Window.prototype.addAffirmativeOption = function (opt) {
-            var option = this.addOption(opt);
-            option.classList.add("affirmative");
-            return option;
-        };
-
-        Window.prototype.addNegativeOption = function (opt) {
-            var option = this.addOption(opt);
-            option.classList.add("negative");
-            return option;
-        };
-
-        Window.prototype.show = function () {
-            if (!this.container.classList.contains("opened"))
-                this.container.classList.add("opened");
-            if (!modalPane.classList.contains("opened"))
-                modalPane.classList.add("opened");
-            modal.activeWindow = this;
-            updatePosition();
-            modal.intervalIdentifier = setInterval(updatePosition, 100);
-            timeOpened = Date.now();
-        };
-
-        Window.prototype.hide = function () {
-            if (this.container.classList.contains("opened"))
-                this.container.classList.remove("opened");
-            if (modalPane.classList.contains("opened"))
-                modalPane.classList.remove("opened");
-        };
-        return Window;
-    })();
-    modal.Window = Window;
-
-    function updatePosition() {
-        if (!modal.activeWindow) {
-            clearInterval(modal.intervalIdentifier);
-        } else {
-            var containerDimensions = modal.activeWindow.container.getBoundingClientRect();
-            modal.activeWindow.container.style.left = (window.innerWidth / 2) - ((containerDimensions.right - containerDimensions.left) / 2) + "px";
-            modal.activeWindow.container.style.top = (window.innerHeight / 2) - ((containerDimensions.bottom - containerDimensions.top) / 2) + "px";
-        }
-    }
-})(modal || (modal = {}));
-var Objects;
-(function (Objects) {
-    var gameobjects = new Array();
-
-    var GameObject = (function () {
-        function GameObject() {
-            this.quantity = 0;
-        }
-        return GameObject;
-    })();
-
-    function register(id, name) {
-        if (!gameobjects[id]) {
-            var gameobject = new GameObject();
-            gameobject.name = name;
-
-            gameobjects[id] = gameobject;
-        }
-    }
-    Objects.register = register;
-
-    function lookupName(id) {
-        return gameobjects[id].name;
-    }
-    Objects.lookupName = lookupName;
-
-    function setQuantity(id, quantity) {
-        gameobjects[id].quantity = quantity;
-    }
-    Objects.setQuantity = setQuantity;
-
-    function getQuantity(id) {
-        var gameobject = gameobjects[id];
-        if (gameobject)
-            return gameobject.quantity;
-
-        return 0;
-    }
-    Objects.getQuantity = getQuantity;
-
-    function setMaxQuantity(id, maxQuantity) {
-        gameobjects[id].maxQuantity = maxQuantity;
-    }
-    Objects.setMaxQuantity = setMaxQuantity;
-
-    function getMaxQuantity(id) {
-        return gameobjects[id].maxQuantity;
-    }
-    Objects.getMaxQuantity = getMaxQuantity;
-
-    function setLifeTimeTotal(id, quantity) {
-        gameobjects[id].lifeTimeTotal = quantity;
-    }
-    Objects.setLifeTimeTotal = setLifeTimeTotal;
-
-    function getLifeTimeTotal(id) {
-        return gameobjects[id].lifeTimeTotal;
-    }
-    Objects.getLifeTimeTotal = getLifeTimeTotal;
-
-    function setTooltip(id, tooltip) {
-        gameobjects[id].tooltip = tooltip;
-    }
-    Objects.setTooltip = setTooltip;
-    function getTooltip(id) {
-        return gameobjects[id].tooltip;
-    }
-    Objects.getTooltip = getTooltip;
-})(Objects || (Objects = {}));
-/// <reference path="typings/jquery/jquery.d.ts"/>
-var Account;
-(function (Account) {
-    var container;
-    var userButton;
-    var userSpan;
-    var contextMenu;
-
-    var registrationErrors;
-    var loginErrors;
-
-    var mouseTimeout;
-
-    var LeaderboardAjaxService = (function () {
-        function LeaderboardAjaxService() {
-        }
-        LeaderboardAjaxService.prototype.failed = function (request) {
-            this.resultsElement.textContent = 'Loading failed...';
-        };
-
-        LeaderboardAjaxService.prototype.succeeded = function (request) {
-            while (this.resultsElement.firstChild)
-                this.resultsElement.removeChild(this.resultsElement.firstChild);
-
-            var leaderboardTable = document.createElement('table');
-            var thead = leaderboardTable.createTHead();
-            var subheader = thead.insertRow(0);
-            subheader.classList.add('table-subheader');
-
-            var score = subheader.insertCell(0);
-            score.textContent = 'Score';
-            score.style.width = '65%';
-            var player = subheader.insertCell(0);
-            player.textContent = 'Name';
-            player.style.width = '25%';
-            var rank = subheader.insertCell(0);
-            rank.textContent = 'Rank';
-            rank.style.width = '10%';
-
-            var tbody = leaderboardTable.createTBody();
-
-            for (var i = 0; i < request.length; i++) {
-                var leaderboardEntry = request[i];
-                console.log(leaderboardEntry);
-
-                var row = tbody.insertRow(tbody.rows.length);
-                row.classList.add('table-row');
-
-                var rScore = row.insertCell(0);
-                rScore.textContent = Utils.formatNumber(leaderboardEntry.Score);
-                rScore.style.width = '65%';
-                rScore.addEventListener('click', function (event) {
-                    var score;
-                    var cell = event.target;
-
-                    if (cell.dataset) {
-                        score = cell.dataset['tooltip'];
-                    } else {
-                        score = cell.getAttribute('data-tooltip');
-                    }
-
-                    if (cell.textContent.indexOf(',') > 0) {
-                        cell.textContent = Utils.formatNumber(score);
-                    } else {
-                        cell.textContent = Utils.formatNumber(score, true);
-                    }
-                });
-
-                if (rScore.dataset) {
-                    rScore.dataset['tooltip'] = leaderboardEntry.Score;
-                } else {
-                    rScore.setAttribute('data-tooltip', leaderboardEntry.Score.toString());
-                }
-
-                var rPlayer = row.insertCell(0);
-                rPlayer.textContent = leaderboardEntry.UserId;
-                player.style.width = '25%';
-                var rRank = row.insertCell(0);
-                rRank.textContent = Utils.formatNumber(leaderboardEntry.Rank);
-                rRank.style.width = '10%';
-            }
-            this.resultsElement.appendChild(leaderboardTable);
-        };
-
-        LeaderboardAjaxService.prototype.sendRequest = function (lowerbound, upperbound) {
-            var self = this;
-
-            var request = $.ajax({
-                asyn: true,
-                type: 'POST',
-                url: '/Api/Stats/LeaderBoard/',
-                data: $.param({ Lower: lowerbound, Upper: upperbound }),
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                success: function (request) {
-                    request = JSON.parse(request);
-                    self.succeeded(request);
-                },
-                failure: function (request) {
-                    self.failed(request);
-                }
-            });
-        };
-        return LeaderboardAjaxService;
-    })();
-
-    function draw() {
-        container = document.createElement('DIV');
-        container.classList.add('account-manager');
-        container.classList.add('closed');
-
-        container.onmouseenter = function () {
-            clearTimeout(mouseTimeout);
-        };
-
-        container.onmouseleave = function () {
-            mouseTimeout = setTimeout(hideMenu, 250);
-        };
-
-        // Anon stuff.
-        var loginButton = document.createElement('DIV');
-        loginButton.textContent = 'Sign in';
-        loginButton.classList.add('account-option');
-        loginButton.classList.add('anonymous-account-option');
-        loginButton.addEventListener('click', function () {
-            loginModal();
-        });
-        container.appendChild(loginButton);
-
-        var registerButton = document.createElement('DIV');
-        registerButton.textContent = 'Register';
-        registerButton.classList.add('account-option');
-        registerButton.classList.add('anonymous-account-option');
-        registerButton.addEventListener('click', function () {
-            registerModal();
-        });
-        container.appendChild(registerButton);
-
-        // Registered stuff.
-        var optionsButton = document.createElement('DIV');
-        optionsButton.textContent = 'Options';
-        optionsButton.classList.add('account-option');
-        optionsButton.classList.add('registered-account-option');
-        container.appendChild(optionsButton);
-
-        var logoffButton = document.createElement('DIV');
-        logoffButton.textContent = 'Sign out';
-        logoffButton.classList.add('account-option');
-        logoffButton.classList.add('registered-account-option');
-        logoffButton.addEventListener('click', function () {
-            logoff();
-        });
-        container.appendChild(logoffButton);
-
-        userButton = document.createElement('DIV');
-        userButton.classList.add('account-user');
-        userSpan = document.createElement('SPAN');
-        userButton.appendChild(userSpan);
-        container.appendChild(userButton);
-
-        document.body.appendChild(container);
-        userButton.addEventListener('click', function () {
-            toggleMenu();
-        });
-
-        var highscoresLink = document.createElement('SPAN');
-        highscoresLink.textContent = 'Leaderboards';
-        highscoresLink.addEventListener('click', function () {
-            leaderboardsModal();
-        });
-        highscoresLink.style.cursor = 'pointer';
-        document.getElementsByClassName('header-links')[0].appendChild(highscoresLink);
-
-        info();
-    }
-    draw();
-    function toggleMenu() {
-        if (container.classList.contains('closed'))
-            container.classList.remove('closed');
-        else
-            container.classList.add('closed');
-    }
-
-    function hideMenu() {
-        if (!container.classList.contains('closed'))
-            container.classList.add('closed');
-    }
-
-    function updateUser(name, isAnon) {
-        userSpan.textContent = isAnon ? 'Guest' : name;
-
-        // styles the container depending on the status of the account.
-        Utils.cssSwap(container, isAnon ? 'registered' : 'anonymous', isAnon ? 'anonymous' : 'registered');
-    }
-
-    function leaderboardsModal() {
-        var leaderboardModal = new modal.Window();
-        leaderboardModal.title = 'Leaderboards';
-        var leaderboardList = document.createElement('DIV');
-        leaderboardList.style.width = '400px';
-        leaderboardList.appendChild(Ajax.createLoader());
-        leaderboardModal.addElement(leaderboardList);
-
-        var leaderboardService = new LeaderboardAjaxService();
-        leaderboardService.resultsElement = leaderboardList;
-        leaderboardService.sendRequest(0, 20);
-
-        leaderboardModal.show();
-    }
-
-    function loginModal() {
-        var loginModal = new modal.Window();
-        var formControlsContainer = document.createElement('DIV');
-        formControlsContainer.style.width = '400px';
-
-        var usernameContainer = document.createElement('DIV');
-        usernameContainer.style.marginBottom = '5px';
-        var username = document.createElement("INPUT");
-        username.type = 'TEXT';
-        username.maxLength = 16;
-        username.placeholder = 'Username';
-        usernameContainer.appendChild(username);
-
-        var passwordContainer = document.createElement('DIV');
-        passwordContainer.style.marginBottom = '5px';
-        var password = document.createElement("INPUT");
-        password.type = 'PASSWORD';
-        password.pattern = ".{6,}";
-        password.placeholder = 'Password';
-        passwordContainer.appendChild(password);
-
-        var rememberMeContainer = document.createElement('DIV');
-        rememberMeContainer.style.marginBottom = '5px';
-        var rememberMe = document.createElement('INPUT');
-        rememberMe.type = 'CHECKBOX';
-        rememberMe.placeholder = 'Stay logged in on this computer?';
-        rememberMeContainer.appendChild(rememberMe);
-
-        formControlsContainer.appendChild(usernameContainer);
-        formControlsContainer.appendChild(passwordContainer);
-        formControlsContainer.appendChild(rememberMeContainer);
-
-        loginErrors = document.createElement('div');
-        loginModal.addElement(loginErrors);
-
-        loginModal.title = 'Log in';
-        loginModal.addElement(formControlsContainer);
-
-        var no = loginModal.addNegativeOption("Cancel");
-        no.addEventListener("click", function () {
-            modal.close();
-        }, false);
-        var yes = loginModal.addAffirmativeOption("Submit");
-        yes.addEventListener("click", function () {
-            login(username.value, password.value, rememberMe.checked);
-            while (loginErrors.firstChild) {
-                loginErrors.removeChild(loginErrors.firstChild);
-            }
-        }, false);
-        loginModal.show();
-    }
-
-    function registerModal() {
-        var registerModal = new modal.Window();
-        var formControlsContainer = document.createElement('DIV');
-        formControlsContainer.style.width = '400px';
-
-        var usernameContainer = document.createElement('DIV');
-        usernameContainer.style.marginBottom = '5px';
-        var username = document.createElement("INPUT");
-        username.type = 'TEXT';
-        username.maxLength = 16;
-        username.placeholder = 'Username';
-        usernameContainer.appendChild(username);
-
-        var emailContainer = document.createElement('DIV');
-        emailContainer.style.marginBottom = '5px';
-        var email = document.createElement("INPUT");
-        email.type = 'EMAIL';
-        email.placeholder = 'Email';
-        emailContainer.appendChild(email);
-
-        var passwordContainer = document.createElement('DIV');
-        passwordContainer.style.marginBottom = '5px';
-        var password = document.createElement("INPUT");
-        password.type = 'PASSWORD';
-        password.pattern = ".{6,}";
-        password.placeholder = 'Password';
-        passwordContainer.appendChild(password);
-
-        var confpassContainer = document.createElement('DIV');
-        confpassContainer.style.marginBottom = '5px';
-        var confirmPassword = document.createElement("INPUT");
-        confirmPassword.type = 'PASSWORD';
-        confirmPassword.pattern = ".{6,}";
-        confirmPassword.placeholder = 'Confirm password';
-        confpassContainer.appendChild(confirmPassword);
-        confirmPassword.onblur = function () {
-            if (password.value != confirmPassword.value)
-                confirmPassword.setCustomValidity('Passwords are not the same.');
-        };
-
-        confirmPassword.onfocus = function () {
-            confirmPassword.setCustomValidity('');
-        };
-        formControlsContainer.appendChild(usernameContainer);
-        formControlsContainer.appendChild(emailContainer);
-        formControlsContainer.appendChild(passwordContainer);
-        formControlsContainer.appendChild(confpassContainer);
-
-        registerModal.addElement(formControlsContainer);
-        registrationErrors = document.createElement('div');
-        registerModal.addElement(registrationErrors);
-
-        registerModal.title = "Register";
-
-        var no = registerModal.addNegativeOption("Cancel");
-        no.addEventListener("click", function () {
-            modal.close();
-        }, false);
-        var yes = registerModal.addAffirmativeOption("Submit");
-        yes.addEventListener("click", function () {
-            create(email.value, username.value, password.value, confirmPassword.value);
-            while (registrationErrors.firstChild) {
-                registrationErrors.removeChild(registrationErrors.firstChild);
-            }
-        }, false);
-
-        registerModal.show();
-    }
-
-    function create(email, username, password, passwordConfirmation) {
-        var request = $.ajax({
-            type: 'POST',
-            url: '/Api/Account/Register',
-            data: $.param({ Email: email, UserName: username, Password: password, ConfirmPassword: passwordConfirmation }),
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            success: function (request) {
-                request = JSON.parse(request);
-                if (request.Succeeded) {
-                    Connection.restart();
-                    info();
-                    modal.close();
-                } else {
-                    while (registrationErrors.firstChild) {
-                        registrationErrors.removeChild(registrationErrors.firstChild);
-                    }
-                    for (var i = 0; i < request.Errors.length; i++) {
-                        var errorElm = document.createElement('div');
-                        errorElm.textContent = request.Errors[i];
-                        registrationErrors.appendChild(errorElm);
-                    }
-                }
-            }
-        });
-    }
-
-    function login(email, password, rememberMe) {
-        var request = $.ajax({
-            type: 'POST',
-            url: '/Api/Account/Login',
-            data: $.param({ UserName: email, Password: password, RememberMe: rememberMe }),
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            success: function (request) {
-                request = JSON.parse(request);
-
-                if (request.Succeeded) {
-                    Connection.restart();
-                    info();
-                    modal.close();
-                } else {
-                    while (loginErrors.firstChild) {
-                        loginErrors.removeChild(loginErrors.firstChild);
-                    }
-                    for (var i = 0; i < request.Errors.length; i++) {
-                        var errorElm = document.createElement('div');
-                        errorElm.textContent = request.Errors[i];
-                        loginErrors.appendChild(errorElm);
-                    }
-                }
-            }
-        });
-    }
-
-    function logoff() {
-        var request = $.ajax({
-            type: 'POST',
-            url: '/Api/Account/LogOff',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            success: function (request) {
-                console.log(request);
-                Connection.restart();
-                info();
-                location.reload();
-            }
-        });
-    }
-
-    function info() {
-        var request = $.ajax({
-            type: 'POST',
-            url: '/Api/Account/Info',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            success: function (request) {
-                request = JSON.parse(request);
-                updateUser(request.UserName, request.Anonymous);
-            }
-        });
-    }
-    Account.info = info;
-})(Account || (Account = {}));
-var Rock;
-(function (Rock) {
-    var canvas = document.getElementById('rock');
-    var particleCanvas = document.getElementById('particles');
-    var context = canvas.getContext('2d');
-    var particleContext = particleCanvas.getContext('2d');
-    var relativeRockURL = '/Content/Rock.png';
-    var relativeStoneURL = '/Content/Stone.png';
-    var rockImage = new Image();
-    var stoneImage = new Image(16, 16);
-    var stoneLoaded = false;
-    var lastX = 0;
-    var lastY = 0;
-    var rockSize = 64;
-    var rockGrowth = 4;
-    var rockIsBig = false;
-    var mouseDown = false;
-
-    var notTouched = true;
-    var growing = true;
-    var currentNotifier = 0;
-    var growRate = 8;
-    var notifierGrowth = 4;
-    var gsLastTick = Date.now();
-
-    Rock.particles = new Array();
-
-    var Particle = (function () {
-        function Particle(x, y) {
-            this.width = 5;
-            this.height = 5;
-            this.dispose = false;
-            this.x = x;
-            this.y = y;
-            this.verticalVelocity = Utils.getRandomInt(-100, -155);
-            this.horizonalVelocity = Utils.getRandomInt(-50, 50);
-            this.width = Utils.getRandomInt(3, 6);
-            this.height = Utils.getRandomInt(3, 6);
-            this.rotation = Utils.getRandomInt(0, 180);
-            this.rotationalVelocity = Utils.getRandomInt(-75, 75);
-
-            this.lastTick = Date.now();
-        }
-        Particle.prototype.update = function () {
-            var timeSinceLastTick = Date.now() - this.lastTick;
-            this.lastTick = Date.now();
-            timeSinceLastTick /= 1000;
-
-            this.rotation += (this.rotationalVelocity * timeSinceLastTick);
-            this.y += (this.verticalVelocity * timeSinceLastTick);
-            this.x += (this.horizonalVelocity * timeSinceLastTick);
-            this.verticalVelocity += (200 * timeSinceLastTick);
-            if (this.y > 270) {
-                this.dispose = true;
-            }
-        };
-        return Particle;
-    })();
-    Rock.Particle = Particle;
-
-    function initialize() {
-        rockImage.onload = function () {
-            drawBackground();
-            console.log('rock loaded');
-        };
-        rockImage.src = relativeRockURL;
-
-        stoneImage.onload = function () {
-            stoneLoaded = true;
-        };
-        stoneImage.src = relativeStoneURL;
-
-        canvas.addEventListener('mousemove', function (e) {
-            var mousePos = getMousePos(canvas, e);
-            isOverRock(mousePos.x, mousePos.y);
-            //console.log('x: ' + mousePos.x + ' y: ' + mousePos.y);
-        }, false);
-        canvas.addEventListener('mousedown', function (e) {
-            var mousePos = getMousePos(canvas, e);
-            mouseDown = true;
-            isOverRock(mousePos.x, mousePos.y);
-            Connection.mine(mousePos.x, mousePos.y);
-        }, false);
-        canvas.addEventListener('mouseup', function (e) {
-            var mousePos = getMousePos(canvas, e);
-            mouseDown = false;
-            isOverRock(mousePos.x, mousePos.y);
-        }, false);
-        canvas.addEventListener('mouseleave', function (e) {
-            var mousePos = getMousePos(canvas, e);
-            mouseDown = false;
-            isOverRock(mousePos.x, mousePos.y);
-        }, false);
-    }
-
-    function growAndShrink() {
-        if (!stoneLoaded) {
-            setTimeout(growAndShrink, 10);
-            return;
-        }
-
-        var time = Date.now();
-        var timePassed = time - gsLastTick;
-        timePassed /= 1000;
-        gsLastTick = time;
-
-        if (growing) {
-            currentNotifier += growRate * timePassed;
-        } else {
-            currentNotifier -= growRate * timePassed;
-        }
-
-        if (currentNotifier > notifierGrowth || currentNotifier < -notifierGrowth) {
-            growing = !growing;
-        }
-
-        drawRock(lastX, lastY, rockSize + currentNotifier, rockSize + currentNotifier);
-
-        if (notTouched)
-            setTimeout(growAndShrink, 10);
-    }
-    growAndShrink();
-
-    function getMousePos(canvas, evt) {
-        var rect = canvas.getBoundingClientRect();
-        return {
-            x: evt.clientX - rect.left,
-            y: evt.clientY - rect.top
-        };
-    }
-
-    var released = true;
-
-    function isOverRock(x, y) {
-        if (x > lastX && x < (lastX + rockSize) && y > lastY && y < (lastY + rockSize)) {
-            if (!mouseDown) {
-                drawRock(lastX - (rockGrowth / 2), lastY - (rockGrowth / 2), rockSize + rockGrowth, rockSize + rockGrowth);
-                released = true;
-                notTouched = false;
-            } else {
-                drawRock(lastX + (rockGrowth / 2), lastY + (rockGrowth / 2), rockSize - rockGrowth, rockSize - rockGrowth);
-                if (released)
-                    addParticles(x, y);
-                released = false;
-                notTouched = false;
-            }
-            rockIsBig = true;
-        } else if (rockIsBig) {
-            drawRock(lastX, lastY, rockSize, rockSize);
-            rockIsBig = false;
-            released = true;
-        }
-    }
-
-    function moveRock(x, y) {
-        if (x != lastX && y != lastY) {
-            lastX = x;
-            lastY = y;
-            if (stoneLoaded)
-                drawRock(x, y, rockSize, rockSize);
-            else
-                setTimeout(function () {
-                    moveRock(x, y);
-                }, 10);
-        }
-    }
-    Rock.moveRock = moveRock;
-
-    function clearCanvas() {
-        context.clearRect(0, 0, 250, 250);
-    }
-
-    function drawBackground() {
-        context.drawImage(rockImage, 0, 0);
-    }
-
-    function addParticles(x, y) {
-        var rand = Utils.getRandomInt(1, 3);
-        for (var i = 0; i < rand; i++) {
-            var xOffset = Utils.getRandomInt(-5, 5);
-            var yOffset = Utils.getRandomInt(-2, 2);
-            Rock.particles.push(new Particle(x + xOffset, y + yOffset));
-        }
-    }
-
-    var particleCache = document.createElement('canvas');
-    var cacheCtx = particleCache.getContext('2d');
-
-    function drawParticle(particle) {
-        particleCache.width = particle.width;
-        particleCache.height = particle.height;
-        cacheCtx.rect(0, 0, particle.width, particle.height);
-        cacheCtx.fillStyle = 'gray';
-        cacheCtx.fill();
-        cacheCtx.stroke();
-
-        particleContext.beginPath();
-
-        drawImageRot(particleContext, particleCache, particle.x, particle.y, particle.width, particle.height, particle.rotation);
-    }
-
-    function drawImageRot(ctx, img, x, y, width, height, deg) {
-        //Convert degrees to radian
-        var rad = deg * Math.PI / 180;
-
-        //Set the origin to the center of the image
-        ctx.translate(x + width / 2, y + height / 2);
-
-        //Rotate the canvas around the origin
-        ctx.rotate(rad);
-
-        //draw the image
-        ctx.drawImage(img, width / 2 * (-1), height / 2 * (-1), width, height);
-
-        //reset the canvas
-        ctx.rotate(rad * (-1));
-        ctx.translate((x + width / 2) * (-1), (y + height / 2) * (-1));
-    }
-
-    function updateParticles() {
-        particleContext.clearRect(0, 0, 250, 250);
-
-        for (var i = 0; i < Rock.particles.length; i++) {
-            var particle = Rock.particles[i];
-            particle.update();
-            drawParticle(particle);
-
-            if (particle.dispose) {
-                Rock.particles.splice(i, 1);
-            }
-        }
-    }
-    setInterval(updateParticles, 10);
-
-    function drawRock(x, y, xScale, yScale) {
-        clearCanvas();
-        drawBackground();
-        context.drawImage(stoneImage, x, y, xScale, yScale);
-        //context.drawImage(stoneImage, x, y);
-    }
-
-    initialize();
-})(Rock || (Rock = {}));
-var Tabs;
-(function (Tabs) {
-    var lowestTabContainerId = 0;
-    var tabContainer = document.getElementById("paneContainer");
-    Tabs.bottomPadding = 200;
-    var tabContainers = new Array();
-    var selectedTab;
-
-    var TabContainer = (function () {
-        function TabContainer(container) {
-            this.container = container;
-            this.tabs = new Array();
-            this.lowestId = 0;
-            this.id = lowestTabContainerId++;
-            tabContainers.push(this);
-        }
-        TabContainer.prototype.newTab = function (pane) {
-            var tab = new Tab();
-            tab.pane = pane;
-            var button = document.createElement('DIV');
-            button.classList.add('tab-button');
-            this.container.appendChild(button);
-            tab.button = button;
-
-            if (this.lowestId == 0) {
-                tab.activate();
-            } else {
-                tab.deactivate();
-            }
-
-            // IDs are incremented here. to get their initial value we must subtract.
-            var id = this.lowestId++;
-            var contId = this.id;
-
-            button.addEventListener('click', function () {
-                Tabs.activateTab(contId, id);
-            });
-
-            this.tabs.push(tab);
-            this.container.appendChild(button);
-
-            return this.lowestId - 1;
-        };
-
-        TabContainer.prototype.activate = function (id) {
-            for (var i = 0; i < this.tabs.length; i++) {
-                this.tabs[i].deactivate();
-            }
-            this.tabs[id].activate();
-        };
-
-        TabContainer.prototype.css = function (id, className) {
-            this.tabs[id].button.classList.add(className);
-        };
-        return TabContainer;
-    })();
-
-    var gameTabs = new TabContainer(document.getElementById('tabContainer'));
-
-    function registerGameTab(pane, css) {
-        var id = gameTabs.newTab(pane);
-        if (css)
-            gameTabs.css(id, css);
-    }
-    Tabs.registerGameTab = registerGameTab;
-
-    function updateGameTabs() {
-        if (selectedTab) {
-            var height = selectedTab.scrollHeight;
-            if (height > window.innerHeight - Tabs.bottomPadding) {
-                height = window.innerHeight - Tabs.bottomPadding;
-            }
-            tabContainer.style.minHeight = height + 'px';
-            tabContainer.style.maxHeight = height + 'px';
-            tabContainer.style.overflowY = height >= window.innerHeight - Tabs.bottomPadding ? 'scroll' : 'hidden';
-        }
-    }
-    Tabs.updateGameTabs = updateGameTabs;
-
-    Utils.addEvent(window, 'resize', Tabs.updateGameTabs);
-    setInterval(updateGameTabs, 20);
-
-    function activateTab(containerId, tabId) {
-        tabContainers[containerId].activate(tabId);
-        updateGameTabs();
-    }
-    Tabs.activateTab = activateTab;
-
-    var Tab = (function () {
-        function Tab() {
-        }
-        Tab.prototype.deactivate = function () {
-            Utils.cssSwap(this.button, 'active', 'inactive');
-            this.pane.style.display = 'none';
-            this.pane.style.overflow = 'hidden';
-        };
-
-        Tab.prototype.activate = function () {
-            Utils.cssSwap(this.button, 'inactive', 'active');
-            this.pane.style.display = 'block';
-            this.pane.style.overflow = 'visible';
-            selectedTab = this.pane;
-        };
-        return Tab;
-    })();
-})(Tabs || (Tabs = {}));
-//<reference path="connection.ts"/>
-var Chat;
-(function (Chat) {
-    var chatWindow;
-    var chatLogContainer;
-    var debugLogContainer;
-    function initialize() {
-        if (!chatWindow) {
-            chatWindow = document.createElement('DIV');
-            chatWindow.classList.add('chat-window');
-            chatWindow.classList.add('social');
-            chatWindow.id = 'chatWindow';
-
-            chatWindow.style.backgroundColor = '#ebebeb';
-            chatWindow.style.border = '1px solid #adadad';
-
-            var chatHeader = document.createElement('DIV');
-            chatHeader.classList.add('chat-header');
-
-            chatHeader.style.backgroundColor = 'rgb(160, 160, 160)';
-            chatWindow.appendChild(chatHeader);
-
-            var chatCloser = document.createElement('DIV');
-            chatCloser.textContent = '_';
-            chatCloser.style.position = 'absolute';
-            chatCloser.style.top = '0';
-            chatCloser.style.right = '0';
-            chatCloser.addEventListener('click', function () {
-                if (chatWindow.classList.contains('closed')) {
-                    chatWindow.classList.remove('closed');
-                    chatCloser.textContent = '_';
-                } else {
-                    chatWindow.classList.add('closed');
-                    chatCloser.textContent = '+';
-                }
-            });
-            chatHeader.appendChild(chatCloser);
-
-            var chatRoomTab = document.createElement('DIV');
-            chatRoomTab.classList.add('chat-room-tab');
-            chatRoomTab.textContent = 'General';
-            chatRoomTab.addEventListener('click', function () {
-                document.getElementById('debugpane').style.display = 'none';
-                document.getElementById('chatpane').style.display = 'block';
-            });
-            chatHeader.appendChild(chatRoomTab);
-
-            var debugTab = document.createElement('DIV');
-            debugTab.classList.add('chat-room-tab');
-            debugTab.textContent = '>Dev';
-            debugTab.addEventListener('click', function () {
-                document.getElementById('debugpane').style.display = 'block';
-                document.getElementById('chatpane').style.display = 'none';
-            });
-            debugTab.style.display = 'none';
-            chatHeader.appendChild(debugTab);
-
-            debugLogContainer = document.createElement('DIV');
-            debugLogContainer.id = 'debugpane';
-            debugLogContainer.classList.add('chat-room');
-            debugLogContainer.style.display = 'none';
-            chatWindow.appendChild(debugLogContainer);
-
-            chatLogContainer = document.createElement('DIV');
-            chatLogContainer.id = 'chatpane';
-            chatLogContainer.classList.add('chat-room');
-            chatWindow.appendChild(chatLogContainer);
-
-            var debugLog = document.createElement('DIV');
-            debugLog.id = 'debuglog';
-            debugLog.classList.add('chat-room-content');
-            debugLogContainer.appendChild(debugLog);
-
-            var chatLog = document.createElement('DIV');
-            chatLog.id = 'chatlog';
-            chatLog.classList.add('chat-room-content');
-            chatLogContainer.appendChild(chatLog);
-
-            var chatSendingContainer = document.createElement('DIV');
-
-            var chatInputContainer = document.createElement('DIV');
-            chatInputContainer.classList.add('chat-textbox-container');
-
-            var chatInput = document.createElement('INPUT');
-            chatInput.setAttribute('TYPE', 'TEXT');
-            chatInput.classList.add('chat-textbox');
-            chatInput.style.borderTop = '1px solid #adadad';
-            chatInput.setAttribute('maxlength', '220');
-            chatInput.addEventListener('keydown', function (e) {
-                if (e.keyCode == 13)
-                    sendGlobalMessagePress();
-
-                if (e.keyCode == 68 && e.altKey)
-                    document.getElementById('debugtab').style.display = 'inline-block';
-            });
-            chatInput.id = 'chattext';
-            chatInputContainer.appendChild(chatInput);
-            chatSendingContainer.appendChild(chatInputContainer);
-
-            var chatSendContainer = document.createElement('DIV');
-            chatSendContainer.classList.add('chat-submit-container');
-
-            var chatSend = document.createElement('INPUT');
-            chatSend.setAttribute('TYPE', 'BUTTON');
-            chatSend.setAttribute('VALUE', 'SEND');
-            chatSend.classList.add('chat-submit');
-            chatSend.style.borderTop = '1px solid #adadad';
-            chatSend.style.borderLeft = '1px solid #adadad';
-            chatSend.addEventListener('click', function () {
-                sendGlobalMessagePress();
-            });
-            chatSendContainer.appendChild(chatSend);
-            chatSendingContainer.appendChild(chatSendContainer);
-            chatWindow.appendChild(chatSendingContainer);
-
-            document.body.appendChild(chatWindow);
-        }
-    }
-    Chat.initialize = initialize;
-    initialize();
-
-    function sendGlobalMessagePress() {
-        Connection.sendGlobalMessage(document.getElementById('chattext').value);
-        document.getElementById('chattext').value = '';
-    }
-
-    function log(message) {
-        var debugLog = document.getElementById('debuglog');
-        var debugItem = document.createElement('DIV');
-        debugItem.textContent = message;
-        debugLog.appendChild(debugItem);
-    }
-    Chat.log = log;
-
-    function receiveGlobalMessage(sender, message, time, perms) {
-        var chatLog = document.getElementById('chatlog');
-
-        var difference = chatLog.scrollTop - (chatLog.scrollHeight - chatLog.offsetHeight);
-        var scrolledDown = Math.abs(difference) < 5;
-
-        var chatItem = document.createElement('DIV');
-        chatItem.classList.add('chat-msg');
-        if (perms && perms != '')
-            chatItem.classList.add('chat-' + perms);
-        var timeSpan = document.createElement('SPAN');
-        timeSpan.textContent = '[' + Utils.convertServerTimeToLocal(time) + '] ';
-        var nameSpan = document.createElement('SPAN');
-        nameSpan.textContent = sender;
-        nameSpan.classList.add('chat-sender');
-        var messageSpan = document.createElement('SPAN');
-        messageSpan.textContent = message;
-        messageSpan.classList.add('chat-text');
-        var dividerSpan = document.createElement('SPAN');
-        dividerSpan.textContent = ': ';
-        chatItem.appendChild(timeSpan);
-        chatItem.appendChild(nameSpan);
-        chatItem.appendChild(dividerSpan);
-        chatItem.appendChild(messageSpan);
-
-        chatLog.appendChild(chatItem);
-
-        if (scrolledDown)
-            chatLog.scrollTop = chatLog.scrollHeight;
-    }
-    Chat.receiveGlobalMessage = receiveGlobalMessage;
-})(Chat || (Chat = {}));
 var tooltip;
 (function (_tooltip) {
     var registeredTooltips = 0;
@@ -1524,6 +307,347 @@ var tooltip;
         }
     }
 })(tooltip || (tooltip = {}));
+//<reference path="connection.ts"/>
+var Chat;
+(function (Chat) {
+    var chatWindow;
+    var chatLogContainer;
+    var debugLogContainer;
+    function initialize() {
+        if (!chatWindow) {
+            chatWindow = document.createElement('DIV');
+            chatWindow.classList.add('chat-window');
+            chatWindow.classList.add('social');
+            chatWindow.id = 'chatWindow';
+
+            chatWindow.style.backgroundColor = '#ebebeb';
+            chatWindow.style.border = '1px solid #adadad';
+
+            var chatHeader = document.createElement('DIV');
+            chatHeader.classList.add('chat-header');
+
+            chatHeader.style.backgroundColor = 'rgb(160, 160, 160)';
+            chatWindow.appendChild(chatHeader);
+
+            var chatCloser = document.createElement('DIV');
+            chatCloser.textContent = '_';
+            chatCloser.style.position = 'absolute';
+            chatCloser.style.top = '0';
+            chatCloser.style.right = '0';
+            chatCloser.addEventListener('click', function () {
+                if (chatWindow.classList.contains('closed')) {
+                    chatWindow.classList.remove('closed');
+                    chatCloser.textContent = '_';
+                } else {
+                    chatWindow.classList.add('closed');
+                    chatCloser.textContent = '+';
+                }
+            });
+            chatHeader.appendChild(chatCloser);
+
+            var chatRoomTab = document.createElement('DIV');
+            chatRoomTab.classList.add('chat-room-tab');
+            chatRoomTab.textContent = 'General';
+            chatRoomTab.addEventListener('click', function () {
+                document.getElementById('debugpane').style.display = 'none';
+                document.getElementById('chatpane').style.display = 'block';
+            });
+            chatHeader.appendChild(chatRoomTab);
+
+            var debugTab = document.createElement('DIV');
+            debugTab.classList.add('chat-room-tab');
+            debugTab.textContent = '>Dev';
+            debugTab.addEventListener('click', function () {
+                document.getElementById('debugpane').style.display = 'block';
+                document.getElementById('chatpane').style.display = 'none';
+            });
+            debugTab.style.display = 'none';
+            chatHeader.appendChild(debugTab);
+
+            debugLogContainer = document.createElement('DIV');
+            debugLogContainer.id = 'debugpane';
+            debugLogContainer.classList.add('chat-room');
+            debugLogContainer.style.display = 'none';
+            chatWindow.appendChild(debugLogContainer);
+
+            chatLogContainer = document.createElement('DIV');
+            chatLogContainer.id = 'chatpane';
+            chatLogContainer.classList.add('chat-room');
+            chatWindow.appendChild(chatLogContainer);
+
+            var debugLog = document.createElement('DIV');
+            debugLog.id = 'debuglog';
+            debugLog.classList.add('chat-room-content');
+            debugLogContainer.appendChild(debugLog);
+
+            var chatLog = document.createElement('DIV');
+            chatLog.id = 'chatlog';
+            chatLog.classList.add('chat-room-content');
+            chatLogContainer.appendChild(chatLog);
+
+            var chatSendingContainer = document.createElement('DIV');
+
+            var chatInputContainer = document.createElement('DIV');
+            chatInputContainer.classList.add('chat-textbox-container');
+
+            var chatInput = document.createElement('INPUT');
+            chatInput.setAttribute('TYPE', 'TEXT');
+            chatInput.classList.add('chat-textbox');
+            chatInput.style.borderTop = '1px solid #adadad';
+            chatInput.setAttribute('maxlength', '220');
+            chatInput.addEventListener('keydown', function (e) {
+                if (e.keyCode == 13)
+                    sendGlobalMessagePress();
+
+                if (e.keyCode == 68 && e.altKey)
+                    document.getElementById('debugtab').style.display = 'inline-block';
+            });
+            chatInput.id = 'chattext';
+            chatInputContainer.appendChild(chatInput);
+            chatSendingContainer.appendChild(chatInputContainer);
+
+            var chatSendContainer = document.createElement('DIV');
+            chatSendContainer.classList.add('chat-submit-container');
+
+            var chatSend = document.createElement('INPUT');
+            chatSend.setAttribute('TYPE', 'BUTTON');
+            chatSend.setAttribute('VALUE', 'SEND');
+            chatSend.classList.add('chat-submit');
+            chatSend.style.borderTop = '1px solid #adadad';
+            chatSend.style.borderLeft = '1px solid #adadad';
+            chatSend.addEventListener('click', function () {
+                sendGlobalMessagePress();
+            });
+            chatSendContainer.appendChild(chatSend);
+            chatSendingContainer.appendChild(chatSendContainer);
+            chatWindow.appendChild(chatSendingContainer);
+
+            document.body.appendChild(chatWindow);
+        }
+    }
+    Chat.initialize = initialize;
+    initialize();
+
+    function sendGlobalMessagePress() {
+        Connection.sendGlobalMessage(document.getElementById('chattext').value);
+        document.getElementById('chattext').value = '';
+    }
+
+    function log(message) {
+        var debugLog = document.getElementById('debuglog');
+        var debugItem = document.createElement('DIV');
+        debugItem.textContent = message;
+        debugLog.appendChild(debugItem);
+    }
+    Chat.log = log;
+
+    function receiveGlobalMessage(sender, message, time, perms) {
+        var chatLog = document.getElementById('chatlog');
+
+        var difference = chatLog.scrollTop - (chatLog.scrollHeight - chatLog.offsetHeight);
+        var scrolledDown = Math.abs(difference) < 5;
+
+        var chatItem = document.createElement('DIV');
+        chatItem.classList.add('chat-msg');
+        if (perms && perms != '')
+            chatItem.classList.add('chat-' + perms);
+        var timeSpan = document.createElement('SPAN');
+        timeSpan.textContent = '[' + Utils.convertServerTimeToLocal(time) + '] ';
+        var nameSpan = document.createElement('SPAN');
+        nameSpan.textContent = sender;
+        nameSpan.classList.add('chat-sender');
+        var messageSpan = document.createElement('SPAN');
+        messageSpan.textContent = message;
+        messageSpan.classList.add('chat-text');
+        var dividerSpan = document.createElement('SPAN');
+        dividerSpan.textContent = ': ';
+        chatItem.appendChild(timeSpan);
+        chatItem.appendChild(nameSpan);
+        chatItem.appendChild(dividerSpan);
+        chatItem.appendChild(messageSpan);
+
+        chatLog.appendChild(chatItem);
+
+        if (scrolledDown)
+            chatLog.scrollTop = chatLog.scrollHeight;
+    }
+    Chat.receiveGlobalMessage = receiveGlobalMessage;
+})(Chat || (Chat = {}));
+var Tabs;
+(function (Tabs) {
+    var lowestTabContainerId = 0;
+    var tabContainer = document.getElementById("paneContainer");
+    Tabs.bottomPadding = 200;
+    var tabContainers = new Array();
+    var selectedTab;
+
+    var TabContainer = (function () {
+        function TabContainer(container) {
+            this.container = container;
+            this.tabs = new Array();
+            this.lowestId = 0;
+            this.id = lowestTabContainerId++;
+            tabContainers.push(this);
+        }
+        TabContainer.prototype.newTab = function (pane) {
+            var tab = new Tab();
+            tab.pane = pane;
+            var button = document.createElement('DIV');
+            button.classList.add('tab-button');
+            this.container.appendChild(button);
+            tab.button = button;
+
+            if (this.lowestId == 0) {
+                tab.activate();
+            } else {
+                tab.deactivate();
+            }
+
+            // IDs are incremented here. to get their initial value we must subtract.
+            var id = this.lowestId++;
+            var contId = this.id;
+
+            button.addEventListener('click', function () {
+                Tabs.activateTab(contId, id);
+            });
+
+            this.tabs.push(tab);
+            this.container.appendChild(button);
+
+            return this.lowestId - 1;
+        };
+
+        TabContainer.prototype.activate = function (id) {
+            for (var i = 0; i < this.tabs.length; i++) {
+                this.tabs[i].deactivate();
+            }
+            this.tabs[id].activate();
+        };
+
+        TabContainer.prototype.css = function (id, className) {
+            this.tabs[id].button.classList.add(className);
+        };
+        return TabContainer;
+    })();
+
+    var gameTabs = new TabContainer(document.getElementById('tabContainer'));
+
+    function registerGameTab(pane, css) {
+        var id = gameTabs.newTab(pane);
+        if (css)
+            gameTabs.css(id, css);
+    }
+    Tabs.registerGameTab = registerGameTab;
+
+    function updateGameTabs() {
+        if (selectedTab) {
+            var height = selectedTab.scrollHeight;
+            if (height > window.innerHeight - Tabs.bottomPadding) {
+                height = window.innerHeight - Tabs.bottomPadding;
+            }
+            tabContainer.style.minHeight = height + 'px';
+            tabContainer.style.maxHeight = height + 'px';
+            tabContainer.style.overflowY = height >= window.innerHeight - Tabs.bottomPadding ? 'scroll' : 'hidden';
+        }
+    }
+    Tabs.updateGameTabs = updateGameTabs;
+
+    Utils.addEvent(window, 'resize', Tabs.updateGameTabs);
+    setInterval(updateGameTabs, 20);
+
+    function activateTab(containerId, tabId) {
+        tabContainers[containerId].activate(tabId);
+        updateGameTabs();
+    }
+    Tabs.activateTab = activateTab;
+
+    var Tab = (function () {
+        function Tab() {
+        }
+        Tab.prototype.deactivate = function () {
+            Utils.cssSwap(this.button, 'active', 'inactive');
+            this.pane.style.display = 'none';
+            this.pane.style.overflow = 'hidden';
+        };
+
+        Tab.prototype.activate = function () {
+            Utils.cssSwap(this.button, 'inactive', 'active');
+            this.pane.style.display = 'block';
+            this.pane.style.overflow = 'visible';
+            selectedTab = this.pane;
+        };
+        return Tab;
+    })();
+})(Tabs || (Tabs = {}));
+var Objects;
+(function (Objects) {
+    var gameobjects = new Array();
+
+    var GameObject = (function () {
+        function GameObject() {
+            this.quantity = 0;
+        }
+        return GameObject;
+    })();
+
+    function register(id, name) {
+        if (!gameobjects[id]) {
+            var gameobject = new GameObject();
+            gameobject.name = name;
+
+            gameobjects[id] = gameobject;
+        }
+    }
+    Objects.register = register;
+
+    function lookupName(id) {
+        return gameobjects[id].name;
+    }
+    Objects.lookupName = lookupName;
+
+    function setQuantity(id, quantity) {
+        gameobjects[id].quantity = quantity;
+    }
+    Objects.setQuantity = setQuantity;
+
+    function getQuantity(id) {
+        var gameobject = gameobjects[id];
+        if (gameobject)
+            return gameobject.quantity;
+
+        return 0;
+    }
+    Objects.getQuantity = getQuantity;
+
+    function setMaxQuantity(id, maxQuantity) {
+        gameobjects[id].maxQuantity = maxQuantity;
+    }
+    Objects.setMaxQuantity = setMaxQuantity;
+
+    function getMaxQuantity(id) {
+        return gameobjects[id].maxQuantity;
+    }
+    Objects.getMaxQuantity = getMaxQuantity;
+
+    function setLifeTimeTotal(id, quantity) {
+        gameobjects[id].lifeTimeTotal = quantity;
+    }
+    Objects.setLifeTimeTotal = setLifeTimeTotal;
+
+    function getLifeTimeTotal(id) {
+        return gameobjects[id].lifeTimeTotal;
+    }
+    Objects.getLifeTimeTotal = getLifeTimeTotal;
+
+    function setTooltip(id, tooltip) {
+        gameobjects[id].tooltip = tooltip;
+    }
+    Objects.setTooltip = setTooltip;
+    function getTooltip(id) {
+        return gameobjects[id].tooltip;
+    }
+    Objects.getTooltip = getTooltip;
+})(Objects || (Objects = {}));
 ///<reference path="utils.ts"/>
 ///<reference path="tooltip.ts"/>
 ///<reference path="tabs.ts"/>
@@ -1749,8 +873,6 @@ var Inventory;
     }
 
     function modifyConfig(id, enabled) {
-        if (!Inventory.configClickers[id])
-            console.log(id);
         Inventory.configClickers[id].checked = enabled;
     }
     Inventory.modifyConfig = modifyConfig;
@@ -1957,7 +1079,7 @@ var Inventory;
                 configImages[item.id].style.display = itemQuantity > 0 ? 'inline-block' : 'none';
         });
     }
-    Inventory.update = update;
+    setInterval(update, 1000);
 })(Inventory || (Inventory = {}));
 var Statistics;
 (function (Statistics) {
@@ -1982,6 +1104,7 @@ var Statistics;
             item.lifetimeQuantity = lifetime;
             Objects.setLifeTimeTotal(id, lifetime);
             item.alltimeRow.textContent = Utils.formatNumber(lifetime);
+            item.row.style.display = lifetime > 0 ? 'table-row' : 'none';
         });
     }
     Statistics.changeStats = changeStats;
@@ -1996,6 +1119,7 @@ var Statistics;
 
             var row = itemsBody.insertRow(itemsBody.rows.length);
             row.classList.add('table-row');
+            item.row = row;
             item.alltimeRow = row.insertCell(0);
             item.alltimeRow.style.width = '40%';
             item.prestigeRow = row.insertCell(0);
@@ -2272,6 +1396,249 @@ var Store;
         return itemContainer;
     }
 })(Store || (Store = {}));
+var Rock;
+(function (Rock) {
+    var canvas = document.getElementById('rock');
+    var particleCanvas = document.getElementById('particles');
+    var context = canvas.getContext('2d');
+    var particleContext = particleCanvas.getContext('2d');
+    var relativeRockURL = '/Content/Rock.png';
+    var relativeStoneURL = '/Content/Stone.png';
+    var rockImage = new Image();
+    var stoneImage = new Image(16, 16);
+    var stoneLoaded = false;
+    var lastX = 0;
+    var lastY = 0;
+    var rockSize = 64;
+    var rockGrowth = 4;
+    var rockIsBig = false;
+    var mouseDown = false;
+
+    var notTouched = true;
+    var growing = true;
+    var currentNotifier = 0;
+    var growRate = 8;
+    var notifierGrowth = 4;
+    var gsLastTick = Date.now();
+
+    Rock.particles = new Array();
+
+    var Particle = (function () {
+        function Particle(x, y) {
+            this.width = 5;
+            this.height = 5;
+            this.dispose = false;
+            this.x = x;
+            this.y = y;
+            this.verticalVelocity = Utils.getRandomInt(-100, -155);
+            this.horizonalVelocity = Utils.getRandomInt(-50, 50);
+            this.width = Utils.getRandomInt(3, 6);
+            this.height = Utils.getRandomInt(3, 6);
+            this.rotation = Utils.getRandomInt(0, 180);
+            this.rotationalVelocity = Utils.getRandomInt(-75, 75);
+
+            this.lastTick = Date.now();
+        }
+        Particle.prototype.update = function () {
+            var timeSinceLastTick = Date.now() - this.lastTick;
+            this.lastTick = Date.now();
+            timeSinceLastTick /= 1000;
+
+            this.rotation += (this.rotationalVelocity * timeSinceLastTick);
+            this.y += (this.verticalVelocity * timeSinceLastTick);
+            this.x += (this.horizonalVelocity * timeSinceLastTick);
+            this.verticalVelocity += (200 * timeSinceLastTick);
+            if (this.y > 270) {
+                this.dispose = true;
+            }
+        };
+        return Particle;
+    })();
+    Rock.Particle = Particle;
+
+    function initialize() {
+        rockImage.onload = function () {
+            drawBackground();
+            console.log('rock loaded');
+        };
+        rockImage.src = relativeRockURL;
+
+        stoneImage.onload = function () {
+            stoneLoaded = true;
+        };
+        stoneImage.src = relativeStoneURL;
+
+        canvas.addEventListener('mousemove', function (e) {
+            var mousePos = getMousePos(canvas, e);
+            isOverRock(mousePos.x, mousePos.y);
+            //console.log('x: ' + mousePos.x + ' y: ' + mousePos.y);
+        }, false);
+        canvas.addEventListener('mousedown', function (e) {
+            var mousePos = getMousePos(canvas, e);
+            mouseDown = true;
+            isOverRock(mousePos.x, mousePos.y);
+            Connection.mine(mousePos.x, mousePos.y);
+        }, false);
+        canvas.addEventListener('mouseup', function (e) {
+            var mousePos = getMousePos(canvas, e);
+            mouseDown = false;
+            isOverRock(mousePos.x, mousePos.y);
+        }, false);
+        canvas.addEventListener('mouseleave', function (e) {
+            var mousePos = getMousePos(canvas, e);
+            mouseDown = false;
+            isOverRock(mousePos.x, mousePos.y);
+        }, false);
+    }
+
+    function growAndShrink() {
+        if (!stoneLoaded) {
+            setTimeout(growAndShrink, 10);
+            return;
+        }
+
+        var time = Date.now();
+        var timePassed = time - gsLastTick;
+        timePassed /= 1000;
+        gsLastTick = time;
+
+        if (growing) {
+            currentNotifier += growRate * timePassed;
+        } else {
+            currentNotifier -= growRate * timePassed;
+        }
+
+        if (currentNotifier > notifierGrowth || currentNotifier < -notifierGrowth) {
+            growing = !growing;
+        }
+
+        drawRock(lastX, lastY, rockSize + currentNotifier, rockSize + currentNotifier);
+
+        if (notTouched)
+            setTimeout(growAndShrink, 10);
+    }
+    growAndShrink();
+
+    function getMousePos(canvas, evt) {
+        var rect = canvas.getBoundingClientRect();
+        return {
+            x: evt.clientX - rect.left,
+            y: evt.clientY - rect.top
+        };
+    }
+
+    var released = true;
+
+    function isOverRock(x, y) {
+        if (x > lastX && x < (lastX + rockSize) && y > lastY && y < (lastY + rockSize)) {
+            if (!mouseDown) {
+                drawRock(lastX - (rockGrowth / 2), lastY - (rockGrowth / 2), rockSize + rockGrowth, rockSize + rockGrowth);
+                released = true;
+                notTouched = false;
+            } else {
+                drawRock(lastX + (rockGrowth / 2), lastY + (rockGrowth / 2), rockSize - rockGrowth, rockSize - rockGrowth);
+                if (released)
+                    addParticles(x, y);
+                released = false;
+                notTouched = false;
+            }
+            rockIsBig = true;
+        } else if (rockIsBig) {
+            drawRock(lastX, lastY, rockSize, rockSize);
+            rockIsBig = false;
+            released = true;
+        }
+    }
+
+    function moveRock(x, y) {
+        if (x != lastX && y != lastY) {
+            lastX = x;
+            lastY = y;
+            if (stoneLoaded)
+                drawRock(x, y, rockSize, rockSize);
+            else
+                setTimeout(function () {
+                    moveRock(x, y);
+                }, 10);
+        }
+    }
+    Rock.moveRock = moveRock;
+
+    function clearCanvas() {
+        context.clearRect(0, 0, 250, 250);
+    }
+
+    function drawBackground() {
+        context.drawImage(rockImage, 0, 0);
+    }
+
+    function addParticles(x, y) {
+        var rand = Utils.getRandomInt(1, 3);
+        for (var i = 0; i < rand; i++) {
+            var xOffset = Utils.getRandomInt(-5, 5);
+            var yOffset = Utils.getRandomInt(-2, 2);
+            Rock.particles.push(new Particle(x + xOffset, y + yOffset));
+        }
+    }
+
+    var particleCache = document.createElement('canvas');
+    var cacheCtx = particleCache.getContext('2d');
+
+    function drawParticle(particle) {
+        particleCache.width = particle.width;
+        particleCache.height = particle.height;
+        cacheCtx.rect(0, 0, particle.width, particle.height);
+        cacheCtx.fillStyle = 'gray';
+        cacheCtx.fill();
+        cacheCtx.stroke();
+
+        particleContext.beginPath();
+
+        drawImageRot(particleContext, particleCache, particle.x, particle.y, particle.width, particle.height, particle.rotation);
+    }
+
+    function drawImageRot(ctx, img, x, y, width, height, deg) {
+        //Convert degrees to radian
+        var rad = deg * Math.PI / 180;
+
+        //Set the origin to the center of the image
+        ctx.translate(x + width / 2, y + height / 2);
+
+        //Rotate the canvas around the origin
+        ctx.rotate(rad);
+
+        //draw the image
+        ctx.drawImage(img, width / 2 * (-1), height / 2 * (-1), width, height);
+
+        //reset the canvas
+        ctx.rotate(rad * (-1));
+        ctx.translate((x + width / 2) * (-1), (y + height / 2) * (-1));
+    }
+
+    function updateParticles() {
+        particleContext.clearRect(0, 0, 250, 250);
+
+        for (var i = 0; i < Rock.particles.length; i++) {
+            var particle = Rock.particles[i];
+            particle.update();
+            drawParticle(particle);
+
+            if (particle.dispose) {
+                Rock.particles.splice(i, 1);
+            }
+        }
+    }
+    setInterval(updateParticles, 10);
+
+    function drawRock(x, y, xScale, yScale) {
+        clearCanvas();
+        drawBackground();
+        context.drawImage(stoneImage, x, y, xScale, yScale);
+        //context.drawImage(stoneImage, x, y);
+    }
+
+    initialize();
+})(Rock || (Rock = {}));
 var Equipment;
 (function (Equipment) {
     var gatherers = new Array();
@@ -2430,6 +1797,7 @@ var Equipment;
 })(Equipment || (Equipment = {}));
 var Crafting;
 (function (Crafting) {
+    var Long = dcodeIO.Long;
     var storePane;
     var processorSection;
     var craftingSection;
@@ -2500,12 +1868,6 @@ var Crafting;
         drawCraftingTable();
     }
 
-<<<<<<< HEAD
-    Account.signedIn = false;
-
-    var registrationErrors;
-    var loginErrors;
-=======
     function drawCraftingTable() {
         craftingTable = document.createElement('TABLE');
         craftingTable.classList.add('block-table');
@@ -2519,99 +1881,12 @@ var Crafting;
         var titleCell = realTitleRow.insertCell(0);
         titleCell.colSpan = cellDescriptions.length;
         titleCell.textContent = 'Crafting Table';
->>>>>>> 48573a74dbde3044acffad41d7f4206ab30b244e
 
         for (var i = 0; i < cellDescriptions.length; i++) {
             var cell = titleRow.insertCell(0);
             cell.style.width = cellWidths[i];
             cell.textContent = cellDescriptions[i];
 
-<<<<<<< HEAD
-    var Leaderboard;
-    (function (Leaderboard) {
-        Leaderboard.currentlyInspecting = 0;
-
-        function load(lower, upper, element) {
-            Leaderboard.currentlyInspecting = lower;
-
-            var leaderboardService = new Ajax.LeaderboardAjaxService();
-            leaderboardService.resultsElement = element;
-            leaderboardService.sendRequest(lower, upper);
-        }
-
-        function open() {
-            var leaderboardModal = new modal.Window();
-            leaderboardModal.title = 'Leaderboards';
-            if (!Account.signedIn) {
-                var signInNotification = document.createElement('div');
-                signInNotification.style.fontSize = '18px';
-                signInNotification.style.background = 'darkred';
-                signInNotification.style.color = 'white';
-                signInNotification.style.fontWeight = 'bold';
-                signInNotification.style.textAlign = 'center';
-                signInNotification.style.border = '1px solid white';
-                signInNotification.textContent = "Sign in to see where you rank.";
-                leaderboardModal.addElement(signInNotification);
-            }
-            var leaderboardList = document.createElement('DIV');
-            leaderboardList.style.width = '400px';
-            leaderboardList.appendChild(Ajax.createLoader());
-            leaderboardModal.addElement(leaderboardList);
-
-            // Navigation controls.
-            var controlContainer = document.createElement('div');
-            controlContainer.style.textAlign = 'center';
-            controlContainer.style.marginTop = '5px';
-            var navigateUp = Utils.createButton('<<', '');
-            var navigateSpecific = document.createElement('input');
-            navigateSpecific.type = 'TEXT';
-            var navigateDown = Utils.createButton('>>', '');
-
-            navigateUp.addEventListener('click', function () {
-                Leaderboard.currentlyInspecting -= 20;
-                if (Leaderboard.currentlyInspecting < 0)
-                    Leaderboard.currentlyInspecting = 0;
-                Leaderboard.currentlyInspecting = Leaderboard.currentlyInspecting - (Leaderboard.currentlyInspecting % 20);
-
-                load(Leaderboard.currentlyInspecting, Leaderboard.currentlyInspecting + 20, leaderboardList);
-            });
-
-            navigateSpecific.addEventListener('keyup', function (e) {
-                if (e.keyCode == 13) {
-                    var text = e.currentTarget.value;
-                    if (!Utils.isNumber(text))
-                        return;
-
-                    Leaderboard.currentlyInspecting = +text;
-                    Leaderboard.currentlyInspecting = Leaderboard.currentlyInspecting - (Leaderboard.currentlyInspecting % 20);
-                    load(Leaderboard.currentlyInspecting, Leaderboard.currentlyInspecting + 20, leaderboardList);
-                }
-            });
-
-            navigateDown.addEventListener('click', function () {
-                Leaderboard.currentlyInspecting += 20;
-                Leaderboard.currentlyInspecting = Leaderboard.currentlyInspecting - (Leaderboard.currentlyInspecting % 20);
-
-                load(Leaderboard.currentlyInspecting, Leaderboard.currentlyInspecting + 20, leaderboardList);
-            });
-
-            controlContainer.appendChild(navigateUp);
-            controlContainer.appendChild(navigateSpecific);
-            controlContainer.appendChild(navigateDown);
-            leaderboardModal.addElement(controlContainer);
-
-            // options
-            var close = leaderboardModal.addOption("Close");
-            close.addEventListener('click', function () {
-                modal.close();
-            });
-
-            leaderboardModal.show();
-            load(0, 20, leaderboardList);
-        }
-        Leaderboard.open = open;
-    })(Leaderboard || (Leaderboard = {}));
-=======
             if (cellMinWidths[i] != '0')
                 cell.style.minWidth = cellMinWidths[i];
         }
@@ -2679,7 +1954,6 @@ var Crafting;
         }
         return false;
     }
->>>>>>> 48573a74dbde3044acffad41d7f4206ab30b244e
 
     function addProcessorRecipe(id, ingredients, resultants) {
         if (!Crafting.processors[id])
@@ -2715,18 +1989,8 @@ var Crafting;
         if (!processor)
             return;
 
-<<<<<<< HEAD
-        var highscoresLink = document.createElement('SPAN');
-        highscoresLink.textContent = 'Leaderboards';
-        highscoresLink.addEventListener('click', function () {
-            Leaderboard.open();
-        });
-        highscoresLink.style.cursor = 'pointer';
-        document.getElementsByClassName('header-links')[0].appendChild(highscoresLink);
-=======
         var recipe = processor._recipes[recipeIndex];
         processor.selectedRecipe = recipeIndex;
->>>>>>> 48573a74dbde3044acffad41d7f4206ab30b244e
 
         while (processor.recipeList.lastChild) {
             processor.recipeList.removeChild(processor.recipeList.lastChild);
@@ -2742,7 +2006,8 @@ var Crafting;
             recipe.ingredients[x].quantityDiv = ingredientQuantity;
             ingredientQuantity.style.display = 'inline-block';
             ingredientQuantity.style.verticalAlign = 'super';
-            ingredientQuantity.style.color = (recipe.ingredients[x].quantity <= Objects.getQuantity(recipe.ingredients[x].id)) ? 'darkgreen' : 'darkred';
+            var requiredIngredients = Long.fromNumber(recipe.ingredients[x].quantity).lessThanOrEqual(Long.fromNumber(Objects.getQuantity(recipe.ingredients[x].id)));
+            ingredientQuantity.style.color = (requiredIngredients) ? 'darkgreen' : 'darkred';
             ingredientQuantity.textContent = Utils.formatNumber(recipe.ingredients[x].quantity);
             ingredientImage.classList.add("Half-" + Utils.cssifyName(Objects.lookupName(recipe.ingredients[x].id)));
 
@@ -2763,17 +2028,6 @@ var Crafting;
         var realTitleRow = header.insertRow(0);
         realTitleRow.classList.add('table-header');
 
-<<<<<<< HEAD
-        // styles the container depending on the status of the account.
-        Account.signedIn = !isAnon;
-        Utils.cssSwap(container, isAnon ? 'registered' : 'anonymous', isAnon ? 'anonymous' : 'registered');
-    }
-
-    function loginModal() {
-        var loginModal = new modal.Window();
-        var formControlsContainer = document.createElement('DIV');
-        formControlsContainer.style.width = '400px';
-=======
         var titleCell = realTitleRow.insertCell(0);
         titleCell.colSpan = cellDescriptions.length;
         titleCell.textContent = processor.name;
@@ -2807,7 +2061,6 @@ var Crafting;
         processor.progressText = progressText;
         progressContainer.appendChild(progressBar);
         progressCell.appendChild(progressContainer);
->>>>>>> 48573a74dbde3044acffad41d7f4206ab30b244e
 
         var contentRow = processorTable.insertRow(3);
         contentRow.classList.add('table-row');
@@ -3005,7 +2258,8 @@ var Crafting;
             recipe.row.style.display = (quantity == -1 || !recipe.isItem && quantity > 0) ? 'none' : '';
             recipe.ingredients.forEach(function (ingredient) {
                 var ingQuantity = Objects.getQuantity(ingredient.id);
-                ingredient.quantityDiv.style.color = (ingQuantity >= ingredient.quantity) ? 'darkgreen' : 'darkred';
+                var hasIngredients = Long.fromNumber(ingredient.quantity).lessThanOrEqual(Long.fromNumber(ingQuantity));
+                ingredient.quantityDiv.style.color = (hasIngredients) ? 'darkgreen' : 'darkred';
             });
         });
 
@@ -3160,7 +2414,590 @@ var Buffs;
     var sidebar = document.getElementById('sidebarInformation');
     var buffContainer;
 
-<<<<<<< HEAD
+    var Buff = (function () {
+        function Buff() {
+        }
+        return Buff;
+    })();
+
+    function init() {
+        buffContainer = document.createElement('div');
+        sidebar.appendChild(buffContainer);
+    }
+
+    function register(id, name, description, duration) {
+        if (buffs[id])
+            return;
+
+        var buff = new Buff();
+        buff.name = name;
+        buff.description = description;
+        buff.duration = duration;
+        buffs[id] = buff;
+
+        draw(buff);
+    }
+    Buffs.register = register;
+
+    function draw(buff) {
+        var container = document.createElement('div');
+        container.classList.add('buff-container');
+        tooltip.create(container, buff.description);
+
+        var header = document.createElement('div');
+        header.textContent = buff.name;
+        header.classList.add('buff-header');
+        container.appendChild(header);
+
+        var imageContainer = document.createElement('div');
+        imageContainer.classList.add('buff-image-container');
+        container.appendChild(imageContainer);
+
+        var image = document.createElement('div');
+        image.classList.add(Utils.cssifyName(buff.name));
+        imageContainer.appendChild(image);
+
+        var duration = document.createElement('div');
+        duration.classList.add('buff-header');
+        container.appendChild(duration);
+
+        buffContainer.appendChild(container);
+        buff.container = container;
+        buff.durationElm = duration;
+    }
+
+    function update(id, timeActive) {
+        var buff = buffs[id];
+        buff.timeActive = timeActive;
+        buff.durationElm.textContent = '(' + Utils.formatTime(buff.duration - timeActive) + ')';
+        buff.container.style.display = timeActive == 0 ? 'none' : 'inline-block';
+    }
+    Buffs.update = update;
+    init();
+})(Buffs || (Buffs = {}));
+/// <reference path="typings/jquery/jquery.d.ts"/>
+var Account;
+(function (Account) {
+    var container;
+    var userButton;
+    var userSpan;
+    var contextMenu;
+
+    Account.signedIn = false;
+
+    var registrationErrors;
+    var loginErrors;
+
+    var mouseTimeout;
+
+    var Leaderboard;
+    (function (Leaderboard) {
+        Leaderboard.currentlyInspecting = 0;
+
+        function load(lower, upper, element) {
+            Leaderboard.currentlyInspecting = lower;
+
+            var leaderboardService = new Ajax.LeaderboardAjaxService();
+            leaderboardService.resultsElement = element;
+            leaderboardService.sendRequest(lower, upper);
+        }
+
+        function open() {
+            var leaderboardModal = new modal.Window();
+            leaderboardModal.title = 'Leaderboards';
+            if (!Account.signedIn) {
+                var signInNotification = document.createElement('div');
+                signInNotification.style.fontSize = '18px';
+                signInNotification.style.background = 'darkred';
+                signInNotification.style.color = 'white';
+                signInNotification.style.fontWeight = 'bold';
+                signInNotification.style.textAlign = 'center';
+                signInNotification.style.border = '1px solid white';
+                signInNotification.textContent = "Sign in to see where you rank.";
+                leaderboardModal.addElement(signInNotification);
+            }
+            var leaderboardList = document.createElement('DIV');
+            leaderboardList.style.width = '400px';
+            leaderboardList.appendChild(Ajax.createLoader());
+            leaderboardModal.addElement(leaderboardList);
+
+            // Navigation controls.
+            var controlContainer = document.createElement('div');
+            controlContainer.style.textAlign = 'center';
+            controlContainer.style.marginTop = '5px';
+            var navigateUp = Utils.createButton('<<', '');
+            var navigateSpecific = document.createElement('input');
+            navigateSpecific.type = 'TEXT';
+            var navigateDown = Utils.createButton('>>', '');
+
+            navigateUp.addEventListener('click', function () {
+                Leaderboard.currentlyInspecting -= 20;
+                if (Leaderboard.currentlyInspecting < 0)
+                    Leaderboard.currentlyInspecting = 0;
+                Leaderboard.currentlyInspecting = Leaderboard.currentlyInspecting - (Leaderboard.currentlyInspecting % 20);
+
+                load(Leaderboard.currentlyInspecting, Leaderboard.currentlyInspecting + 20, leaderboardList);
+            });
+
+            navigateSpecific.addEventListener('keyup', function (e) {
+                if (e.keyCode == 13) {
+                    var text = e.currentTarget.value;
+                    if (!Utils.isNumber(text))
+                        return;
+
+                    Leaderboard.currentlyInspecting = +text;
+                    Leaderboard.currentlyInspecting = Leaderboard.currentlyInspecting - (Leaderboard.currentlyInspecting % 20);
+                    load(Leaderboard.currentlyInspecting, Leaderboard.currentlyInspecting + 20, leaderboardList);
+                }
+            });
+
+            navigateDown.addEventListener('click', function () {
+                Leaderboard.currentlyInspecting += 20;
+                Leaderboard.currentlyInspecting = Leaderboard.currentlyInspecting - (Leaderboard.currentlyInspecting % 20);
+
+                load(Leaderboard.currentlyInspecting, Leaderboard.currentlyInspecting + 20, leaderboardList);
+            });
+
+            controlContainer.appendChild(navigateUp);
+            controlContainer.appendChild(navigateSpecific);
+            controlContainer.appendChild(navigateDown);
+            leaderboardModal.addElement(controlContainer);
+
+            // options
+            var close = leaderboardModal.addOption("Close");
+            close.addEventListener('click', function () {
+                modal.close();
+            });
+
+            leaderboardModal.show();
+            load(0, 20, leaderboardList);
+        }
+        Leaderboard.open = open;
+    })(Leaderboard || (Leaderboard = {}));
+
+    function draw() {
+        container = document.createElement('DIV');
+        container.classList.add('account-manager');
+        container.classList.add('closed');
+
+        container.onmouseenter = function () {
+            clearTimeout(mouseTimeout);
+        };
+
+        container.onmouseleave = function () {
+            mouseTimeout = setTimeout(hideMenu, 250);
+        };
+
+        // Anon stuff.
+        var loginButton = document.createElement('DIV');
+        loginButton.textContent = 'Sign in';
+        loginButton.classList.add('account-option');
+        loginButton.classList.add('anonymous-account-option');
+        loginButton.addEventListener('click', function () {
+            loginModal();
+        });
+        container.appendChild(loginButton);
+
+        var registerButton = document.createElement('DIV');
+        registerButton.textContent = 'Register';
+        registerButton.classList.add('account-option');
+        registerButton.classList.add('anonymous-account-option');
+        registerButton.addEventListener('click', function () {
+            registerModal();
+        });
+        container.appendChild(registerButton);
+
+        // Registered stuff.
+        var optionsButton = document.createElement('DIV');
+        optionsButton.textContent = 'Options';
+        optionsButton.classList.add('account-option');
+        optionsButton.classList.add('registered-account-option');
+        container.appendChild(optionsButton);
+
+        var logoffButton = document.createElement('DIV');
+        logoffButton.textContent = 'Sign out';
+        logoffButton.classList.add('account-option');
+        logoffButton.classList.add('registered-account-option');
+        logoffButton.addEventListener('click', function () {
+            logoff();
+        });
+        container.appendChild(logoffButton);
+
+        userButton = document.createElement('DIV');
+        userButton.classList.add('account-user');
+        userSpan = document.createElement('SPAN');
+        userButton.appendChild(userSpan);
+        container.appendChild(userButton);
+
+        document.body.appendChild(container);
+        userButton.addEventListener('click', function () {
+            toggleMenu();
+        });
+
+        var highscoresLink = document.createElement('SPAN');
+        highscoresLink.textContent = 'Leaderboards';
+        highscoresLink.addEventListener('click', function () {
+            Leaderboard.open();
+        });
+        highscoresLink.style.cursor = 'pointer';
+        document.getElementsByClassName('header-links')[0].appendChild(highscoresLink);
+
+        info();
+    }
+    draw();
+    function toggleMenu() {
+        if (container.classList.contains('closed'))
+            container.classList.remove('closed');
+        else
+            container.classList.add('closed');
+    }
+
+    function hideMenu() {
+        if (!container.classList.contains('closed'))
+            container.classList.add('closed');
+    }
+
+    function updateUser(name, isAnon) {
+        userSpan.textContent = isAnon ? 'Guest' : name;
+
+        // styles the container depending on the status of the account.
+        Account.signedIn = !isAnon;
+        Utils.cssSwap(container, isAnon ? 'registered' : 'anonymous', isAnon ? 'anonymous' : 'registered');
+    }
+
+    function loginModal() {
+        var loginModal = new modal.Window();
+        var formControlsContainer = document.createElement('DIV');
+        formControlsContainer.style.width = '400px';
+
+        var usernameContainer = document.createElement('DIV');
+        usernameContainer.style.marginBottom = '5px';
+        var username = document.createElement("INPUT");
+        username.type = 'TEXT';
+        username.maxLength = 16;
+        username.placeholder = 'Username';
+        usernameContainer.appendChild(username);
+
+        var passwordContainer = document.createElement('DIV');
+        passwordContainer.style.marginBottom = '5px';
+        var password = document.createElement("INPUT");
+        password.type = 'PASSWORD';
+        password.pattern = ".{6,}";
+        password.placeholder = 'Password';
+        passwordContainer.appendChild(password);
+
+        var rememberMeContainer = document.createElement('DIV');
+        rememberMeContainer.style.marginBottom = '5px';
+        var rememberMe = document.createElement('INPUT');
+        rememberMe.type = 'CHECKBOX';
+        rememberMe.placeholder = 'Stay logged in on this computer?';
+        rememberMeContainer.appendChild(rememberMe);
+
+        formControlsContainer.appendChild(usernameContainer);
+        formControlsContainer.appendChild(passwordContainer);
+        formControlsContainer.appendChild(rememberMeContainer);
+
+        loginErrors = document.createElement('div');
+        loginModal.addElement(loginErrors);
+
+        loginModal.title = 'Log in';
+        loginModal.addElement(formControlsContainer);
+
+        var no = loginModal.addNegativeOption("Cancel");
+        no.addEventListener("click", function () {
+            modal.close();
+        }, false);
+        var yes = loginModal.addAffirmativeOption("Submit");
+        yes.addEventListener("click", function () {
+            login(username.value, password.value, rememberMe.checked);
+            while (loginErrors.firstChild) {
+                loginErrors.removeChild(loginErrors.firstChild);
+            }
+        }, false);
+        loginModal.show();
+    }
+
+    function registerModal() {
+        var registerModal = new modal.Window();
+        var formControlsContainer = document.createElement('DIV');
+        formControlsContainer.style.width = '400px';
+
+        var usernameContainer = document.createElement('DIV');
+        usernameContainer.style.marginBottom = '5px';
+        var username = document.createElement("INPUT");
+        username.type = 'TEXT';
+        username.maxLength = 16;
+        username.placeholder = 'Username';
+        usernameContainer.appendChild(username);
+
+        var emailContainer = document.createElement('DIV');
+        emailContainer.style.marginBottom = '5px';
+        var email = document.createElement("INPUT");
+        email.type = 'EMAIL';
+        email.placeholder = 'Email';
+        emailContainer.appendChild(email);
+
+        var passwordContainer = document.createElement('DIV');
+        passwordContainer.style.marginBottom = '5px';
+        var password = document.createElement("INPUT");
+        password.type = 'PASSWORD';
+        password.pattern = ".{6,}";
+        password.placeholder = 'Password';
+        passwordContainer.appendChild(password);
+
+        var confpassContainer = document.createElement('DIV');
+        confpassContainer.style.marginBottom = '5px';
+        var confirmPassword = document.createElement("INPUT");
+        confirmPassword.type = 'PASSWORD';
+        confirmPassword.pattern = ".{6,}";
+        confirmPassword.placeholder = 'Confirm password';
+        confpassContainer.appendChild(confirmPassword);
+        confirmPassword.onblur = function () {
+            if (password.value != confirmPassword.value)
+                confirmPassword.setCustomValidity('Passwords are not the same.');
+        };
+
+        confirmPassword.onfocus = function () {
+            confirmPassword.setCustomValidity('');
+        };
+        formControlsContainer.appendChild(usernameContainer);
+        formControlsContainer.appendChild(emailContainer);
+        formControlsContainer.appendChild(passwordContainer);
+        formControlsContainer.appendChild(confpassContainer);
+
+        registerModal.addElement(formControlsContainer);
+        registrationErrors = document.createElement('div');
+        registerModal.addElement(registrationErrors);
+
+        registerModal.title = "Register";
+
+        var no = registerModal.addNegativeOption("Cancel");
+        no.addEventListener("click", function () {
+            modal.close();
+        }, false);
+        var yes = registerModal.addAffirmativeOption("Submit");
+        yes.addEventListener("click", function () {
+            create(email.value, username.value, password.value, confirmPassword.value);
+            while (registrationErrors.firstChild) {
+                registrationErrors.removeChild(registrationErrors.firstChild);
+            }
+        }, false);
+
+        registerModal.show();
+    }
+
+    function create(email, username, password, passwordConfirmation) {
+        var request = $.ajax({
+            type: 'POST',
+            url: '/Api/Account/Register',
+            data: $.param({ Email: email, UserName: username, Password: password, ConfirmPassword: passwordConfirmation }),
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            success: function (request) {
+                request = JSON.parse(request);
+                if (request.Succeeded) {
+                    Connection.restart();
+                    info();
+                    modal.close();
+                } else {
+                    while (registrationErrors.firstChild) {
+                        registrationErrors.removeChild(registrationErrors.firstChild);
+                    }
+                    for (var i = 0; i < request.Errors.length; i++) {
+                        var errorElm = document.createElement('div');
+                        errorElm.textContent = request.Errors[i];
+                        registrationErrors.appendChild(errorElm);
+                    }
+                }
+            }
+        });
+    }
+
+    function login(email, password, rememberMe) {
+        var request = $.ajax({
+            type: 'POST',
+            url: '/Api/Account/Login',
+            data: $.param({ UserName: email, Password: password, RememberMe: rememberMe }),
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            success: function (request) {
+                request = JSON.parse(request);
+
+                if (request.Succeeded) {
+                    Connection.restart();
+                    info();
+                    modal.close();
+                } else {
+                    while (loginErrors.firstChild) {
+                        loginErrors.removeChild(loginErrors.firstChild);
+                    }
+                    for (var i = 0; i < request.Errors.length; i++) {
+                        var errorElm = document.createElement('div');
+                        errorElm.textContent = request.Errors[i];
+                        loginErrors.appendChild(errorElm);
+                    }
+                }
+            }
+        });
+    }
+
+    function logoff() {
+        var request = $.ajax({
+            type: 'POST',
+            url: '/Api/Account/LogOff',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            success: function (request) {
+                console.log(request);
+                Connection.restart();
+                info();
+                location.reload();
+            }
+        });
+    }
+
+    function info() {
+        var request = $.ajax({
+            type: 'POST',
+            url: '/Api/Account/Info',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            success: function (request) {
+                request = JSON.parse(request);
+                updateUser(request.UserName, request.Anonymous);
+            }
+        });
+    }
+    Account.info = info;
+})(Account || (Account = {}));
+var modal;
+(function (modal) {
+    var timeOpened = 0;
+    var modalPane;
+    modal.activeWindow;
+    modal.intervalIdentifier;
+
+    function hide() {
+        if (modal.activeWindow) {
+            modal.activeWindow.hide();
+        }
+        modal.activeWindow = null;
+    }
+    modal.hide = hide;
+
+    function close() {
+        if (modal.activeWindow) {
+            var a = modal.activeWindow;
+            hide();
+            a.container.parentNode.removeChild(a.container);
+        }
+    }
+    modal.close = close;
+
+    var Window = (function () {
+        function Window() {
+            this.container = document.createElement("div");
+            this.container.addEventListener("click", function (e) {
+                e.stopPropagation();
+            }, false);
+            this.container.classList.add("modal-window");
+            if (!modalPane) {
+                var pane = document.createElement("div");
+                modalPane = pane;
+                pane.classList.add("modal-wrapper");
+                pane.addEventListener("click", function (e) {
+                    e.stopPropagation();
+                    if ((Date.now() - timeOpened) > 3000)
+                        modal.close();
+                }, false);
+                document.body.appendChild(pane);
+            }
+            modalPane.appendChild(this.container);
+
+            this.titleEl = document.createElement("div");
+            this.titleEl.classList.add("modal-header");
+            this.bodyEl = document.createElement("div");
+
+            this.container.appendChild(this.titleEl);
+            this.container.appendChild(this.bodyEl);
+        }
+        Object.defineProperty(Window.prototype, "title", {
+            get: function () {
+                return this._title;
+            },
+            set: function (s) {
+                this._title = s;
+                this.titleEl.textContent = this._title;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Window.prototype.addElement = function (el) {
+            this.bodyEl.appendChild(el);
+        };
+
+        // intended for the bottom bar of controls.
+        Window.prototype.addOption = function (opt) {
+            if (!this.options) {
+                this.options = document.createElement("div");
+                this.options.classList.add("modal-options");
+                this.container.appendChild(this.options);
+            }
+            var optionContainer = document.createElement("span");
+            optionContainer.classList.add("modal-option");
+
+            var option = document.createElement("span");
+            option.textContent = opt;
+
+            optionContainer.appendChild(option);
+            this.options.appendChild(optionContainer);
+            return optionContainer;
+        };
+
+        Window.prototype.addAffirmativeOption = function (opt) {
+            var option = this.addOption(opt);
+            option.classList.add("affirmative");
+            return option;
+        };
+
+        Window.prototype.addNegativeOption = function (opt) {
+            var option = this.addOption(opt);
+            option.classList.add("negative");
+            return option;
+        };
+
+        Window.prototype.show = function () {
+            if (!this.container.classList.contains("opened"))
+                this.container.classList.add("opened");
+            if (!modalPane.classList.contains("opened"))
+                modalPane.classList.add("opened");
+            modal.activeWindow = this;
+            updatePosition();
+            modal.intervalIdentifier = setInterval(updatePosition, 100);
+            timeOpened = Date.now();
+        };
+
+        Window.prototype.hide = function () {
+            if (this.container.classList.contains("opened"))
+                this.container.classList.remove("opened");
+            if (modalPane.classList.contains("opened"))
+                modalPane.classList.remove("opened");
+        };
+        return Window;
+    })();
+    modal.Window = Window;
+
+    function updatePosition() {
+        if (!modal.activeWindow) {
+            clearInterval(modal.intervalIdentifier);
+        } else {
+            var containerDimensions = modal.activeWindow.container.getBoundingClientRect();
+            modal.activeWindow.container.style.left = (window.innerWidth / 2) - ((containerDimensions.right - containerDimensions.left) / 2) + "px";
+            modal.activeWindow.container.style.top = (window.innerHeight / 2) - ((containerDimensions.bottom - containerDimensions.top) / 2) + "px";
+        }
+    }
+})(modal || (modal = {}));
+var Ajax;
+(function (Ajax) {
+    var loaders = new Array();
+
     var LeaderboardAjaxService = (function () {
         function LeaderboardAjaxService() {
         }
@@ -3272,69 +3109,227 @@ var Buffs;
             this.canvasElement.height = this.squareSize;
             this.container.appendChild(this.canvasElement);
             this.context = this.canvasElement.getContext('2d');
-=======
-    var Buff = (function () {
-        function Buff() {
->>>>>>> 48573a74dbde3044acffad41d7f4206ab30b244e
         }
-        return Buff;
+        Loader.prototype.update = function () {
+            var time = Date.now();
+
+            if (this.canvasElement.parentElement)
+                this.spawned = true;
+
+            var timePassed = time - this.timeSinceLastTick;
+            timePassed /= 1000;
+            this.spinPos += this.spinSpeed * timePassed;
+            this.timeSinceLastTick = time;
+
+            if (this.spawned && !this.canvasElement.parentElement)
+                this.dead = true;
+
+            this.draw();
+        };
+
+        Loader.prototype.draw = function () {
+            var x = this.squareSize / 2;
+            var y = x;
+            var adjustedSpinPosStart = this.spinPos % 2;
+            var adjustedSpinPosEnd = (this.spinPos + 1) % 2;
+
+            var radius = (this.squareSize / 2) - 5;
+            var lengthEach = (2 - (this.space * this.notches)) / this.notches;
+            var selected = this.spinPos % this.notches;
+            var shown = selected - this.notDisplayed;
+
+            this.context.clearRect(0, 0, this.canvasElement.width, this.canvasElement.height);
+            for (var i = 0; i < this.notches; i++) {
+                var start = 0 + (i * lengthEach) + (this.space * i);
+                var end = start + lengthEach;
+                var inverse = i - this.notches;
+
+                if (i <= selected && i >= shown) {
+                    this.context.beginPath();
+                    this.context.arc(x, y, radius, start * Math.PI, end * Math.PI);
+                    this.context.lineWidth = this.thickness;
+                    this.context.strokeStyle = 'rgba(113,142,164,' + (1 - (selected - i) / (this.notches - this.notDisplayed)) + ')';
+                    this.context.stroke();
+                } else if (inverse <= selected && inverse >= shown) {
+                    this.context.beginPath();
+                    this.context.arc(x, y, radius, start * Math.PI, end * Math.PI);
+                    this.context.lineWidth = this.thickness;
+                    this.context.strokeStyle = 'rgba(113,142,164,' + (1 - (selected - inverse) / (this.notches - this.notDisplayed)) + ')';
+                    this.context.stroke();
+                }
+            }
+        };
+        return Loader;
     })();
 
+    function createLoader() {
+        var loader = new Loader();
+        loaders.push(loader);
+        return loader.container;
+    }
+    Ajax.createLoader = createLoader;
+
+    function update() {
+        for (var i = 0; i < loaders.length; i++) {
+            var loader = loaders[i];
+            if (loader.dead)
+                loaders.splice(i, 1);
+            else
+                loader.update();
+        }
+        setTimeout(update, 10);
+    }
+    update();
+})(Ajax || (Ajax = {}));
+var Achievements;
+(function (Achievements) {
+    var achievements = new Array();
+    var achievementPane;
+    var reverseRequired = false;
+
+    (function (Category) {
+        Category[Category["Undefined"] = 0] = "Undefined";
+        Category[Category["Money"] = 1] = "Money";
+        Category[Category["TimePlayed"] = 2] = "TimePlayed";
+        Category[Category["RockClicks"] = 3] = "RockClicks";
+        Category[Category["Oil"] = 4] = "Oil";
+    })(Achievements.Category || (Achievements.Category = {}));
+    var Category = Achievements.Category;
+    ;
+
     function init() {
-        buffContainer = document.createElement('div');
-        sidebar.appendChild(buffContainer);
+        achievementPane = document.createElement('div');
+        document.getElementById('paneContainer').appendChild(achievementPane);
+        Tabs.registerGameTab(achievementPane, 'Achievements');
     }
 
-    function register(id, name, description, duration) {
-        if (buffs[id])
+    var Achievement = (function () {
+        function Achievement() {
+        }
+        Achievement.prototype.getTooltip = function () {
+            if (this.category == 1 /* Money */) {
+                return "Have a total of " + Utils.formatNumber(this.goal) + " accumulated coins.";
+            } else if (this.category == 2 /* TimePlayed */) {
+                return "Play for " + secondsToTimePeriod(this.goal) + ".";
+            } else if (this.category == 3 /* RockClicks */) {
+                return "Click the rock " + Utils.formatNumber(this.goal) + " times.";
+            } else if (this.category == 4 /* Oil */) {
+                if (this.goal == 1)
+                    return "Get some oil!";
+                else
+                    return "Have a total of " + Utils.formatNumber(this.goal) + " accumulated oil.";
+            }
+        };
+
+        Achievement.prototype.trickleDown = function (progress) {
+            if (!progress)
+                progress = this.progress;
+            this.progress = progress;
+            this.progressBar.style.width = ((progress / this.goal) * 100) + "%";
+            if (this.requiredBy != null)
+                this.requiredBy.trickleDown(progress);
+        };
+        return Achievement;
+    })();
+
+    function register(id, name, requires, goal, category) {
+        if (achievements[id])
             return;
 
-        var buff = new Buff();
-        buff.name = name;
-        buff.description = description;
-        buff.duration = duration;
-        buffs[id] = buff;
+        var achievement = new Achievement();
+        achievement.name = name;
+        if (requires != 0)
+            achievement.requires = achievements[requires];
+        achievement.goal = goal;
+        achievement.category = category;
+        drawAchievement(achievement);
 
-        draw(buff);
+        achievements[id] = achievement;
     }
-    Buffs.register = register;
+    Achievements.register = register;
 
-    function draw(buff) {
-        var container = document.createElement('div');
-        container.classList.add('buff-container');
-        tooltip.create(container, buff.description);
+    function drawAchievement(achievement) {
+        if (!achievementPane)
+            init();
 
-        var header = document.createElement('div');
-        header.textContent = buff.name;
-        header.classList.add('buff-header');
-        container.appendChild(header);
+        var achievementContainer = document.createElement('div');
+        achievementContainer.classList.add('achievement');
+        achievement.container = achievementContainer;
 
-        var imageContainer = document.createElement('div');
-        imageContainer.classList.add('buff-image-container');
-        container.appendChild(imageContainer);
+        var achievementImage = document.createElement('div');
+        achievementImage.classList.add('achievement-image');
+        achievementContainer.appendChild(achievementImage);
 
-        var image = document.createElement('div');
-        image.classList.add(Utils.cssifyName(buff.name));
-        imageContainer.appendChild(image);
+        var achievementBody = document.createElement('div');
+        achievementBody.classList.add('achievement-body');
+        achievementContainer.appendChild(achievementBody);
 
-        var duration = document.createElement('div');
-        duration.classList.add('buff-header');
-        container.appendChild(duration);
+        var achievementTitle = document.createElement('div');
+        achievementTitle.classList.add('achievement-title');
+        achievementTitle.textContent = achievement.name;
+        achievementBody.appendChild(achievementTitle);
 
-        buffContainer.appendChild(container);
-        buff.container = container;
-        buff.durationElm = duration;
+        var achievementDescription = document.createElement('div');
+        achievementDescription.classList.add('achievement-description');
+        achievementDescription.textContent = achievement.getTooltip();
+        achievementBody.appendChild(achievementDescription);
+
+        var achievementProgressContainer = document.createElement('div');
+        achievementProgressContainer.classList.add('achievement-progress-container');
+        achievementBody.appendChild(achievementProgressContainer);
+
+        var achievementProgress = document.createElement('div');
+        achievementProgress.classList.add('achievement-progress');
+        achievementProgress.style.width = '0%';
+        achievementProgressContainer.appendChild(achievementProgress);
+        achievement.progressBar = achievementProgress;
+        achievementPane.appendChild(achievementContainer);
     }
 
-    function update(id, timeActive) {
-        var buff = buffs[id];
-        buff.timeActive = timeActive;
-        buff.durationElm.textContent = '(' + Utils.formatTime(buff.duration - timeActive) + ')';
-        buff.container.style.display = timeActive == 0 ? 'none' : 'inline-block';
+    function reverseRequire() {
+        achievements.forEach(function (achievement) {
+            if (achievement.requires != null) {
+                achievement.requires.requiredBy = achievement;
+            }
+        });
     }
-    Buffs.update = update;
-    init();
-})(Buffs || (Buffs = {}));
+
+    function updateAchievement(id, progress) {
+        if (!reverseRequired) {
+            reverseRequire();
+            reverseRequired = true;
+        }
+
+        var achievement = achievements[id];
+        if (!achievement)
+            return;
+        if (!progress)
+            progress = 0;
+
+        achievement.progress = progress;
+        achievement.trickleDown(progress);
+    }
+    Achievements.updateAchievement = updateAchievement;
+
+    function secondsToTimePeriod(seconds) {
+        var minutes = seconds / 60;
+        if (minutes < 60) {
+            return Math.max(Math.ceil(minutes), 1) + " minutes";
+        }
+        var hours = minutes / 60;
+        if (hours < 24) {
+            return Math.max(Math.ceil(hours), 1) + ((hours <= 1) ? " hour" : " hours");
+        }
+        var days = hours / 24;
+        if (days < 30) {
+            return Math.max(Math.ceil(days), 1) + ((days <= 1) ? " day" : " days");
+        }
+        var months = days / 30;
+        if (months < 12) {
+            return Math.max(Math.ceil(months), 1) + ((months <= 1) ? " month" : " months");
+        }
+    }
+})(Achievements || (Achievements = {}));
 ///<reference path="chat.ts"/>
 ///<reference path="inventory.ts"/>
 ///<reference path="stats.ts"/>
@@ -3343,11 +3338,13 @@ var Buffs;
 ///<reference path="equipment.ts"/>
 ///<reference path="crafting.ts"/>
 ///<reference path="typings/jquery/jquery.d.ts"/>
+///<reference path="typings/dcode/long.d.ts"/>
 ///<reference path="buffs.ts"/>
 ///<reference path="register.ts"/>
 ///<reference path="modal.ts"/>
 ///<reference path="tooltip.ts"/>
 ///<reference path="ajax.ts"/>
+///<reference path="achievements.ts"/>
 var Connection;
 (function (Connection) {
     var conInterval;
@@ -3457,6 +3454,9 @@ var Connection;
         if (msg.ConnectedUsers) {
             playerCounter.textContent = 'There are ' + msg.ConnectedUsers + ' players mining.';
         }
+        if (msg.Achievements) {
+            updateAchievements(msg.Achievements);
+        }
     });
 
     function restart() {
@@ -3541,6 +3541,13 @@ var Connection;
                 Buffs.register(buff.Id, buff.Name, buff.Description, buff.Duration);
             }
         }
+        if (schema.Achievements) {
+            for (var i = 0; i < schema.Achievements.length; i++) {
+                var achievement = schema.Achievements[i];
+                console.log(achievement);
+                Achievements.register(achievement.Id, achievement.Name, achievement.RequiredId, achievement.Goal, achievement.Category);
+            }
+        }
     }
 
     function rateLimit(limited) {
@@ -3565,6 +3572,13 @@ var Connection;
         }
     }
 
+    function updateAchievements(achievements) {
+        for (var i = 0; i < achievements.length; i++) {
+            var achievement = achievements[i];
+            Achievements.updateAchievement(achievement.Id, achievement.Progress);
+        }
+    }
+
     function updateBuffs(buffs) {
         for (var i = 0; i < buffs.length; i++) {
             var buff = buffs[i];
@@ -3575,7 +3589,6 @@ var Connection;
     function receiveGlobalMessages(messages) {
         for (var i = 0; i < messages.length; i++) {
             var msg = messages[i];
-            console.log(msg);
             Chat.receiveGlobalMessage(msg.Sender, msg.Text, msg.Time, msg.Permissions);
         }
     }
@@ -3633,6 +3646,7 @@ var Connection;
         var sellAction = new Komodo.ClientActions.InventoryAction.SellAction();
         sellAction.Id = id;
         sellAction.Quantity = quantity;
+        console.log(quantity);
         inventoryAction.Sell = sellAction;
         actions.InventoryActions.push(inventoryAction);
     }

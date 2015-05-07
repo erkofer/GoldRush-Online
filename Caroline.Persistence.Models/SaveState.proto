@@ -59,5 +59,9 @@ message SaveState
 	}
 	repeated Buff Buffs=8;
 
-	optional int64 TimePlayed=9;
+	message Statistic {
+		optional int32 Id=1;
+		optional int64 Value=2;
+	}
+	repeated Statistic Statistics=9;
 }

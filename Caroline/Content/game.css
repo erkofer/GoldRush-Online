@@ -907,3 +907,70 @@ td {
     padding: 5px;
     text-align: center;
 }
+
+.achievement {
+    width: 200px;
+    height: 64px;
+    margin: 3px;
+    display: inline-block;
+    overflow: hidden;
+}
+
+.achievement-image {
+    width: 64px;
+    height: 64px;
+    float: left;
+}
+
+.achievement.locked .achievement-image {
+    display: none;
+}
+
+.achievement-body {
+    margin-left: 64px;
+    height: 64px;
+    position: relative;
+}
+
+.achievement.locked .achievement-body {
+    margin-left: 0px;
+}
+
+.achievement-title {
+    font-size: 14px;
+}
+
+.achievement.locked .achievement-title {
+    display: none;
+}
+
+.achievement.locked .achievement-title:after {
+    content: "???";
+    display: inline-block;
+}
+
+.achievement-description {
+    font-size: 11px;
+}
+
+.achievement.locked .achievement-description {
+    display: none;
+}
+
+
+.achievement-progress-container {
+    width: 100%;
+    height: 3px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+
+.achievement.locked .achievement-progress-container {
+    display: none;
+}
+
+
+.achievement-progress {
+    height: 3px;
+}

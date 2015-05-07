@@ -6,11 +6,13 @@
 ///<reference path="equipment.ts"/>
 ///<reference path="crafting.ts"/>
 ///<reference path="typings/jquery/jquery.d.ts"/>
+///<reference path="typings/dcode/long.d.ts"/>
 ///<reference path="buffs.ts"/>
 ///<reference path="register.ts"/>
 ///<reference path="modal.ts"/>
 ///<reference path="tooltip.ts"/>
 ///<reference path="ajax.ts"/>
+///<reference path="achievements.ts"/>
 
 module Connection {
     declare var Komodo: { connection: any; ClientActions: any; decode: any; send: any; restart: any };
@@ -20,6 +22,7 @@ module Connection {
     var networkErrorElm;
     var rateLimitedElm;
     var playerCounter;
+    
     
     function init() {
         var headerLinks = document.getElementsByClassName('header-links')[0];
@@ -114,12 +117,14 @@ module Connection {
         if (msg.ConnectedUsers) {
             playerCounter.textContent = 'There are ' + msg.ConnectedUsers + ' players mining.';
         }
+        if (msg.Achievements) {
+            updateAchievements(msg.Achievements);
+        }
     });
 
     export function restart() {
         Komodo.restart();
     }
-
 
     var actions = new Komodo.ClientActions();
 
@@ -154,13 +159,12 @@ module Connection {
     }
 
     function disconnected() {
-        console.log('Connection lost')
+        console.log('Connection lost');
         networkErrorElm.style.top = '0px';
         disconInterval = setTimeout(function () {
             Komodo.restart();
         }, 5000);
     }
-
 
     function loadSchema(schema: any) {
         if (schema.Items) {
@@ -198,6 +202,13 @@ module Connection {
                 Buffs.register(buff.Id, buff.Name, buff.Description, buff.Duration);
             }
         }
+        if (schema.Achievements) {
+            for (var i = 0; i < schema.Achievements.length; i++) {
+                var achievement = schema.Achievements[i];
+                console.log(achievement);
+                Achievements.register(achievement.Id, achievement.Name, achievement.RequiredId, achievement.Goal, achievement.Category);
+            }
+        }
     }
 
     function rateLimit(limited: any) {
@@ -221,6 +232,13 @@ module Connection {
         }
     }
 
+    function updateAchievements(achievements: any) {
+        for (var i = 0; i < achievements.length; i++) {
+            var achievement = achievements[i];
+            Achievements.updateAchievement(achievement.Id, achievement.Progress);
+        }
+    }
+
     function updateBuffs(buffs: any) {
         for (var i = 0; i < buffs.length; i++){
             var buff = buffs[i];
@@ -232,7 +250,6 @@ module Connection {
         for (var i = 0; i < messages.length; i++) {
 
             var msg = messages[i];
-            console.log(msg);
             Chat.receiveGlobalMessage(msg.Sender, msg.Text, msg.Time, msg.Permissions);
         }
     }
@@ -289,6 +306,7 @@ module Connection {
         var sellAction = new Komodo.ClientActions.InventoryAction.SellAction();
         sellAction.Id = id;
         sellAction.Quantity = quantity;
+        console.log(quantity);
         inventoryAction.Sell = sellAction;
         actions.InventoryActions.push(inventoryAction);
     }

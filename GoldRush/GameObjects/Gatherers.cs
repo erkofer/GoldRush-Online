@@ -85,6 +85,7 @@ namespace GoldRush
             if (AntiCheat(x, y))
             {
                 Player.Mine(1000);
+                Game.Statistics.RockClicked.Value++;
                 AntiCheatNextChange--;
             }
 

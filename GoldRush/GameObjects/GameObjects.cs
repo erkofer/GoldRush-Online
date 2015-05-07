@@ -11,6 +11,7 @@ namespace GoldRush
         public GameObjects()
         {
             Random = new Random();
+            Statistics = new Statistics();
             Items = new Items(this);
             Gatherers = new Gatherers(this);
             Processing = new Processing(this);
@@ -26,6 +27,7 @@ namespace GoldRush
         }
 
         public Random Random;
+        public Statistics Statistics;
         public Items Items;
         //GameId = 200
         public Upgrades Upgrades;
