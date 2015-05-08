@@ -82,6 +82,7 @@
   <ItemGroup>
     <Compile Include="ChatroomManager.cs" />
     <Compile Include="Identity.cs" />
+    <Compile Include="MarketPlace.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -25,7 +25,7 @@ namespace Caroline.Domain
         public static async Task<UserManager> CreateAsync()
         {
             var db = await CarolineRedisDb.CreateAsync();
-            var mongo = CarolineMongoDb.Create();
+            var mongo = CarolineMongoDb.CreateAsync();
             return new UserManager(db, mongo, new RedisUserStore(db));
         }
 
@@ -78,7 +78,7 @@ namespace Caroline.Domain
         public static UserManager Create(IdentityFactoryOptions<UserManager> options, IOwinContext context)
         {
             var db = CarolineRedisDb.Create();
-            var mongo = CarolineMongoDb.Create();
+            var mongo = CarolineMongoDb.CreateAsync();
             var store = new RedisUserStore(db);
             var manager = new UserManager(db, mongo, store);
             // Configure validation logic for usernames

@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GoldRush.Market
+﻿namespace GoldRush.Market
 {
-    class Order
+    public class Order
     {
+        public Order() { }
         public Order(int id, bool selling, int quantity, int unitWorth)
         {
             Id = id;

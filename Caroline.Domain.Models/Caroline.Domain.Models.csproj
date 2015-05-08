@@ -54,9 +54,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ComparisonPredicate.cs" />
     <Compile Include="DtoBase.cs" />
     <Compile Include="Message.cs" />
     <Compile Include="MessageUser.cs" />
+    <Compile Include="Order.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Results.cs" />
     <Compile Include="UserChatroom.cs" />

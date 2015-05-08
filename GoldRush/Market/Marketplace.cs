@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GoldRush.Market
 {
@@ -12,7 +9,7 @@ namespace GoldRush.Market
         //TODO: attach a unique transaction id to each order.
 
         //TODO: tristyn save this to db pls.
-        private static List<Order> orders = new List<Order>(); 
+        private static List<Order> orders = new List<Order>();
 
         static Marketplace()
         {
@@ -79,19 +76,18 @@ namespace GoldRush.Market
             if (selling)
             {
                 // sort the alike orders in descending value
-                alikeOrders.Sort((a,b)=>a.UnitWorth.CompareTo(b.UnitWorth));
+                alikeOrders.Sort((a, b) => a.UnitWorth.CompareTo(b.UnitWorth));
                 // iterate through orders buying our items.
                 foreach (var selectedOrder in alikeOrders)
                 {
                     // if this order's offer is greater than our asking price.
                     if (selectedOrder.UnitWorth >= unitWorth)
                     {
-                        
+
                     }
                 }
             }
-           
-        }
 
+        }
     }
 }
