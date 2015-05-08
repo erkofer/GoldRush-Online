@@ -13,6 +13,7 @@ using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using StackExchange.Redis;
+using Order = StackExchange.Redis.Order;
 
 namespace Caroline.Domain
 {
@@ -25,7 +26,7 @@ namespace Caroline.Domain
         public static async Task<UserManager> CreateAsync()
         {
             var db = await CarolineRedisDb.CreateAsync();
-            var mongo = CarolineMongoDb.Create();
+            var mongo = await CarolineMongoDb.CreateAsync();
             return new UserManager(db, mongo, new RedisUserStore(db));
         }
 
@@ -67,7 +68,7 @@ namespace Caroline.Domain
 
         public Task SetLeaderboardEntry(long userId, long value)
         {
-            return _redis.HighScores.Add(new ScoreEntry {ListName = "lb", UserId = userId, Score = value});
+            return _redis.HighScores.Add(new ScoreEntry { ListName = "lb", UserId = userId, Score = value });
         }
 
         public Task<string> GetUsername(long userid)
@@ -78,7 +79,7 @@ namespace Caroline.Domain
         public static UserManager Create(IdentityFactoryOptions<UserManager> options, IOwinContext context)
         {
             var db = CarolineRedisDb.Create();
-            var mongo = CarolineMongoDb.Create();
+            var mongo = Task.Run(() => CarolineMongoDb.CreateAsync()).Result; // ive been haaacked and I hate it.
             var store = new RedisUserStore(db);
             var manager = new UserManager(db, mongo, store);
             // Configure validation logic for usernames
@@ -117,7 +118,7 @@ namespace Caroline.Domain
         readonly UserManager<User, long> _manager;
         private readonly IUserEmailStore<User, long> _emailStore;
 
-        public GoldRushUserValidator(UserManager<User, long> manager, IUserEmailStore<User,long> emailStore)
+        public GoldRushUserValidator(UserManager<User, long> manager, IUserEmailStore<User, long> emailStore)
             : base(manager)
         {
             _manager = manager;
@@ -152,7 +153,7 @@ namespace Caroline.Domain
 
             if (illegalChars != null && illegalChars.Count > 0)
                 errors.Add("Your username may only contain letters, numbers, spaces and underscores.");
-            
+
             return errors.Count > 0 ? new IdentityResult(errors) : IdentityResult.Success;
         }
 
