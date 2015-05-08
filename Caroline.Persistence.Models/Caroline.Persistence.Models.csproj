@@ -66,7 +66,7 @@
     <Compile Include="IIdentifiableObject.cs" />
     <Compile Include="IpEndpoint.cs" />
     <Compile Include="GameSession.cs" />
-    <Compile Include="Order.cs" />
+    <Compile Include="StaleOrder.cs" />
     <Compile Include="Pair.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <!-- <Compile Include="SaveState.cs" /> -->

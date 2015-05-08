@@ -86,6 +86,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CarolineDb.cs" />
     <Compile Include="CarolineMongoDb.cs" />
     <Compile Include="CarolineRedisDb.cs" />
     <Compile Include="RedisUserStore.cs" />

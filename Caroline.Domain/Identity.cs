@@ -153,7 +153,7 @@ namespace Caroline.Domain
 
             if (illegalChars != null && illegalChars.Count > 0)
                 errors.Add("Your username may only contain letters, numbers, spaces and underscores.");
-
+            
             return errors.Count > 0 ? new IdentityResult(errors) : IdentityResult.Success;
         }
 

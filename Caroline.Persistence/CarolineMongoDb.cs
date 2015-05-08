@@ -40,7 +40,6 @@ namespace Caroline.Persistence
             return new CarolineMongoDb();
         }
 
-        public IMongoCollection<Order> Orders { get { return _orders; } }
-        static IMongoCollection<Order> _orders { get; set; }
+        //public IMongoCollection<MongoGame> GameSnapshots { get; set; }
     }
 }
