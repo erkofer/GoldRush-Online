@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Caroline.Domain;
@@ -76,7 +75,6 @@ namespace Caroline.App
             if (actions == null || actions.SocialActions == null || actions.SocialActions.Count == 0)
                 return new List<GameState.ChatMessage>();
 
-            var now = DateTime.UtcNow.ToShortTimeString();
             var ret = new List<GameState.ChatMessage>();
             for (var i = 0; i < actions.SocialActions.Count; i++)
             {

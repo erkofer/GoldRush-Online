@@ -2,7 +2,7 @@
 {
     public class Order
     {
-        public long OwnerId { get; set; }
+        public long GameId { get; set; }
 
         /// <summary>
         /// Whether or not this order is a sell order.

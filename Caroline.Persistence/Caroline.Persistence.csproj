@@ -89,6 +89,7 @@
     <Compile Include="CarolineDb.cs" />
     <Compile Include="CarolineMongoDb.cs" />
     <Compile Include="CarolineRedisDb.cs" />
+    <Compile Include="Extensions\MongoCollectionEx.cs" />
     <Compile Include="RedisUserStore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -110,9 +111,7 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Extensions\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

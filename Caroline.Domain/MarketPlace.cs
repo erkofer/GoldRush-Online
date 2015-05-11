@@ -2,7 +2,9 @@
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Caroline.Domain.Models;
 using Caroline.Persistence;
+using Caroline.Persistence.Extensions;
 using Caroline.Persistence.Models;
 using MongoDB.Driver;
 using Nito.AsyncEx;
@@ -12,7 +14,6 @@ namespace Caroline.Domain
 {
     class MarketPlace
     {
-        CarolineRedisDb _redis = CarolineRedisDb.Create();
         static CarolineMongoDb _mongo;
         static readonly AsyncLock StaticInitializationLock = new AsyncLock();
         static readonly log4net.ILog Log = log4net.LogManager.GetLogger
@@ -28,67 +29,149 @@ namespace Caroline.Domain
             return new MarketPlace();
         }
 
-        public async Task Transact(DomainOrder order)
+        public async Task<StaleOrder> Transact(DomainOrder order)
         {
-            var isCounterPartSelling = !order.IsSelling;
-            var orderSearchPredicate = order.IsSelling 
-                ? ComparisonPredicate.GreaterThan 
+            var isStaleOrderSelling = !order.IsSelling;
+            var orderSearchPredicate = order.IsSelling
+                ? ComparisonPredicate.GreaterThan
                 : ComparisonPredicate.LessThan;
-            var freshOrder = new StaleOrder
-            {
-                Quantity = order.Quantity,
-                UnfulfilledQuantity = order.Quantity,
-                IsSelling = order.IsSelling,
-                ItemId = order.ItemId,
-                UnitValue = order.UnitValue
-            };
 
-            while (order.Quantity > 0)
+            var freshOrder = BuildStaleOrder(order);
+
+            while (freshOrder.UnfulfilledQuantity > 0)
             {
-                var staleOrder = await GetOrder(order.ItemId, isCounterPartSelling, order.UnitValue, orderSearchPredicate);
+                var staleOrder = await GetOrder(order.ItemId, isStaleOrderSelling, order.UnitValue, orderSearchPredicate);
                 if (staleOrder == null)
                     break;
 
-                var unitsTransacted = Math.Min(staleOrder.Quantity, order.Quantity);
+                var sellOrder = isStaleOrderSelling ? staleOrder : freshOrder;
+                var buyOrder = isStaleOrderSelling ? freshOrder : staleOrder;
+
+                var unitsTransacted = Math.Min(staleOrder.UnfulfilledQuantity, freshOrder.UnfulfilledQuantity);
                 freshOrder.UnfulfilledQuantity -= unitsTransacted;
-                // TODO: check uses of unfulfilledQuantity after its been changed from fulfilledQuantity
-                // TODO: code switching from buy/sell orders to fresh/stale orders
                 staleOrder.UnfulfilledQuantity -= unitsTransacted;
 
-                // delete or update stale order
-                if (staleOrder.Quantity == 0)
-                    // remove buy order from active marketplace
-                    // TODO: !!! process return values of these calls to check for races, retry
-                    await DeleteStaleOrder(staleOrder.Id);
-                else
-                    await UpdateStaleOrder(staleOrder);
+                // exchange money and items
+                var moneyExchanged = staleOrder.UnitValue * unitsTransacted;
+                sellOrder.TotalMoneyRecieved += moneyExchanged;
+                sellOrder.UnclaimedMoneyRecieved += moneyExchanged;
+                buyOrder.TotalItemsRecieved += unitsTransacted;
+                buyOrder.UnclaimedItemsRecieved += unitsTransacted;
 
-                // stale order advantage, give buyer the difference in price
-                var differenceToRefund = (staleOrder.UnitWorth - order.UnitValue) * unitsTransacted;
-                GiveBuyerMoney(differenceToRefund);
+                // stale order advantage, give stale order the difference in price
+                var differenceToRefund = MathHelpers.Difference(staleOrder.UnitValue, freshOrder.UnitValue) * unitsTransacted;
+                staleOrder.TotalMoneyRecieved += differenceToRefund;
 
+                var result = await UpdateStaleOrder(staleOrder);
+                switch (result)
+                {
+                    case VersionedUpdateResult.Success:
+                        continue;
+                    case VersionedUpdateResult.WrongVersion:
+                        // reset freshOrder and try again
+                        // staleOrder wasn't sent to the DB, but freshOrder has been modified
+                        ResetOrder(freshOrder, unitsTransacted, moneyExchanged);
+                        break;
+                    case VersionedUpdateResult.DoesNotExist:
+                        Log.Warn("Attempted to update StaleOrder with id that does not exist in DB.");
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
 
-            // update sell order
-            if (order.Quantity == 0)
-                ; // delete order.. but we never commited it to the db so what ever
-            else
-                UpdateStaleOrder(order);
+            await InsertOrder(freshOrder);
+            return freshOrder;
         }
 
-        async Task<StaleOrder> GetOrder(long itemId, bool isSelling, long unitValue, ComparisonPredicate unitValueComparison)
+        public Task<StaleOrder> GetOrder(long id)
+        {
+            return _mongo.Orders.SingleOrDefault(o => o.Id == id);
+        }
+
+        public Task<IAsyncCursor<StaleOrder>> GetOrders(long gameId)
+        {
+            return _mongo.Orders.FindAsync(o => o.GameId == gameId);
+        }
+
+        public async Task<OrderClaimResult> ClaimOrderContents(long id, ClaimField field)
+        {
+            var order = await _mongo.Orders.SingleOrDefault(o => o.Id == id);
+            if (order == null)
+                return new OrderClaimResult { Status = VersionedUpdateResult.DoesNotExist };
+            long numClaimed;
+            switch (field)
+            {
+                case ClaimField.Items:
+                    numClaimed = order.UnclaimedItemsRecieved;
+                    order.UnclaimedItemsRecieved = 0;
+                    break;
+                case ClaimField.Money:
+                    numClaimed = order.UnclaimedMoneyRecieved;
+                    order.UnclaimedMoneyRecieved = 0;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("field");
+            }
+
+            var updateResult = await UpdateStaleOrder(order);
+            switch (updateResult)
+            {
+                case VersionedUpdateResult.Success:
+                    return new OrderClaimResult { NumItems = numClaimed, Status = VersionedUpdateResult.Success };
+                case VersionedUpdateResult.WrongVersion:
+                    return new OrderClaimResult { Status = VersionedUpdateResult.WrongVersion };
+                case VersionedUpdateResult.DoesNotExist:
+                    return new OrderClaimResult { Status = VersionedUpdateResult.DoesNotExist };
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        static StaleOrder BuildStaleOrder(DomainOrder order)
+        {
+            return new StaleOrder
+            {
+                ItemId = order.ItemId,
+                GameId = order.GameId,
+                UnitValue = order.UnitValue,
+                Quantity = order.Quantity,
+                UnfulfilledQuantity = order.Quantity,
+                IsSelling = order.IsSelling,
+                Version = 1
+            };
+        }
+
+        static void ResetOrder(StaleOrder order, long unitsTransacted, long moneyExchanged)
+        {
+            order.UnfulfilledQuantity += unitsTransacted;
+            if (order.IsSelling)
+            {
+                order.TotalMoneyRecieved -= moneyExchanged;
+                order.UnclaimedMoneyRecieved -= moneyExchanged;
+            }
+            else
+            {
+                order.TotalItemsRecieved -= unitsTransacted;
+                order.UnclaimedItemsRecieved -= unitsTransacted;
+            }
+        }
+
+        static async Task<StaleOrder> GetOrder(long itemId, bool isSelling, long unitValue, ComparisonPredicate unitValueComparison)
         {
             Expression<Func<StaleOrder, bool>> predicate;
             switch (unitValueComparison)
             {
                 case ComparisonPredicate.GreaterThan:
-                    predicate = o => o.ItemId == itemId
+                    predicate = o
+                        => o.ItemId == itemId
                         && o.IsSelling == isSelling
                         && o.UnfulfilledQuantity != 0
                         && o.UnitValue >= unitValue;
                     break;
                 case ComparisonPredicate.LessThan:
-                    predicate = o => o.ItemId == itemId
+                    predicate = o
+                        => o.ItemId == itemId
                         && o.IsSelling == isSelling
                         && o.UnfulfilledQuantity != 0
                         && o.UnitValue <= unitValue;
@@ -102,7 +185,7 @@ namespace Caroline.Domain
             return list.SingleOrDefault();
         }
 
-        async Task InsertStaleOrder(StaleOrder staleOrder)
+        static async Task InsertOrder(StaleOrder staleOrder)
         {
             if (staleOrder.Version != 0)
             {
@@ -120,7 +203,7 @@ namespace Caroline.Domain
             staleOrder.Id = result.UpsertedId.AsInt64;
         }
 
-        async Task<VersionedUpdateResult> UpdateStaleOrder(StaleOrder staleOrder)
+        static async Task<VersionedUpdateResult> UpdateStaleOrder(StaleOrder staleOrder)
         {
             var oldVersion = staleOrder.Version++;
             var result = await _mongo.Orders.UpdateOneAsync(o => o.Id == staleOrder.Id && o.Version == oldVersion, new ObjectUpdateDefinition<StaleOrder>(staleOrder));
@@ -136,29 +219,6 @@ namespace Caroline.Domain
             Log.Warn("Multiple Orders with the same Id " + staleOrder.Id);
             return VersionedUpdateResult.DoesNotExist;
         }
-
-        async Task<bool> DeleteStaleOrder(long id)
-        {
-            var result = await _mongo.Orders.DeleteOneAsync(e => e.Id == id);
-            return result.DeletedCount == 1;
-        }
-
-        Task SendMoney(long gameId, long amount)
-        {
-            throw new NotImplementedException();
-        }
-
-        Task SendItems(long itemId, long amount)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    internal enum VersionedUpdateResult
-    {
-        Success,
-        WrongVersion,
-        DoesNotExist
     }
 
     internal enum ComparisonPredicate

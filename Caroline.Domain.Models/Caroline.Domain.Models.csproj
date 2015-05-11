@@ -54,6 +54,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="OrderClaimResult.cs" />
+    <Compile Include="ClaimField.cs" />
     <Compile Include="ComparisonPredicate.cs" />
     <Compile Include="DtoBase.cs" />
     <Compile Include="Message.cs" />
@@ -63,6 +65,7 @@
     <Compile Include="Results.cs" />
     <Compile Include="UserChatroom.cs" />
     <Compile Include="UserDto.cs" />
+    <Compile Include="VersionedUpdateResult.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
