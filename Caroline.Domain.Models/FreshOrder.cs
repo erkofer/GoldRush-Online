@@ -1,8 +1,10 @@
 ﻿namespace Caroline.Domain.Models
 {
-    public class Order
+    public class FreshOrder
     {
         public long GameId { get; set; }
+
+        public long ItemId { get; set; }
 
         /// <summary>
         /// Whether or not this order is a sell order.
@@ -18,7 +20,5 @@
         /// The value of each item being sold.
         /// </summary>
         public long UnitValue { get; set; }
-
-        public long ItemId { get; set; }
     }
 }

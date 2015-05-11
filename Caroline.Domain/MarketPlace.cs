@@ -8,11 +8,10 @@ using Caroline.Persistence.Extensions;
 using Caroline.Persistence.Models;
 using MongoDB.Driver;
 using Nito.AsyncEx;
-using DomainOrder = Caroline.Domain.Models.Order;
 
 namespace Caroline.Domain
 {
-    class MarketPlace
+    public class MarketPlace
     {
         static CarolineMongoDb _mongo;
         static readonly AsyncLock StaticInitializationLock = new AsyncLock();
@@ -29,7 +28,7 @@ namespace Caroline.Domain
             return new MarketPlace();
         }
 
-        public async Task<StaleOrder> Transact(DomainOrder order)
+        public async Task<StaleOrder> Transact(FreshOrder order)
         {
             var isStaleOrderSelling = !order.IsSelling;
             var orderSearchPredicate = order.IsSelling
@@ -89,55 +88,62 @@ namespace Caroline.Domain
             return _mongo.Orders.SingleOrDefault(o => o.Id == id);
         }
 
-        public Task<IAsyncCursor<StaleOrder>> GetOrders(long gameId)
+        public Task<IAsyncCursor<StaleOrder>> GetOrdersByGame(long gameId)
         {
             return _mongo.Orders.FindAsync(o => o.GameId == gameId);
         }
 
-        public async Task<OrderClaimResult> ClaimOrderContents(long id, ClaimField field)
+        public async Task<long?> ClaimOrderContents(long id, ClaimField field)
         {
-            var order = await _mongo.Orders.SingleOrDefault(o => o.Id == id);
-            if (order == null)
-                return new OrderClaimResult { Status = VersionedUpdateResult.DoesNotExist };
-            long numClaimed;
-            switch (field)
+            int i;
+            for (i = 0; i < 10; i++)
             {
-                case ClaimField.Items:
-                    numClaimed = order.UnclaimedItemsRecieved;
-                    order.UnclaimedItemsRecieved = 0;
-                    break;
-                case ClaimField.Money:
-                    numClaimed = order.UnclaimedMoneyRecieved;
-                    order.UnclaimedMoneyRecieved = 0;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException("field");
+                var order = await _mongo.Orders.SingleOrDefault(o => o.Id == id);
+                if (order == null)
+                    return null;
+                long numClaimed;
+                switch (field)
+                {
+                    case ClaimField.Items:
+                        numClaimed = order.UnclaimedItemsRecieved;
+                        order.UnclaimedItemsRecieved = 0;
+                        break;
+                    case ClaimField.Money:
+                        numClaimed = order.UnclaimedMoneyRecieved;
+                        order.UnclaimedMoneyRecieved = 0;
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException("field");
+                }
+
+                var updateResult = await UpdateStaleOrder(order);
+                switch (updateResult)
+                {
+                    case VersionedUpdateResult.Success:
+                        return numClaimed;
+                    case VersionedUpdateResult.WrongVersion:
+                        continue; // retry
+                    case VersionedUpdateResult.DoesNotExist:
+                        return null;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
 
-            var updateResult = await UpdateStaleOrder(order);
-            switch (updateResult)
-            {
-                case VersionedUpdateResult.Success:
-                    return new OrderClaimResult { NumItems = numClaimed, Status = VersionedUpdateResult.Success };
-                case VersionedUpdateResult.WrongVersion:
-                    return new OrderClaimResult { Status = VersionedUpdateResult.WrongVersion };
-                case VersionedUpdateResult.DoesNotExist:
-                    return new OrderClaimResult { Status = VersionedUpdateResult.DoesNotExist };
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            Log.Warn("MarketPlace.ClaimOrderContents retried " + i + "times and failed with WrongVersion.");
+            return null;
         }
 
-        static StaleOrder BuildStaleOrder(DomainOrder order)
+        static StaleOrder BuildStaleOrder(FreshOrder freshOrder)
         {
             return new StaleOrder
             {
-                ItemId = order.ItemId,
-                GameId = order.GameId,
-                UnitValue = order.UnitValue,
-                Quantity = order.Quantity,
-                UnfulfilledQuantity = order.Quantity,
-                IsSelling = order.IsSelling,
+                ItemId = freshOrder.ItemId,
+                GameId = freshOrder.GameId,
+                UnitValue = freshOrder.UnitValue,
+                Quantity = freshOrder.Quantity,
+                UnfulfilledQuantity = freshOrder.Quantity,
+                IsSelling = freshOrder.IsSelling,
                 Version = 1
             };
         }

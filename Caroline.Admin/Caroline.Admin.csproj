@@ -55,18 +55,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Caroline.Persistence.Models.Tests\Caroline.Persistence.Models.Tests.csproj">
-      <Project>{b67db907-3271-4571-8f80-fc9bf7f92d0a}</Project>
-      <Name>Caroline.Persistence.Models.Tests</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Caroline.Persistence.Models\Caroline.Persistence.Models.csproj">
-      <Project>{7d8032ab-3c86-4894-b5fa-302ac5b474e5}</Project>
-      <Name>Caroline.Persistence.Models</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Caroline.Persistence.Redis.Tests\Caroline.Persistence.Redis.Tests.csproj">
-      <Project>{8d3daa43-511f-4245-9c34-f4bbcb70f9e2}</Project>
-      <Name>Caroline.Persistence.Redis.Tests</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Caroline.Persistence.Redis\Caroline.Persistence.Redis.csproj">
       <Project>{41a2679f-2075-4fad-8306-ce7645a68eba}</Project>
       <Name>Caroline.Persistence.Redis</Name>

@@ -1,5 +1,6 @@
 ﻿using Caroline.Persistence.Models;
 using Caroline.App.Models;
+using GoldRush.Market;
 
 namespace GoldRush.APIs
 {
@@ -7,6 +8,7 @@ namespace GoldRush.APIs
     {
         public ClientActions ClientActions { get; set; }
         public GameSession Session { get; set; }
+        public IMarketPlace MarketPlace { get; set; }
     }
 
     public class UpdateDto

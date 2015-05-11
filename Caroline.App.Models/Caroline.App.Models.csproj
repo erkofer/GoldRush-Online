@@ -56,12 +56,6 @@
     <ProtoBuf Include="descriptor.proto" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Caroline.Persistence.Models\Caroline.Persistence.Models.csproj">
-      <Project>{7d8032ab-3c86-4894-b5fa-302ac5b474e5}</Project>
-      <Name>Caroline.Persistence.Models</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="BeforeBuild">
     <Copy SourceFiles="$(SolutionDir)\Caroline.App.Models\csharp_options.proto" DestinationFolder="$(SolutionDir)\Caroline\Content" />

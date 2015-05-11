@@ -34,8 +34,10 @@ namespace Caroline.App
             var game = _sessionFactory.Create();
             game.Load(new LoadArgs { SaveState = save });
 
+            var marketPlace = new MarketPlaceGlue(await MarketPlace.CreateAsync());
+            
             // update save with new input
-            var updateDto = game.Update(new UpdateArgs { ClientActions = input, Session = session });
+            var updateDto = await game.Update(new UpdateArgs { ClientActions = input, Session = session, MarketPlace = marketPlace });
 
             var errors = await SendMessages(user, input, chat);
             var messages = await chat.GetRecentMessages(session.LastChatMessageRecieved);

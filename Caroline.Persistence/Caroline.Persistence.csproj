@@ -102,10 +102,6 @@
       <Project>{41a2679f-2075-4fad-8306-ce7645a68eba}</Project>
       <Name>Caroline.Persistence.Redis</Name>
     </ProjectReference>
-    <ProjectReference Include="..\GoldRush\GoldRush.csproj">
-      <Project>{60aa2d41-1721-46b8-954c-76beaec6199f}</Project>
-      <Name>GoldRush</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
