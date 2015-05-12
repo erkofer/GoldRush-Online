@@ -97,8 +97,25 @@ message GameState {
 			optional string Name=2;
 			optional double Duration=3;
 			optional string Description=4;
-	}
+		}
 		repeated SchemaBuff Buffs = 5;
+
+		message SchemaAchievement {
+			enum Section{
+			Undefined = 0;
+            Money = 1;
+            TimePlayed = 2;
+			RockClicks=3;
+			Oil=4;
+			}
+
+			optional int32 Id=1;
+			optional int32 RequiredId=2 [default = -100];
+			optional string Name=3;
+			optional Section Category=4;
+			optional int64 Goal = 5;
+		}
+		repeated SchemaAchievement Achievements=6;
 	}
 	optional Schematic GameSchema = 4; 
 
@@ -156,5 +173,11 @@ message GameState {
 		optional double RarityBonus=5;
 	}
 	repeated Gatherer Gatherers = 13;
+
+	message Achievement {
+		optional int32 Id=1;
+		optional int64 Progress=2;
+	}
+	repeated Achievement Achievements =14;
 } 
 

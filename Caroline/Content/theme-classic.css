@@ -432,3 +432,49 @@ background-image: linear-gradient(to bottom right, #CFCF00 0%, #B8B800 100%);
 .network-error-text{
     color: white;
 }
+
+.achievement {
+    background: #B0BEC5;
+    color: white;
+}
+
+.achievement.locked {
+    background: gray;
+}
+
+.achievement-image {
+    background: #78909C;
+}
+
+.achievement-progress-container {
+    background: #CFD8DC;
+}
+
+.achievement-progress {
+    background: #546E7A;
+}
+
+.market-control {
+    color: white;
+}
+
+.buy {
+    background: #33691E;
+}
+
+.buy:hover {
+    background: #558B2F;
+}
+
+.sell {
+    background: #E65100;
+}
+
+.sell:hover {
+    background: #EF6C00;
+}
+
+.market-order {
+    color: white;
+    background: #546E7A;
+}

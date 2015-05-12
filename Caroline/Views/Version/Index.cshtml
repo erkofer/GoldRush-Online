@@ -2,19 +2,32 @@
     ViewBag.Title = "Version History";
 }
 @Styles.Render("~/Content/version.css")
-
 <div class="update alpha">
     <p><b>v0.1</b></p>
+    <div class="update">
+        <p><b>v0.1.3</b> - May 6th 2015</p>
+        <p><i>This is the last update before v0.2. A lot of great stuff will be coming in the future.</i></p>
+        <p>Features</p>
+        <ul>
+            <li>Highscores can now be viewed at any rank. Navigate up or down the ranks or jump to a specific rank.</li>
+            <li>Achievements have been added. Very primitive at the moment. In the future they will be expanded.</li>
+            <li>When you log in you'll receive recently sent messages to allow you to jump into the ongoing conversation.</li>
+            <li>Items that you have not yet discovered will not be shown in the Statistics or Inventory Configuration menus.</li>
+        </ul>
+        <p>Experimental</p>
+        <ul>
+            <li>
+                <p>Material Design</p>
+                <p>I'm looking into changing the game's UI up a little bit. The achievements page is a preview of how the game might look if it is rewritten according to Google's standards. Let me know what you think!</p>
+            </li>
+        </ul>
+    </div>
     <div class="update wipe">
         <p><b>v0.1.2</b> - April 27th 2015</p>
         <p>Features</p>
         <ul>
-            <li>
-                Gatherer page expanded to show more information.
-            </li>
-            <li>
-                Furnace and Cauldron now require upgrades to unlock.
-            </li>
+            <li>Gatherer page expanded to show more information.</li>
+            <li>Furnace and Cauldron now require upgrades to unlock.</li>
         </ul>
         <p>Fixes</p>
         <ul>
@@ -29,48 +42,26 @@
                     <li>Loading indicator added.</li>
                 </ul>
             </li>
-            <li>
-                Chat system rewritten in preparation for friends chat, group chat, etc.
-            </li>
+            <li>Chat system rewritten in preparation for friends chat, group chat, etc.</li>
         </ul>
     </div>
     <div class="update wipe">
         <p><b>v0.1.1</b></p>
         <p>Features</p>
         <ul>
-            <li>
-                Leaderboards added.
-            </li>
-            <li>
-                Gatherers can now be disabled to stop them from consuming fuel and gatherering resources.
-            </li>
-            <li>
-                Added particles to rock.
-            </li>
-            <li>
-                Rock is now more obviously clickable.
-            </li>
+            <li>Leaderboards added.</li>
+            <li>Gatherers can now be disabled to stop them from consuming fuel and gatherering resources.</li>
+            <li>Added particles to rock.</li>
+            <li>Rock is now more obviously clickable.</li>
         </ul>
         <p>Fixes</p>
         <ul>
-            <li>
-                Item quantities no longer overflow to negative.
-            </li>
-            <li>
-                Oil consumption correctly rounds.
-            </li>
-            <li>
-                Sell all items configuration window looks better at low resolutions.
-            </li>
-            <li>
-                All gatherers now correctly gather resources after an offline period.
-            </li>
-            <li>
-                Craftable upgrades now have descriptions.
-            </li>
-            <li>
-                Player counter hopefully more accurate.
-            </li>
+            <li>Item quantities no longer overflow to negative.</li>
+            <li>Oil consumption correctly rounds.</li>
+            <li>Sell all items configuration window looks better at low resolutions.</li>
+            <li>All gatherers now correctly gather resources after an offline period.</li>
+            <li>Craftable upgrades now have descriptions.</li>
+            <li>Player counter hopefully more accurate.</li>
         </ul>
         <div class="update">
             <p><b>v0.1.1a</b></p>
@@ -87,5 +78,4 @@
             <li>Initial release.</li>
         </ul>
     </div>
-
 </div>

@@ -10,7 +10,7 @@ namespace GoldRush
 {
     class Gatherers
     {
-        public GameObjects Game;
+        private GameObjects Game;
         private Random acRandom = new Random();
         public Gatherers(GameObjects game)
         {
@@ -85,6 +85,7 @@ namespace GoldRush
             if (AntiCheat(x, y))
             {
                 Player.Mine(1000);
+                Game.Statistics.RockClicked.Value++;
                 AntiCheatNextChange--;
             }
 

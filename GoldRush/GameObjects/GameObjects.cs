@@ -11,12 +11,14 @@ namespace GoldRush
         public GameObjects()
         {
             Random = new Random();
+            Statistics = new Statistics();
             Items = new Items(this);
             Gatherers = new Gatherers(this);
             Processing = new Processing(this);
             Upgrades = new Upgrades(this);
             Crafting = new Crafting(this);
             Store = new Store(this);
+            Achievements = new Achievements(this);
             // Add all gameobjects to a big dictionary.
             All = new Dictionary<int,GameObject>();
             foreach (var item in Items.All) { All.Add(item.Key, item.Value); }
@@ -25,6 +27,7 @@ namespace GoldRush
         }
 
         public Random Random;
+        public Statistics Statistics;
         public Items Items;
         //GameId = 200
         public Upgrades Upgrades;
@@ -33,6 +36,7 @@ namespace GoldRush
         public Store Store;
         public Crafting Crafting;
         public Processing Processing;
+        public Achievements Achievements;
         public Dictionary<int,GameObject> All;
 
         public void Update(int ms)

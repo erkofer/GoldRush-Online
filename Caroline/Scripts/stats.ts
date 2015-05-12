@@ -8,6 +8,7 @@
         lifetimeQuantity: number;
         alltimeRow: HTMLElement;
         prestigeRow: HTMLElement;
+        row: HTMLElement;
 
         constructor() {
 
@@ -26,6 +27,7 @@
             item.lifetimeQuantity = lifetime;
             Objects.setLifeTimeTotal(id, lifetime);
             item.alltimeRow.textContent = Utils.formatNumber(lifetime);
+            item.row.style.display = lifetime > 0 ? 'table-row' : 'none';
         });
     }
 
@@ -40,6 +42,7 @@
 
             var row = <HTMLTableRowElement>itemsBody.insertRow(itemsBody.rows.length);
             row.classList.add('table-row');
+            item.row = row;
             item.alltimeRow = row.insertCell(0);
             item.alltimeRow.style.width = '40%';
             item.prestigeRow = row.insertCell(0);

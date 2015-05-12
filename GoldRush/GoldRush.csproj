@@ -56,6 +56,7 @@
     <Compile Include="APIs\IKomodoSession.cs" />
     <Compile Include="APIs\KomodoDtos.cs" />
     <Compile Include="Game.cs" />
+    <Compile Include="GameObjects\Achievements.cs" />
     <Compile Include="GameObjects\Crafting.cs" />
     <Compile Include="GameObjects\GameConfig.cs" />
     <Compile Include="APIs\KomodoSessionFactory.cs" />
@@ -63,6 +64,7 @@
     <Compile Include="GameObjects\Gatherers.cs" />
     <Compile Include="GameObjects\Items.cs" />
     <Compile Include="GameObjects\Processing.cs" />
+    <Compile Include="GameObjects\Statistics.cs" />
     <Compile Include="GameObjects\Store.cs" />
     <Compile Include="APIs\KomodoSession.cs" />
     <Compile Include="Market\IMarketPlace.cs" />

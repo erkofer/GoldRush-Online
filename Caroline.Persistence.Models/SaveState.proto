@@ -58,4 +58,10 @@ message SaveState
 		optional double TimeActive=2;
 	}
 	repeated Buff Buffs=8;
+
+	message Statistic {
+		optional int32 Id=1;
+		optional int64 Value=2;
+	}
+	repeated Statistic Statistics=9;
 }

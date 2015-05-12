@@ -1,4 +1,5 @@
 ﻿module Crafting {
+    import Long = dcodeIO.Long;
     var storePane: HTMLElement;
     var processorSection: HTMLElement;
     var craftingSection: HTMLElement;
@@ -232,7 +233,8 @@
             recipe.ingredients[x].quantityDiv = ingredientQuantity;
             ingredientQuantity.style.display = 'inline-block';
             ingredientQuantity.style.verticalAlign = 'super';
-            ingredientQuantity.style.color = (recipe.ingredients[x].quantity <= Objects.getQuantity(recipe.ingredients[x].id)) ? 'darkgreen' : 'darkred';
+            var requiredIngredients = Long.fromNumber(recipe.ingredients[x].quantity).lessThanOrEqual(Long.fromNumber(Objects.getQuantity(recipe.ingredients[x].id)));
+            ingredientQuantity.style.color = (requiredIngredients) ? 'darkgreen' : 'darkred';
             ingredientQuantity.textContent = Utils.formatNumber(recipe.ingredients[x].quantity);
             ingredientImage.classList.add("Half-" + Utils.cssifyName(Objects.lookupName(recipe.ingredients[x].id)));
 
@@ -459,7 +461,7 @@
                 var completionPerc = timeToFinish / processor.operationDuration;
                 completionPerc *= 100;
                 completionPerc = 100 - completionPerc;
-                // processor.progressBar.style.width = ((((processor.operationCompletionTime - processor.operationStartTime) / processor.operationDuration)) / 10) + '%';
+                
                 processor.progressBar.style.width = completionPerc + '%';
                 processor.sidebarJobBar.style.width = completionPerc + '%';
 
@@ -481,19 +483,14 @@
             recipe.row.style.display = (quantity == -1 || !recipe.isItem && quantity > 0) ? 'none' : '';
             recipe.ingredients.forEach(ingredient => {
                 var ingQuantity = Objects.getQuantity(ingredient.id);
-                ingredient.quantityDiv.style.color = (ingQuantity >= ingredient.quantity) ? 'darkgreen' : 'darkred';
+                var hasIngredients = Long.fromNumber(ingredient.quantity).lessThanOrEqual(Long.fromNumber(ingQuantity));
+                ingredient.quantityDiv.style.color = (hasIngredients) ? 'darkgreen' : 'darkred';
             });
         });
 
         processors.forEach(processor => {
             switchProcessorRecipe(processor.id, (<HTMLSelectElement>processor.recipeSelector).selectedIndex);
         });
-        /*
-        for (var i = 0; i < recipes.length; i++) {
-            var recipe = recipes[i];
-            var quantity = Objects.getQuantity(recipe.id);
-            recipe.row.style.display = (quantity == -1) ? 'none' : 'inline-block';
-        }*/
     }
 
     function drawProcessorSidebar(processor: Processor) {
@@ -573,7 +570,6 @@
                     ingredientQuantity.style.verticalAlign = 'super';
                     ingredientQuantity.textContent = Utils.formatNumber(recipe.ingredients[x].quantity);
                     ingredientImage.classList.add("Third-" + Utils.cssifyName(Objects.lookupName(recipe.ingredients[x].id)));
-
                     ingredientBox.appendChild(ingredientImage);
                     ingredientBox.appendChild(ingredientQuantity);
                     cell.appendChild(ingredientBox);

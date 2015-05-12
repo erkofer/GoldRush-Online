@@ -17,7 +17,7 @@ namespace GoldRush
         bool sendSchema;
         public GameObjects objs;
         long lastUpdate;
-        public long Score=0;
+        public long Score;
 
         public long UnixTimeNow()
         {
@@ -30,17 +30,16 @@ namespace GoldRush
             // TODO
             //return new GameState();
             var currentTime = UnixTimeNow();
-            if (lastUpdate == 0) 
+            if (lastUpdate == 0)
                 lastUpdate = currentTime;
 
             long timeSinceLastUpdate = currentTime - lastUpdate;
             if (timeSinceLastUpdate > 0)
             {
                 lastUpdate = currentTime;
-                objs.Update((int) timeSinceLastUpdate*1000);
+                objs.Update((int)timeSinceLastUpdate * 1000);
             }
-
-
+            objs.Statistics.TimePlayed.Value += timeSinceLastUpdate;
 
             // CLIENT ACTIONS
             if (message != null)
@@ -58,7 +57,8 @@ namespace GoldRush
                         if (msg.Config != null)
                         {
                             var item = objs.Items.All[msg.Config.Id];
-                            item.IncludeInSellAll = msg.Config.Enabled; ;
+                            item.IncludeInSellAll = msg.Config.Enabled;
+                            ;
                         }
                         if (msg.SellAll == true)
                         {
@@ -88,14 +88,15 @@ namespace GoldRush
                 {
                     for (var i = 0; i < message.ProcessingActions.Count; i++)
                     {
-                        objs.Processing.Process(message.ProcessingActions[i].Id, message.ProcessingActions[i].RecipeIndex, message.ProcessingActions[i].Iterations);
+                        objs.Processing.Process(message.ProcessingActions[i].Id,
+                            message.ProcessingActions[i].RecipeIndex, message.ProcessingActions[i].Iterations);
                     }
                 }
                 if (message.MiningActions.Count > 0)
                 {
                     for (var i = 0; i < message.MiningActions.Count; i++)
                     {
-                        objs.Gatherers.Mine(message.MiningActions[i].X,message.MiningActions[i].Y);
+                        objs.Gatherers.Mine(message.MiningActions[i].X, message.MiningActions[i].Y);
                     }
                 }
                 if (message.PotionActions.Count > 0)
@@ -221,6 +222,20 @@ namespace GoldRush
                     schema.Buffs.Add(schemaBuff);
                 }
 
+                foreach (var achievementPair in objs.Achievements.All)
+                {
+                    var achievement = achievementPair.Value;
+                    var achievementSchema = new GameState.Schematic.SchemaAchievement();
+
+                    achievementSchema.Id = achievement.Id;
+                    achievementSchema.RequiredId = achievement.Requires != null ? achievement.Requires.Id : 0;
+                    achievementSchema.Name = achievement.Name;
+                    achievementSchema.Category = (GameState.Schematic.SchemaAchievement.Section)achievement.Type;
+                    achievementSchema.Goal = achievement.Goal;
+
+                    schema.Achievements.Add(achievementSchema);
+                }
+
                 state.GameSchema = schema;
             }
 
@@ -264,7 +279,8 @@ namespace GoldRush
                 stateStoreItem.MaxQuantity = item.Value.MaxQuantity;
                 stateStoreItem.Price = item.Value.GetPrice();
 
-                if (gameobject.Requires != null && gameobject.Requires.Active == false)// if the gameobject requires something and is not active.
+                if (gameobject.Requires != null && gameobject.Requires.Active == false)
+                    // if the gameobject requires something and is not active.
                     stateStoreItem.Quantity = -1;
 
                 state.StoreItemsUpdate.Add(stateStoreItem);
@@ -313,6 +329,18 @@ namespace GoldRush
                 stateGatherer.Efficiency = gatherer.ResourcesPerSecond;
                 stateGatherer.RarityBonus = gatherer.ProbabilityModifier;
                 state.Gatherers.Add(stateGatherer);
+            }
+
+            foreach (var achievementPair in objs.Achievements.All)
+            {
+                var achievement = achievementPair.Value;
+                var stateAchievement = new GameState.Achievement();
+
+                stateAchievement.Id = achievement.Id;
+                stateAchievement.Progress = achievement.Progress;
+
+                if (achievement.Active) // if it requires nothing or it's prerequisite is unlocked.
+                    state.Achievements.Add(stateAchievement);
             }
 
             return state;
@@ -398,6 +426,16 @@ namespace GoldRush
                 saveState.Buffs.Add(saveStateBuff);
             }
 
+            foreach (var statPair in objs.Statistics.All)
+            {
+                var stat = statPair.Value;
+                var stateSave = new SaveState.Statistic();
+                stateSave.Id = stat.Id;
+                stateSave.Value = stat.Value;
+
+                saveState.Statistics.Add(stateSave);
+            }
+
             return saveState;
         }
 
@@ -435,14 +473,14 @@ namespace GoldRush
                 }
                 if (save.LastUpdate != null)
                 {
-                    if(save.LastUpdate != null) lastUpdate = save.LastUpdate;
+                    if (save.LastUpdate != null) lastUpdate = save.LastUpdate;
                 }
                 if (save.Processors != null)
                 {
                     foreach (var processor in save.Processors)
                     {
                         var toLoadProcessor = objs.Processing.Processors[processor.Id];
-                        if(processor.SelectedRecipe != null) toLoadProcessor.SelectedRecipeIndex = processor.SelectedRecipe;
+                        if (processor.SelectedRecipe != null) toLoadProcessor.SelectedRecipeIndex = processor.SelectedRecipe;
                         if (processor.Progress != null) toLoadProcessor.RecipeProgress = processor.Progress;
                         if (processor.RecipesCrafted != null) toLoadProcessor.RecipesCrafted = processor.RecipesCrafted;
                         if (processor.RecipesToCraft != null) toLoadProcessor.RecipesToCraft = processor.RecipesToCraft;
@@ -468,6 +506,14 @@ namespace GoldRush
                     {
                         var toLoadBuff = objs.Upgrades.Buffs[buff.Id];
                         toLoadBuff.TimeActive = buff.TimeActive;
+                    }
+                }
+                if (save.Statistics != null)
+                {
+                    foreach (var stat in save.Statistics)
+                    {
+                        var toLoadStat = objs.Statistics.All[stat.Id];
+                        toLoadStat.Value = stat.Value;
                     }
                 }
                 Score = objs.Items.Coins.LifeTimeTotal;

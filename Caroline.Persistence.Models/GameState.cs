@@ -100,6 +100,8 @@ namespace Caroline.Persistence.Models
 
             CompressableHelpers.CompressList(_Gatherers, oldState._Gatherers, newState._Gatherers);
 
+            CompressableHelpers.CompressList(_Achievements, oldState._Achievements, newState._Achievements);
+
             return newState;
         }
 
@@ -250,6 +252,8 @@ namespace Caroline.Persistence.Models
                 var schematic = new Schematic();
                 CompressableHelpers.CompressList(_Items, oldObject._Items, schematic._Items);
                 CompressableHelpers.CompressList(_StoreItems, oldObject._StoreItems, schematic._StoreItems);
+                CompressableHelpers.CompressList(_Buffs, oldObject._Buffs, schematic._Buffs);
+                CompressableHelpers.CompressList(_Achievements, oldObject._Achievements,schematic._Achievements);
                 return schematic;
             }
 
@@ -319,6 +323,60 @@ namespace Caroline.Persistence.Models
                     return schematic;
                 }
             }
+
+            public partial class SchemaBuff : ICompressable<SchemaBuff>, IIdentifiableObject 
+            {
+                public SchemaBuff Compress(SchemaBuff oldObject)
+                {
+                    SchemaBuff schema = null;
+                    if (oldObject._Name != _Name)
+                    {
+                        if (schema == null) schema = new SchemaBuff() {_Id = _Id};
+                        schema._Name = _Name;
+                    }
+                    if (oldObject._Duration != _Duration)
+                    {
+                        if (schema == null) schema = new SchemaBuff() {_Id = _Id};
+                        schema._Duration = _Duration;
+                    }
+                    if (oldObject._Description != _Description)
+                    {
+                        if (schema == null) schema = new SchemaBuff() {_Id = _Id};
+                        schema._Description = _Description;
+                    }
+                    return schema;
+                }
+            }
+
+            public partial class SchemaAchievement : ICompressable<SchemaAchievement>, IIdentifiableObject
+            {
+                public SchemaAchievement Compress(SchemaAchievement oldObject)
+                {
+                    SchemaAchievement schema = null;
+                    if (oldObject._Name != _Name)
+                    {
+                        if(schema==null) schema = new SchemaAchievement(){_Id = _Id};
+                        schema._Name = _Name;
+                    }
+                    if (oldObject._RequiredId != _RequiredId)
+                    {
+                        if (schema == null) schema = new SchemaAchievement() { _Id = _Id };
+                        schema._RequiredId = _RequiredId;
+                    }
+                    if (oldObject._Category != _Category)
+                    {
+                        if (schema == null) schema = new SchemaAchievement() { _Id = _Id };
+                        schema._Category = _Category;
+                    }
+                    if (oldObject._Goal != _Goal)
+                    {
+                        if (schema == null) schema = new SchemaAchievement() { _Id = _Id };
+                        schema._Goal = _Goal;
+                    }
+
+                    return schema;
+                }
+            }
         }
 
         public partial class StoreItem : ICompressable<StoreItem>, IIdentifiableObject
@@ -386,6 +444,20 @@ namespace Caroline.Persistence.Models
                 if (_TimeActive != oldObject._TimeActive)
                     return new Buff {_Id = _Id, _TimeActive = _TimeActive};
                 return null;
+            }
+        }
+
+        public partial class Achievement : ICompressable<Achievement>, IIdentifiableObject
+        {
+            public Achievement Compress(Achievement oldObject)
+            {
+                Achievement achievement = null;
+                if (_Progress != oldObject._Progress)
+                {
+                    if(achievement == null) achievement = new Achievement(){_Id = _Id};
+                    achievement._Progress = _Progress;
+                }
+                return achievement;
             }
         }
     }

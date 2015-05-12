@@ -226,8 +226,6 @@ module Inventory {
     }
 
     export function modifyConfig(id: number, enabled: boolean) {
-        if (!configClickers[id])
-            console.log(id);
         (<HTMLInputElement>configClickers[id]).checked = enabled;
     }
 
@@ -415,7 +413,7 @@ module Inventory {
         });
     }
 
-    export function update() {
+    function update() {
         if (configNames.length <= 0) return;
 
         items.forEach(item => {
@@ -427,4 +425,5 @@ module Inventory {
                 configImages[item.id].style.display = itemQuantity > 0 ? 'inline-block' : 'none';
         });
     }
+    setInterval(update, 1000);
 }
