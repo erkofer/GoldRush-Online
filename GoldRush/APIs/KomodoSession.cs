@@ -1,11 +1,13 @@
-﻿namespace GoldRush.APIs
+﻿using System.Threading.Tasks;
+
+namespace GoldRush.APIs
 {
     class KomodoSession : IKomodoSession
     {
         Game _game = new Game();
 
         // private GameState cachedGameState;
-        public UpdateDto Update(UpdateArgs args)
+        public async Task<UpdateDto> Update(UpdateArgs args)
         {
             var cachedGameState = args.Session.CachedGameState;
             var fullGameState = _game.Update(args.ClientActions);

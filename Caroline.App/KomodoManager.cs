@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Caroline.Domain;
@@ -35,8 +34,10 @@ namespace Caroline.App
             var game = _sessionFactory.Create();
             game.Load(new LoadArgs { SaveState = save });
 
+            var marketPlace = new MarketPlaceGlue(await MarketPlace.CreateAsync());
+            
             // update save with new input
-            var updateDto = game.Update(new UpdateArgs { ClientActions = input, Session = session });
+            var updateDto = await game.Update(new UpdateArgs { ClientActions = input, Session = session, MarketPlace = marketPlace });
 
             var errors = await SendMessages(user, input, chat);
             var messages = await chat.GetRecentMessages(session.LastChatMessageRecieved);
@@ -76,7 +77,6 @@ namespace Caroline.App
             if (actions == null || actions.SocialActions == null || actions.SocialActions.Count == 0)
                 return new List<GameState.ChatMessage>();
 
-            var now = DateTime.UtcNow.ToShortTimeString();
             var ret = new List<GameState.ChatMessage>();
             for (var i = 0; i < actions.SocialActions.Count; i++)
             {
