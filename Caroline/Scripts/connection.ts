@@ -13,6 +13,7 @@
 ///<reference path="tooltip.ts"/>
 ///<reference path="ajax.ts"/>
 ///<reference path="achievements.ts"/>
+///<reference path="market.ts"/>
 
 module Connection {
     declare var Komodo: { connection: any; ClientActions: any; decode: any; send: any; restart: any };

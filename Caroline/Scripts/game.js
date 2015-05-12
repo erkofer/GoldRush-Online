@@ -476,8 +476,9 @@ var Chat;
 var Tabs;
 (function (Tabs) {
     var lowestTabContainerId = 0;
+    var buttonContainer = document.getElementById('tabContainer');
     var tabContainer = document.getElementById("paneContainer");
-    Tabs.bottomPadding = 200;
+    Tabs.bottomPadding = 170;
     var tabContainers = new Array();
     var selectedTab;
 
@@ -542,12 +543,13 @@ var Tabs;
     function updateGameTabs() {
         if (selectedTab) {
             var height = selectedTab.scrollHeight;
-            if (height > window.innerHeight - Tabs.bottomPadding) {
-                height = window.innerHeight - Tabs.bottomPadding;
+            var extra = Tabs.bottomPadding + buttonContainer.clientHeight;
+            if (height > window.innerHeight - extra) {
+                height = window.innerHeight - extra;
             }
             tabContainer.style.minHeight = height + 'px';
             tabContainer.style.maxHeight = height + 'px';
-            tabContainer.style.overflowY = height >= window.innerHeight - Tabs.bottomPadding ? 'scroll' : 'hidden';
+            tabContainer.style.overflowY = height >= window.innerHeight - extra ? 'scroll' : 'hidden';
         }
     }
     Tabs.updateGameTabs = updateGameTabs;
@@ -2235,7 +2237,6 @@ var Crafting;
                 completionPerc *= 100;
                 completionPerc = 100 - completionPerc;
 
-                // processor.progressBar.style.width = ((((processor.operationCompletionTime - processor.operationStartTime) / processor.operationDuration)) / 10) + '%';
                 processor.progressBar.style.width = completionPerc + '%';
                 processor.sidebarJobBar.style.width = completionPerc + '%';
 
@@ -2266,12 +2267,6 @@ var Crafting;
         Crafting.processors.forEach(function (processor) {
             switchProcessorRecipe(processor.id, processor.recipeSelector.selectedIndex);
         });
-        /*
-        for (var i = 0; i < recipes.length; i++) {
-        var recipe = recipes[i];
-        var quantity = Objects.getQuantity(recipe.id);
-        recipe.row.style.display = (quantity == -1) ? 'none' : 'inline-block';
-        }*/
     }
     Crafting.update = update;
 
@@ -2352,7 +2347,6 @@ var Crafting;
                     ingredientQuantity.style.verticalAlign = 'super';
                     ingredientQuantity.textContent = Utils.formatNumber(recipe.ingredients[x].quantity);
                     ingredientImage.classList.add("Third-" + Utils.cssifyName(Objects.lookupName(recipe.ingredients[x].id)));
-
                     ingredientBox.appendChild(ingredientImage);
                     ingredientBox.appendChild(ingredientQuantity);
                     cell.appendChild(ingredientBox);
@@ -3226,6 +3220,7 @@ var Achievements;
                 progress = this.progress;
             this.progress = progress;
             this.progressBar.style.width = ((progress / this.goal) * 100) + "%";
+            this.progressText.textContent = Utils.formatNumber(Math.min(progress, this.goal)) + '/' + Utils.formatNumber(this.goal);
             if (this.requiredBy != null)
                 this.requiredBy.trickleDown(progress);
         };
@@ -3277,6 +3272,11 @@ var Achievements;
         var achievementProgressContainer = document.createElement('div');
         achievementProgressContainer.classList.add('achievement-progress-container');
         achievementBody.appendChild(achievementProgressContainer);
+
+        var achievementProgressText = document.createElement('div');
+        achievementProgressText.classList.add('achievement-progress-text');
+        achievement.progressText = achievementProgressText;
+        achievementProgressContainer.appendChild(achievementProgressText);
 
         var achievementProgress = document.createElement('div');
         achievementProgress.classList.add('achievement-progress');
@@ -3330,6 +3330,61 @@ var Achievements;
         }
     }
 })(Achievements || (Achievements = {}));
+var Market;
+(function (Market) {
+    var marketPane;
+
+    var Order = (function () {
+        function Order() {
+        }
+        return Order;
+    })();
+    Market.Order = Order;
+
+    function init() {
+        marketPane = document.createElement('DIV');
+        document.getElementById('paneContainer').appendChild(marketPane);
+        Tabs.registerGameTab(marketPane, 'Market');
+    }
+
+    function drawTradePane(order) {
+        if (!marketPane)
+            init();
+
+        var panel = document.createElement('div');
+        panel.classList.add('market-order');
+        panel.classList.add('closed');
+
+        var header = document.createElement('div');
+        header.textContent = 'Empty';
+        header.classList.add('market-order-header');
+        order.header = header;
+        panel.appendChild(header);
+
+        var controls = document.createElement('div');
+        controls.classList.add('market-order-controls');
+        var buy = document.createElement('div');
+        buy.classList.add('market-control');
+        buy.classList.add('buy');
+        buy.textContent = 'Buy';
+        controls.appendChild(buy);
+
+        var sell = document.createElement('div');
+        sell.classList.add('market-control');
+        sell.classList.add('sell');
+        sell.textContent = 'Sell';
+        controls.appendChild(sell);
+
+        panel.appendChild(controls);
+
+        var display = document.createElement('div');
+        display.classList.add('market-order-display');
+        panel.appendChild(display);
+
+        marketPane.appendChild(panel);
+    }
+    Market.drawTradePane = drawTradePane;
+})(Market || (Market = {}));
 ///<reference path="chat.ts"/>
 ///<reference path="inventory.ts"/>
 ///<reference path="stats.ts"/>
@@ -3345,6 +3400,7 @@ var Achievements;
 ///<reference path="tooltip.ts"/>
 ///<reference path="ajax.ts"/>
 ///<reference path="achievements.ts"/>
+///<reference path="market.ts"/>
 var Connection;
 (function (Connection) {
     var conInterval;

@@ -25,6 +25,7 @@
         progress: number;
         goal: number;
         category: Category;
+        progressText:HTMLElement;
         progressBar: HTMLElement;
         container: HTMLElement;
         completed: boolean;
@@ -47,6 +48,7 @@
             if (!progress) progress = this.progress;
             this.progress = progress;
             this.progressBar.style.width = ((progress / this.goal) * 100) + "%";
+            this.progressText.textContent = Utils.formatNumber(Math.min(progress,this.goal)) + '/' + Utils.formatNumber(this.goal);
             if (this.requiredBy != null) this.requiredBy.trickleDown(progress);
         }
     }
@@ -94,6 +96,11 @@
         var achievementProgressContainer = document.createElement('div');
         achievementProgressContainer.classList.add('achievement-progress-container');
         achievementBody.appendChild(achievementProgressContainer);
+
+        var achievementProgressText = document.createElement('div');
+        achievementProgressText.classList.add('achievement-progress-text');
+        achievement.progressText = achievementProgressText;
+        achievementProgressContainer.appendChild(achievementProgressText);
 
         var achievementProgress = document.createElement('div');
         achievementProgress.classList.add('achievement-progress');

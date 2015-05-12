@@ -22,7 +22,7 @@ body{
 }
 
 #tabContainer {
-    height:34px;
+    min-height:34px;
 }
 
 .rock-container{
@@ -90,6 +90,7 @@ body{
 /*Tabs*/
 .tab-button{
     display:inline-block;
+    margin-bottom: -4px;
 }
 
 .tab-button.inactive {
@@ -909,7 +910,7 @@ td {
 }
 
 .achievement {
-    width: 200px;
+    width: 256px;
     height: 64px;
     margin: 3px;
     display: inline-block;
@@ -957,6 +958,18 @@ td {
     display: none;
 }
 
+.achievement-progress-text {
+    opacity: 0;
+    transition: all 0.2s;
+    transition-delay: 0s;
+    font-size: 10px;
+    float: left;
+}
+
+.achievement:hover .achievement-progress-text {
+    opacity: 1;
+    transition-delay: 0.2s;   
+}
 
 .achievement-progress-container {
     width: 100%;
@@ -964,13 +977,79 @@ td {
     position: absolute;
     bottom: 0;
     left: 0;
+    transition: all 0.2s;
+    transition-delay: 0.2s;
+}
+
+.achievement:hover .achievement-progress-container {
+    height: 12px;
+    transition-delay: 0s;
 }
 
 .achievement.locked .achievement-progress-container {
     display: none;
 }
 
-
 .achievement-progress {
     height: 3px;
+    transition: all 0.2s;
+    transition-delay: 0.2s;
+}
+
+.achievement:hover .achievement-progress {
+    height: 12px;
+    transition-delay: 0s;
+}
+
+.market-order {
+    width: 250px;
+    height: 144px;
+    border-radius: 3px;
+}
+
+.market-order-header {
+    width: 100%;
+    height: 12px;
+    text-align: center;
+}
+
+.market-control {
+    margin-top: 41px;
+    width: 50px;
+    height: 50px;
+    text-align: center;
+    border-radius: 3px;
+    display: inline-block;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.market-order-controls {
+    display: none;
+    width: 80%;
+    height: 132px;
+    margin: 0 auto;
+}
+
+.market-order-display {
+    display: none;
+    width: 80%;
+    height: 132px;
+    margin: 0 auto;
+}
+
+.market-order.closed .market-order-controls{
+    display: block;
+}
+
+.market-order.open .market-order-display {
+    display: block;
+}
+
+.buy {
+    float: left;
+}
+
+.sell {
+    float: right;
 }

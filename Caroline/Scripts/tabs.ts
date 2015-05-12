@@ -1,7 +1,8 @@
 ﻿module Tabs {
     var lowestTabContainerId: number = 0;
+    var buttonContainer = document.getElementById('tabContainer');
     var tabContainer = document.getElementById("paneContainer");
-    export var bottomPadding = 200;
+    export var bottomPadding = 170;
     var tabContainers = new Array<TabContainer>();
     var selectedTab:HTMLElement; 
    
@@ -71,12 +72,13 @@
     export function updateGameTabs() {
         if (selectedTab) {
             var height = selectedTab.scrollHeight;
-            if (height > window.innerHeight - bottomPadding) {
-                height = window.innerHeight - bottomPadding;
+            var extra = bottomPadding + buttonContainer.clientHeight;
+            if (height > window.innerHeight - extra) {
+                height = window.innerHeight - extra;
             }
             tabContainer.style.minHeight = height + 'px';
             tabContainer.style.maxHeight = height + 'px';
-            tabContainer.style.overflowY = height >= window.innerHeight - bottomPadding ? 'scroll' : 'hidden';
+            tabContainer.style.overflowY = height >= window.innerHeight - extra ? 'scroll' : 'hidden';
         }
     }
 
