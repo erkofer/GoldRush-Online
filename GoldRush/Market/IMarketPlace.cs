@@ -11,5 +11,6 @@ namespace GoldRush.Market
         Task<IAsyncCursor<StaleOrder>> GetOrders(long gameId);
         Task<StaleOrder> GetOrder(long id);
         Task<long?> ClaimOrderContents(long id, ClaimField field);
+        Task<bool> CancelOrder(long id);
     }
 }
