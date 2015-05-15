@@ -1,1 +1,0 @@
-{"version":3,"file":"chat.js","sourceRoot":"","sources":["chat.ts"],"names":["Chat","Chat.sendGlobalMessage"],"mappings":"AAAA,IAAO,IAAI;AAIV,CAJD,UAAO,IAAI;IACPA,SAAgBA,iBAAiBA,CAACA,OAAeA;IAEjDC,CAACA;IAFDD,2CAECA;AACLA,CAACA,uBAAA"}
