@@ -179,5 +179,17 @@ message GameState {
 		optional int64 Progress=2;
 	}
 	repeated Achievement Achievements =14;
+
+	message Order {
+		optional string Id=1;
+		optional int64 UnclaimedItems=2[default = -100];
+		optional int64 UnclaimedCoins=3[default = -100];
+		optional int64 UnitValue=4[default = -100];
+		optional int64 Quantity=5[default = -100];
+		optional int64 ItemId=6[default = -100];
+		optional bool IsSelling=7;
+		optional int64 UnfulfilledQuantity=8[default=-100];
+	}
+	repeated Order Orders=15;
 } 
 

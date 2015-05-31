@@ -1,4 +1,6 @@
-﻿using System.Data.Odbc;
+﻿using System.Collections.Generic;
+using System.Data.Odbc;
+using System.Net.Mime;
 
 namespace Caroline.Persistence.Models
 {
@@ -101,10 +103,15 @@ namespace Caroline.Persistence.Models
             CompressableHelpers.CompressList(_Gatherers, oldState._Gatherers, newState._Gatherers);
 
             CompressableHelpers.CompressList(_Achievements, oldState._Achievements, newState._Achievements);
+            /* Orders are not compressed
+             * but it doesnt matter much because
+             * orders are sent periodically.
+             */
+            for (int i = 0; i < _Orders.Count; i++)
+                newState._Orders.Add(_Orders[i].Clone());
 
             return newState;
         }
-
         public partial class Item : ICompressable<Item>, IIdentifiableObject
         {
             public Item Compress(Item oldItem)
@@ -458,6 +465,14 @@ namespace Caroline.Persistence.Models
                     achievement._Progress = _Progress;
                 }
                 return achievement;
+            }
+        }
+
+        public partial class Order
+        {
+            public Order Clone()
+            {
+                return (Order)MemberwiseClone();
             }
         }
     }

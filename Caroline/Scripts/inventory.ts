@@ -14,9 +14,20 @@ module Inventory {
     var configTableBody: HTMLElement;
     var configTableContainer: HTMLElement;
     var drinkButton;
+    export var names=new Array<MarketItem>();
 
     var configNames = new Array<HTMLElement>();
     var configImages = new Array<HTMLElement>();
+
+    export class MarketItem {
+        id: number;
+        label: string;
+
+        constructor(id: number, label: string) {
+            this.id = id;
+            this.label = label;
+        }
+    }
 
     export class Item {
         id: number;
@@ -93,6 +104,7 @@ module Inventory {
     function add(item: Item) {
         items[item.id] = item;
         Objects.register(item.id, item.name);
+        names.push(new MarketItem(item.id, item.name));
 
         if (!inventoryPane)
             draw();
@@ -221,7 +233,7 @@ module Inventory {
         inventoryPane.appendChild(inventory);
 
 
-        Tabs.registerGameTab(inventoryPane, 'Inventory');
+        Tabs.registerGameTab(inventoryPane, Connection.Tabs.Inventory,'Inventory');
         Equipment.draw();
     }
 
@@ -384,6 +396,20 @@ module Inventory {
         }
 
         return itemElement;
+    }
+
+    export function isItem(name: string) {
+        for (var i = 0; i < names.length; i++) {
+            if (names[i].label == name) return true;
+        }
+        return false;
+    }
+
+    export function getId(name: string) {
+        for (var i = 0; i < names.length; i++) {
+            if (names[i].label == name) return names[i].id;
+        }
+        return 0;
     }
 
     export function addItem(id: number, name: string, worth: number, category: number) {

@@ -70,4 +70,25 @@ message ClientActions
 		optional bool Enabled=2;
 	}
 	repeated GathererAction GathererActions = 8;
+
+	message Order {
+		optional int32 ItemId=1;
+		optional int64 ItemQuantity=2;
+		optional int64 ItemValue=3;
+		optional bool IsSelling=4;
+	}
+	repeated Order Orders = 9;
+
+	enum Tabs{
+		Inventory=1;
+		Statistics=2;
+		Equipment=3;
+		Store=4;
+		Crafting=5;
+		Achievements=6;
+		Market=7;
+	}
+	optional Tabs SelectedTab=10;
+
+	optional bool RequestOrders=11;
 }

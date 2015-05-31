@@ -9,7 +9,7 @@ namespace GoldRush.Market
     {
         Task<StaleOrder> Transact(FreshOrder order);
         Task<IAsyncCursor<StaleOrder>> GetOrders(long gameId);
-        Task<StaleOrder> GetOrder(long id);
-        Task<long?> ClaimOrderContents(long id, ClaimField field);
+        Task<StaleOrder> GetOrder(string id);
+        Task<long?> ClaimOrderContents(string id, ClaimField field);
     }
 }

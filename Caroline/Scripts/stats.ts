@@ -59,7 +59,7 @@
     function draw() {
         statsPane = document.createElement('DIV');
         document.getElementById('paneContainer').appendChild(statsPane);
-        Tabs.registerGameTab(statsPane, 'Statistics');
+        Tabs.registerGameTab(statsPane, Connection.Tabs.Statistics,'Statistics');
 
         statsPane.appendChild(drawItemsTable());
     }

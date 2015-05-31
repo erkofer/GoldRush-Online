@@ -93,7 +93,7 @@
     function draw() {
         storePane = document.createElement('DIV');
         document.getElementById('paneContainer').appendChild(storePane);
-        Tabs.registerGameTab(storePane, 'Crafting');
+        Tabs.registerGameTab(storePane, Connection.Tabs.Crafting,'Crafting');
 
         processorSection = document.createElement('DIV');
         storePane.appendChild(processorSection);

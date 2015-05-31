@@ -6,6 +6,7 @@
 ///<reference path="equipment.ts"/>
 ///<reference path="crafting.ts"/>
 ///<reference path="typings/jquery/jquery.d.ts"/>
+///<reference path="typings/jqueryui/jqueryui.d.ts"/>
 ///<reference path="typings/dcode/long.d.ts"/>
 ///<reference path="buffs.ts"/>
 ///<reference path="register.ts"/>
@@ -23,7 +24,18 @@ module Connection {
     var networkErrorElm;
     var rateLimitedElm;
     var playerCounter;
-    
+    var currentTab: Tabs;
+    import Long = dcodeIO.Long;
+
+    export enum Tabs {
+        Inventory=1,
+		Statistics=2,
+		Equipment=3,
+		Store=4,
+		Crafting=5,
+		Achievements=6,
+		Market=7
+	};
     
     function init() {
         var headerLinks = document.getElementsByClassName('header-links')[0];
@@ -121,6 +133,11 @@ module Connection {
         if (msg.Achievements) {
             updateAchievements(msg.Achievements);
         }
+        if (msg.Orders) {
+            for (var i = 0; i < msg.Orders.length; i++) {
+                console.log(msg.Orders[i]);
+            }
+        }
     });
 
     export function restart() {
@@ -142,6 +159,10 @@ module Connection {
             networkErrorElm.style.display = 'block';
         }
     });
+
+    export function changeSelectedTab(selected:Tabs) {
+        currentTab = selected;
+    }
 
     function connected() {
         console.log('Connection opened');
@@ -210,10 +231,31 @@ module Connection {
                 Achievements.register(achievement.Id, achievement.Name, achievement.RequiredId, achievement.Goal, achievement.Category);
             }
         }
+        Market.init();
+    }
+
+    export function placeOrder(id: number, quantity: number, value: number, isSelling: boolean) {
+        var order = new Komodo.ClientActions.Order();
+        order.ItemId = id;
+        order.ItemQuantity = quantity;
+        order.ItemValue = value;
+        order.IsSelling = isSelling;
+        console.log(order);
+        actions.Orders.push(order);
     }
 
     function rateLimit(limited: any) {
         rateLimitedElm.style.display = limited ? 'block' : 'none';
+    }
+
+    export function submitOrder(itemId: number, itemQuantity: Long, itemValue: Long, isSelling: boolean) {
+        var order = new Komodo.ClientActions.Order();
+        order.ItemId = itemId;
+        order.ItemQuantity = itemQuantity;
+        order.ItemValue = itemValue;
+        order.IsSelling = isSelling;
+        console.log(order);
+        actions.Orders.push(order);
     }
 
     export function toggleGatherer(id: number, enabled: boolean) {
@@ -322,6 +364,10 @@ module Connection {
         //ConfigAction
     }
 
+    export function requestOrders() {
+        actions.RequestOrders = true;
+    }
+
     export function purchaseItem(id: number, quantity?: number) {
         var storeAction = new Komodo.ClientActions.StoreAction();
         var purchaseAction = new Komodo.ClientActions.StoreAction.PurchaseAction();
@@ -372,6 +418,9 @@ module Connection {
 
     export function send(message: any) {
         if (message.encode64) { // if this message is a protobuf object.
+            if (message.SelectedTab) { // if this is a clientactions message.
+                message.SelectedTab = currentTab;
+            }
             var encoded = message.encode64();
             Chat.log("Sent " + roughSizeOfObject(encoded) + " bytes to komodo.");
             Chat.log("Decoded: ");

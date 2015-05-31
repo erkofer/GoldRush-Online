@@ -1,13 +1,27 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Runtime.Remoting.Messaging;
+using System.Threading.Tasks;
 using Caroline.Persistence.Models;
 using Caroline.App.Models;
+using GoldRush.Market;
+using MongoDB.Bson;
 
 namespace GoldRush
 {
     class Game
     {
+        enum Tab
+        {
+            Inventory = 1,
+            Statistics = 2,
+            Equipment = 3,
+            Store = 4,
+            Crafting = 5,
+            Achievements = 6,
+            Market = 7
+        }
+
         public Game()
         {
             objs = new GameObjects();
@@ -25,221 +39,409 @@ namespace GoldRush
             return (long)timeSpan.TotalSeconds;
         }
 
-        public GameState Update(ClientActions message)
-        {
-            // TODO
-            //return new GameState();
-            var currentTime = UnixTimeNow();
-            if (lastUpdate == 0)
-                lastUpdate = currentTime;
 
-            long timeSinceLastUpdate = currentTime - lastUpdate;
+        public async Task<GameState> Update(ClientActions message, IMarketPlace market, User user)
+        {
+            objs.Items.MarketPlace = market;
+            objs.Items.User = user;
+
+            var currentTime = UnixTimeNow();
+            if (lastUpdate == 0) lastUpdate = currentTime;
+
+            var timeSinceLastUpdate = currentTime - lastUpdate;
             if (timeSinceLastUpdate > 0)
             {
                 lastUpdate = currentTime;
-                objs.Update((int)timeSinceLastUpdate * 1000);
+                objs.Update(timeSinceLastUpdate);
             }
             objs.Statistics.TimePlayed.Value += timeSinceLastUpdate;
 
             // CLIENT ACTIONS
-            if (message != null)
-            {
-                if (message.InventoryActions.Count > 0)
-                {
-                    for (var i = 0; i < message.InventoryActions.Count; i++)
-                    {
-                        var msg = message.InventoryActions[i];
-                        if (msg.Sell != null)
-                        {
-                            var item = objs.Items.All[msg.Sell.Id];
-                            item.Sell(msg.Sell.Quantity);
-                        }
-                        if (msg.Config != null)
-                        {
-                            var item = objs.Items.All[msg.Config.Id];
-                            item.IncludeInSellAll = msg.Config.Enabled;
-                            ;
-                        }
-                        if (msg.SellAll == true)
-                        {
-                            objs.Items.SellAll();
-                        }
-                    }
-                }
-                if (message.StoreActions.Count > 0)
-                {
-                    for (var i = 0; i < message.StoreActions.Count; i++)
-                    {
-                        if (message.StoreActions[i].Purchase != null)
-                        {
-                            var item = objs.Store.All[message.StoreActions[i].Purchase.Id];
-                            item.Purchase(message.StoreActions[i].Purchase.Quantity);
-                        }
-                    }
-                }
-                if (message.CraftingActions.Count > 0)
-                {
-                    for (var i = 0; i < message.CraftingActions.Count; i++)
-                    {
-                        objs.Crafting.Craft(message.CraftingActions[i].Id, message.CraftingActions[i].Quantity);
-                    }
-                }
-                if (message.ProcessingActions.Count > 0)
-                {
-                    for (var i = 0; i < message.ProcessingActions.Count; i++)
-                    {
-                        objs.Processing.Process(message.ProcessingActions[i].Id,
-                            message.ProcessingActions[i].RecipeIndex, message.ProcessingActions[i].Iterations);
-                    }
-                }
-                if (message.MiningActions.Count > 0)
-                {
-                    for (var i = 0; i < message.MiningActions.Count; i++)
-                    {
-                        objs.Gatherers.Mine(message.MiningActions[i].X, message.MiningActions[i].Y);
-                    }
-                }
-                if (message.PotionActions.Count > 0)
-                {
-                    for (var i = 0; i < message.PotionActions.Count; i++)
-                    {
-                        objs.Items.Drink(message.PotionActions[i].Id);
-                    }
-                }
-                if (message.GathererActions.Count > 0)
-                {
-                    for (var i = 0; i < message.GathererActions.Count; i++)
-                    {
-                        GoldRush.Gatherers.Gatherer gatherer;
-                        if (objs.Gatherers.All.TryGetValue(message.GathererActions[i].Id, out gatherer))
-                            gatherer.Enabled = message.GathererActions[i].Enabled;
-                    }
-                }
-            }
+            await InterpretClientActions(message);
 
-            // SEND DATA TO CLIENT
             var state = new GameState();
+            state.GameSchema = GenerateSchema();
+            GetGameData(state);
+            return state;
+        }
 
+        #region Update Helper Methods
 
+        #region Client Actions Interpretation
+        private async Task InterpretClientActions(ClientActions message)
+        {
+            if (message == null) return;
+            InterpretInventoryActions(message);
+            InterpretStoreActions(message);
+            InterpretCraftingActions(message);
+            InterpretProcessingActions(message);
+            InterpretMiningActions(message);
+            InterpretPotionActions(message);
+            InterpretGathererActions(message);
+            await InterpretOrderActions(message);
+        }
 
+        private async Task InterpretOrderActions(ClientActions message)
+        {
+            if (message.RequestOrders == true) await objs.Items.GetOrders();
 
-            // SCHEMATIC
-            if (sendSchema)
+            for (var i = 0; i < message.Orders.Count; i++)
             {
-                var schema = new GameState.Schematic();
-                sendSchema = false;
-                // INVENTORY
-                foreach (var item in objs.Items.All)
-                {
-                    var schemaItem = new GameState.Schematic.SchemaItem();
-                    schemaItem.Id = item.Value.Id;
-                    schemaItem.Name = item.Value.Name;
-                    schemaItem.Worth = item.Value.Worth;
-                    schemaItem.Category = (GameState.Schematic.SchemaItem.Section)item.Value.Category;
-                    schema.Items.Add(schemaItem);
-                }
-                // STORE
-                foreach (var item in objs.Store.All)
-                {
-                    var schemaItem = new GameState.Schematic.SchemaStoreItem();
-                    schemaItem.Id = item.Value.Item.Id;
-                    schemaItem.Name = item.Value.Item.Name;
-                    schemaItem.Price = item.Value.BasePrice;
-                    schemaItem.Factor = item.Value.Factor;
-                    schemaItem.MaxQuantity = item.Value.MaxQuantity;
-                    schemaItem.Category = (GameState.Schematic.SchemaStoreItem.Section)item.Value.Category;
-                    schemaItem.Tooltip = item.Value.Item.Tooltip;
-                    schemaItem.RequiredId = item.Value.Item.Requires != null ? item.Value.Item.Requires.Id : 0;
-
-                    schema.StoreItems.Add(schemaItem);
-                }
-                // Crafting
-                foreach (var item in objs.Crafting.All)
-                {
-                    var schemaItem = new GameState.Schematic.SchemaCraftingItem();
-                    schemaItem.Id = item.Value.Id;
-
-                    foreach (var ing in item.Value.Ingredients)
-                    {
-                        var ingredient = new GameState.Schematic.SchemaCraftingItem.Ingredient();
-                        ingredient.Id = ing.Item.Id;
-                        ingredient.Quantity = ing.Quantity;
-                        schemaItem.Ingredients.Add(ingredient);
-                    }
-
-                    foreach (var res in item.Value.Resultants)
-                    {
-                        var ingredient = new GameState.Schematic.SchemaCraftingItem.Ingredient();
-                        ingredient.Id = res.Item.Id;
-                        ingredient.Quantity = res.Quantity;
-                        schemaItem.Resultants.Add(ingredient);
-                    }
-
-                    schemaItem.IsItem = (item.Value.Resultants[0].Item is GoldRush.Items.Item);
-
-                    schema.CraftingItems.Add(schemaItem);
-                }
-                // Processing
-                foreach (var processor in objs.Processing.Processors)
-                {
-                    var schemaItem = new GameState.Schematic.SchemaProcessor();
-                    schemaItem.Id = processor.Value.Id;
-                    schemaItem.Name = processor.Value.Name;
-                    schemaItem.RequiredId = processor.Value.Requires != null ? processor.Value.Requires.Id : 0;
-
-                    foreach (var recipe in processor.Value.Recipes)
-                    {
-                        var schemaRecipe = new GameState.Schematic.SchemaProcessor.Recipe();
-                        foreach (var ingredient in recipe.Ingredients)
-                        {
-                            var schemaIngredient = new GameState.Schematic.SchemaProcessor.Recipe.Ingredient();
-                            schemaIngredient.Id = ingredient.Item.Id;
-                            schemaIngredient.Quantity = ingredient.Quantity;
-                            schemaRecipe.Ingredients.Add(schemaIngredient);
-                        }
-
-                        foreach (var resultant in recipe.Resultants)
-                        {
-                            var schemaIngredient = new GameState.Schematic.SchemaProcessor.Recipe.Ingredient();
-                            schemaIngredient.Id = resultant.Item.Id;
-                            schemaIngredient.Quantity = resultant.Quantity;
-                            schemaRecipe.Resultants.Add(schemaIngredient);
-                        }
-                        schemaRecipe.Duration = recipe.Duration;
-                        schemaItem.Recipes.Add(schemaRecipe);
-                    }
-                    schema.Processors.Add(schemaItem);
-                }
-                foreach (var buffPair in objs.Upgrades.Buffs)
-                {
-                    var buff = buffPair.Value;
-                    var schemaBuff = new GameState.Schematic.SchemaBuff();
-                    schemaBuff.Id = buff.Id;
-                    schemaBuff.Name = buff.Name;
-                    schemaBuff.Duration = buff.Duration;
-                    schemaBuff.Description = buff.Tooltip;
-
-                    schema.Buffs.Add(schemaBuff);
-                }
-
-                foreach (var achievementPair in objs.Achievements.All)
-                {
-                    var achievement = achievementPair.Value;
-                    var achievementSchema = new GameState.Schematic.SchemaAchievement();
-
-                    achievementSchema.Id = achievement.Id;
-                    achievementSchema.RequiredId = achievement.Requires != null ? achievement.Requires.Id : 0;
-                    achievementSchema.Name = achievement.Name;
-                    achievementSchema.Category = (GameState.Schematic.SchemaAchievement.Section)achievement.Type;
-                    achievementSchema.Goal = achievement.Goal;
-
-                    schema.Achievements.Add(achievementSchema);
-                }
-
-                state.GameSchema = schema;
+                var order = message.Orders[i];
+                await objs.Items.PlaceOrder(order.ItemId, order.ItemQuantity, order.ItemValue, order.IsSelling);
             }
+        }
 
-            // INVENTORY & STATS DATA
+        private void InterpretGathererActions(ClientActions message)
+        {
+            if (message.GathererActions.Count <= 0) return;
+            for (var i = 0; i < message.GathererActions.Count; i++)
+            {
+                GoldRush.Gatherers.Gatherer gatherer;
+                if (objs.Gatherers.All.TryGetValue(message.GathererActions[i].Id, out gatherer))
+                    gatherer.Enabled = message.GathererActions[i].Enabled;
+            }
+        }
+
+        private void InterpretPotionActions(ClientActions message)
+        {
+            if (message.PotionActions.Count <= 0) return;
+            for (var i = 0; i < message.PotionActions.Count; i++)
+            {
+                objs.Items.Drink(message.PotionActions[i].Id);
+            }
+        }
+
+        private void InterpretMiningActions(ClientActions message)
+        {
+            if (message.MiningActions.Count <= 0) return;
+            for (var i = 0; i < message.MiningActions.Count; i++)
+            {
+                objs.Gatherers.Mine(message.MiningActions[i].X, message.MiningActions[i].Y);
+            }
+        }
+
+        private void InterpretProcessingActions(ClientActions message)
+        {
+            if (message.ProcessingActions.Count <= 0) return;
+            for (var i = 0; i < message.ProcessingActions.Count; i++)
+            {
+                objs.Processing.Process(message.ProcessingActions[i].Id,
+                    message.ProcessingActions[i].RecipeIndex, message.ProcessingActions[i].Iterations);
+            }
+        }
+
+        private void InterpretCraftingActions(ClientActions message)
+        {
+            if (message.CraftingActions.Count <= 0) return;
+            for (var i = 0; i < message.CraftingActions.Count; i++)
+            {
+                objs.Crafting.Craft(message.CraftingActions[i].Id, message.CraftingActions[i].Quantity);
+            }
+        }
+
+        private void InterpretStoreActions(ClientActions message)
+        {
+            if (message.StoreActions.Count <= 0) return;
+            for (var i = 0; i < message.StoreActions.Count; i++)
+            {
+                if (message.StoreActions[i].Purchase == null) continue;
+                var item = objs.Store.All[message.StoreActions[i].Purchase.Id];
+                item.Purchase(message.StoreActions[i].Purchase.Quantity);
+            }
+        }
+
+        private void InterpretInventoryActions(ClientActions message)
+        {
+            if (message.InventoryActions.Count <= 0) return;
+            for (var i = 0; i < message.InventoryActions.Count; i++)
+            {
+                var msg = message.InventoryActions[i];
+                if (msg.Sell != null)
+                {
+                    var item = objs.Items.All[msg.Sell.Id];
+                    item.Sell(msg.Sell.Quantity);
+                }
+                if (msg.Config != null)
+                {
+                    var item = objs.Items.All[msg.Config.Id];
+                    item.IncludeInSellAll = msg.Config.Enabled;
+                }
+                if (msg.SellAll == true)
+                {
+                    objs.Items.SellAll();
+                }
+            }
+        }
+        #endregion
+
+        #region Game State Writing
+
+        #region Schema
+        private GameState.Schematic GenerateSchema()
+        {
+            var schema = new GameState.Schematic();
+            // INVENTORY
+            populateInventorySchema(schema);
+            // STORE
+            populateStoreSchema(schema);
+            // Crafting
+            populateCraftingSchema(schema);
+            // Processing
+            populateProcessingSchema(schema);
+            populateBuffSchema(schema);
+            populateAchievementSchema(schema);
+            return schema;
+        }
+
+        private void populateAchievementSchema(GameState.Schematic schema)
+        {
+            foreach (var achievementPair in objs.Achievements.All)
+            {
+                var achievement = achievementPair.Value;
+                var achievementSchema = new GameState.Schematic.SchemaAchievement();
+
+                achievementSchema.Id = achievement.Id;
+                achievementSchema.RequiredId = achievement.Requires != null ? achievement.Requires.Id : 0;
+                achievementSchema.Name = achievement.Name;
+                achievementSchema.Category = (GameState.Schematic.SchemaAchievement.Section)achievement.Type;
+                achievementSchema.Goal = achievement.Goal;
+
+                schema.Achievements.Add(achievementSchema);
+            }
+        }
+
+        private void populateBuffSchema(GameState.Schematic schema)
+        {
+            foreach (var buffPair in objs.Upgrades.Buffs)
+            {
+                var buff = buffPair.Value;
+                var schemaBuff = new GameState.Schematic.SchemaBuff();
+                schemaBuff.Id = buff.Id;
+                schemaBuff.Name = buff.Name;
+                schemaBuff.Duration = buff.Duration;
+                schemaBuff.Description = buff.Tooltip;
+
+                schema.Buffs.Add(schemaBuff);
+            }
+        }
+
+        private void populateProcessingSchema(GameState.Schematic schema)
+        {
+            foreach (var processor in objs.Processing.Processors)
+            {
+                var schemaItem = new GameState.Schematic.SchemaProcessor();
+                schemaItem.Id = processor.Value.Id;
+                schemaItem.Name = processor.Value.Name;
+                schemaItem.RequiredId = processor.Value.Requires != null ? processor.Value.Requires.Id : 0;
+
+                foreach (var recipe in processor.Value.Recipes)
+                {
+                    var schemaRecipe = new GameState.Schematic.SchemaProcessor.Recipe();
+                    foreach (var ingredient in recipe.Ingredients)
+                    {
+                        var schemaIngredient = new GameState.Schematic.SchemaProcessor.Recipe.Ingredient();
+                        schemaIngredient.Id = ingredient.Item.Id;
+                        schemaIngredient.Quantity = ingredient.Quantity;
+                        schemaRecipe.Ingredients.Add(schemaIngredient);
+                    }
+
+                    foreach (var resultant in recipe.Resultants)
+                    {
+                        var schemaIngredient = new GameState.Schematic.SchemaProcessor.Recipe.Ingredient();
+                        schemaIngredient.Id = resultant.Item.Id;
+                        schemaIngredient.Quantity = resultant.Quantity;
+                        schemaRecipe.Resultants.Add(schemaIngredient);
+                    }
+                    schemaRecipe.Duration = recipe.Duration;
+                    schemaItem.Recipes.Add(schemaRecipe);
+                }
+                schema.Processors.Add(schemaItem);
+            }
+        }
+
+        private void populateCraftingSchema(GameState.Schematic schema)
+        {
+            foreach (var item in objs.Crafting.All)
+            {
+                var schemaItem = new GameState.Schematic.SchemaCraftingItem();
+                schemaItem.Id = item.Value.Id;
+
+                foreach (var ing in item.Value.Ingredients)
+                {
+                    var ingredient = new GameState.Schematic.SchemaCraftingItem.Ingredient();
+                    ingredient.Id = ing.Item.Id;
+                    ingredient.Quantity = ing.Quantity;
+                    schemaItem.Ingredients.Add(ingredient);
+                }
+
+                foreach (var res in item.Value.Resultants)
+                {
+                    var ingredient = new GameState.Schematic.SchemaCraftingItem.Ingredient();
+                    ingredient.Id = res.Item.Id;
+                    ingredient.Quantity = res.Quantity;
+                    schemaItem.Resultants.Add(ingredient);
+                }
+
+                schemaItem.IsItem = (item.Value.Resultants[0].Item is GoldRush.Items.Item);
+
+                schema.CraftingItems.Add(schemaItem);
+            }
+        }
+
+        private void populateStoreSchema(GameState.Schematic schema)
+        {
+            foreach (var item in objs.Store.All)
+            {
+                var schemaItem = new GameState.Schematic.SchemaStoreItem();
+                schemaItem.Id = item.Value.Item.Id;
+                schemaItem.Name = item.Value.Item.Name;
+                schemaItem.Price = item.Value.BasePrice;
+                schemaItem.Factor = item.Value.Factor;
+                schemaItem.MaxQuantity = item.Value.MaxQuantity;
+                schemaItem.Category = (GameState.Schematic.SchemaStoreItem.Section)item.Value.Category;
+                schemaItem.Tooltip = item.Value.Item.Tooltip;
+                schemaItem.RequiredId = item.Value.Item.Requires != null ? item.Value.Item.Requires.Id : 0;
+
+                schema.StoreItems.Add(schemaItem);
+            }
+        }
+
+        private void populateInventorySchema(GameState.Schematic schema)
+        {
+            foreach (var item in objs.Items.All)
+            {
+                var schemaItem = new GameState.Schematic.SchemaItem();
+                schemaItem.Id = item.Value.Id;
+                schemaItem.Name = item.Value.Name;
+                schemaItem.Worth = item.Value.Worth;
+                schemaItem.Category = (GameState.Schematic.SchemaItem.Section)item.Value.Category;
+                schema.Items.Add(schemaItem);
+            }
+        }
+        #endregion
+
+        private void GetGameData(GameState state)
+        {
+            WriteInventoryAndStatsData(state);
+            WriteStoreData(state);
+            WriteProcessorData(state);
+            WriteAntiCheatData(state);
+            WriteBuffData(state);
+            WriteGathererData(state);
+            WriteAchievementData(state);
+            WriteMarketData(state);
+        }
+
+        private void WriteMarketData(GameState state)
+        {
+            foreach (var order in objs.Items.Orders)
+            {
+                var stateOrder = new GameState.Order();
+                stateOrder.Id = order.Id.ToString();
+                stateOrder.UnclaimedItems = order.UnclaimedItemsRecieved;
+                stateOrder.UnclaimedCoins = order.UnclaimedMoneyRecieved;
+                stateOrder.UnfulfilledQuantity = order.UnfulfilledQuantity;
+                stateOrder.UnitValue = order.UnitValue;
+                stateOrder.Quantity = order.Quantity;
+                stateOrder.ItemId = order.ItemId;
+                stateOrder.IsSelling = order.IsSelling;
+                state.Orders.Add(stateOrder);
+            }
+        }
+
+        private void WriteAchievementData(GameState state)
+        {
+            foreach (var achievementPair in objs.Achievements.All)
+            {
+                var achievement = achievementPair.Value;
+                var stateAchievement = new GameState.Achievement();
+
+                stateAchievement.Id = achievement.Id;
+                stateAchievement.Progress = achievement.Progress;
+
+                if (achievement.Active) // if it requires nothing or it's prerequisite is unlocked.
+                    state.Achievements.Add(stateAchievement);
+            }
+        }
+
+        private void WriteGathererData(GameState state)
+        {
+            foreach (var gathererPair in objs.Gatherers.All)
+            {
+                var gatherer = gathererPair.Value;
+                var stateGatherer = new GameState.Gatherer();
+
+                stateGatherer.Id = gatherer.Id;
+                stateGatherer.Enabled = gatherer.Enabled;
+                stateGatherer.FuelConsumed = gatherer.FuelConsumption;
+                stateGatherer.Efficiency = gatherer.ResourcesPerSecond;
+                stateGatherer.RarityBonus = gatherer.ProbabilityModifier;
+                state.Gatherers.Add(stateGatherer);
+            }
+        }
+
+        private void WriteBuffData(GameState state)
+        {
+            foreach (var buffPair in objs.Upgrades.Buffs)
+            {
+                var stateBuff = new GameState.Buff();
+                var buff = buffPair.Value;
+
+                stateBuff.Id = buff.Id;
+                stateBuff.TimeActive = buff.TimeActive;
+                state.Buffs.Add(stateBuff);
+            }
+        }
+
+        private void WriteAntiCheatData(GameState state)
+        {
+            var stateAntiCheat = new GameState.AntiCheat();
+            stateAntiCheat.X = objs.Gatherers.AntiCheatX;
+            stateAntiCheat.Y = objs.Gatherers.AntiCheatY;
+
+            state.AntiCheatCoordinates = stateAntiCheat;
+        }
+
+        private void WriteProcessorData(GameState state)
+        {
+            foreach (var processor in objs.Processing.Processors)
+            {
+                var stateProcessor = new GameState.Processor();
+                stateProcessor.Id = processor.Value.Id;
+                stateProcessor.SelectedRecipe = processor.Value.SelectedRecipeIndex;
+                stateProcessor.OperationDuration = (int)processor.Value.SelectedRecipeDuration;
+                //stateProcessor.OperationCompletion = currentTime + (long)processor.Value.RemainingOperationTime;
+                stateProcessor.CompletedOperations = processor.Value.RecipesCrafted;
+                stateProcessor.TotalOperations = processor.Value.RecipesToCraft;
+                stateProcessor.Capacity = processor.Value.Capacity;
+                state.Processors.Add(stateProcessor);
+            }
+        }
+
+        private void WriteStoreData(GameState state)
+        {
+            // STORE DATA
+            foreach (var item in objs.Store.All)
+            {
+                var stateStoreItem = new GameState.StoreItem();
+                GameObjects.GameObject gameobject;
+                objs.All.TryGetValue(item.Key, out gameobject);
+                stateStoreItem.Id = gameobject.Id;
+                stateStoreItem.Quantity = gameobject.Quantity;
+                stateStoreItem.MaxQuantity = item.Value.MaxQuantity;
+                stateStoreItem.Price = item.Value.GetPrice();
+
+                if (gameobject.Requires != null && gameobject.Requires.Active == false)
+                    // if the gameobject requires something and is not active.
+                    stateStoreItem.Quantity = -1;
+
+                state.StoreItemsUpdate.Add(stateStoreItem);
+            }
+        }
+
+        private void WriteInventoryAndStatsData(GameState state)
+        {
             foreach (var item in objs.Items.All)
             {
                 var stateItem = new GameState.Item();
@@ -264,88 +466,11 @@ namespace GoldRush
                     state.ConfigItems.Add(configItem);
                 }
             }
-
-
-
-
-            // STORE DATA
-            foreach (var item in objs.Store.All)
-            {
-                var stateStoreItem = new GameState.StoreItem();
-                GameObjects.GameObject gameobject;
-                objs.All.TryGetValue(item.Key, out gameobject);
-                stateStoreItem.Id = gameobject.Id;
-                stateStoreItem.Quantity = gameobject.Quantity;
-                stateStoreItem.MaxQuantity = item.Value.MaxQuantity;
-                stateStoreItem.Price = item.Value.GetPrice();
-
-                if (gameobject.Requires != null && gameobject.Requires.Active == false)
-                    // if the gameobject requires something and is not active.
-                    stateStoreItem.Quantity = -1;
-
-                state.StoreItemsUpdate.Add(stateStoreItem);
-            }
-
-            // PROCESSORS
-
-            foreach (var processor in objs.Processing.Processors)
-            {
-                var stateProcessor = new GameState.Processor();
-                stateProcessor.Id = processor.Value.Id;
-                stateProcessor.SelectedRecipe = processor.Value.SelectedRecipeIndex;
-                stateProcessor.OperationDuration = (int)processor.Value.SelectedRecipeDuration;
-                //stateProcessor.OperationCompletion = currentTime + (long)processor.Value.RemainingOperationTime;
-                stateProcessor.CompletedOperations = processor.Value.RecipesCrafted;
-                stateProcessor.TotalOperations = processor.Value.RecipesToCraft;
-                stateProcessor.Capacity = processor.Value.Capacity;
-                state.Processors.Add(stateProcessor);
-            }
-
-            // ANTICHEAT
-
-            var stateAntiCheat = new GameState.AntiCheat();
-            stateAntiCheat.X = objs.Gatherers.AntiCheatX;
-            stateAntiCheat.Y = objs.Gatherers.AntiCheatY;
-
-            state.AntiCheatCoordinates = stateAntiCheat;
-
-            foreach (var buffPair in objs.Upgrades.Buffs)
-            {
-                var stateBuff = new GameState.Buff();
-                var buff = buffPair.Value;
-
-                stateBuff.Id = buff.Id;
-                stateBuff.TimeActive = buff.TimeActive;
-                state.Buffs.Add(stateBuff);
-            }
-            foreach (var gathererPair in objs.Gatherers.All)
-            {
-                var gatherer = gathererPair.Value;
-                var stateGatherer = new GameState.Gatherer();
-
-                stateGatherer.Id = gatherer.Id;
-                stateGatherer.Enabled = gatherer.Enabled;
-                stateGatherer.FuelConsumed = gatherer.FuelConsumption;
-                stateGatherer.Efficiency = gatherer.ResourcesPerSecond;
-                stateGatherer.RarityBonus = gatherer.ProbabilityModifier;
-                state.Gatherers.Add(stateGatherer);
-            }
-
-            foreach (var achievementPair in objs.Achievements.All)
-            {
-                var achievement = achievementPair.Value;
-                var stateAchievement = new GameState.Achievement();
-
-                stateAchievement.Id = achievement.Id;
-                stateAchievement.Progress = achievement.Progress;
-
-                if (achievement.Active) // if it requires nothing or it's prerequisite is unlocked.
-                    state.Achievements.Add(stateAchievement);
-            }
-
-            return state;
         }
 
+        #endregion
+
+        #endregion
 
         public SaveState Save()
         {
@@ -436,6 +561,11 @@ namespace GoldRush
                 saveState.Statistics.Add(stateSave);
             }
 
+            foreach (var orderId in objs.Items.OrderIds)
+            {
+                saveState.OrderIds.Add(orderId);
+            }
+
             return saveState;
         }
 
@@ -517,6 +647,13 @@ namespace GoldRush
                     }
                 }
                 Score = objs.Items.Coins.LifeTimeTotal;
+                if (save.OrderIds != null)
+                {
+                    foreach (var orderId in save.OrderIds)
+                    {
+                        objs.Items.OrderIds.Add(orderId);
+                    }
+                }
             }
         }
     }

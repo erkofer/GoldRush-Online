@@ -9,6 +9,9 @@ namespace GoldRush.APIs
         public ClientActions ClientActions { get; set; }
         public GameSession Session { get; set; }
         public IMarketPlace MarketPlace { get; set; }
+        public Caroline.Persistence.Models.User User { get; set; }
+
+        public long UserId { get; set; }
     }
 
     public class UpdateDto

@@ -473,6 +473,7 @@ var Chat;
     }
     Chat.receiveGlobalMessage = receiveGlobalMessage;
 })(Chat || (Chat = {}));
+///<reference path="connection.ts"/>
 var Tabs;
 (function (Tabs) {
     var lowestTabContainerId = 0;
@@ -528,13 +529,19 @@ var Tabs;
         TabContainer.prototype.css = function (id, className) {
             this.tabs[id].button.classList.add(className);
         };
+
+        TabContainer.prototype.connectionLink = function (id, connectionTab) {
+            this.tabs[id].connectionTab = connectionTab;
+        };
         return TabContainer;
     })();
 
     var gameTabs = new TabContainer(document.getElementById('tabContainer'));
 
-    function registerGameTab(pane, css) {
+    function registerGameTab(pane, connectionTab, css) {
         var id = gameTabs.newTab(pane);
+        gameTabs.connectionLink(id, connectionTab);
+
         if (css)
             gameTabs.css(id, css);
     }
@@ -577,6 +584,7 @@ var Tabs;
             this.pane.style.display = 'block';
             this.pane.style.overflow = 'visible';
             selectedTab = this.pane;
+            Connection.changeSelectedTab(this.connectionTab);
         };
         return Tab;
     })();
@@ -668,9 +676,19 @@ var Inventory;
     var configTableBody;
     var configTableContainer;
     var drinkButton;
+    Inventory.names = new Array();
 
     var configNames = new Array();
     var configImages = new Array();
+
+    var MarketItem = (function () {
+        function MarketItem(id, label) {
+            this.id = id;
+            this.label = label;
+        }
+        return MarketItem;
+    })();
+    Inventory.MarketItem = MarketItem;
 
     var Item = (function () {
         function Item(id, name, worth, category) {
@@ -744,6 +762,7 @@ var Inventory;
     function add(item) {
         Inventory.items[item.id] = item;
         Objects.register(item.id, item.name);
+        Inventory.names.push(new MarketItem(item.id, item.name));
 
         if (!inventoryPane)
             draw();
@@ -870,7 +889,7 @@ var Inventory;
         inventory.appendChild(configTableContainer);
         inventoryPane.appendChild(inventory);
 
-        Tabs.registerGameTab(inventoryPane, 'Inventory');
+        Tabs.registerGameTab(inventoryPane, 1 /* Inventory */, 'Inventory');
         Equipment.draw();
     }
 
@@ -1038,6 +1057,24 @@ var Inventory;
         return itemElement;
     }
 
+    function isItem(name) {
+        for (var i = 0; i < Inventory.names.length; i++) {
+            if (Inventory.names[i].label == name)
+                return true;
+        }
+        return false;
+    }
+    Inventory.isItem = isItem;
+
+    function getId(name) {
+        for (var i = 0; i < Inventory.names.length; i++) {
+            if (Inventory.names[i].label == name)
+                return Inventory.names[i].id;
+        }
+        return 0;
+    }
+    Inventory.getId = getId;
+
     function addItem(id, name, worth, category) {
         if (!Inventory.items[id])
             add(new Item(id, name, worth, category));
@@ -1139,7 +1176,7 @@ var Statistics;
     function draw() {
         statsPane = document.createElement('DIV');
         document.getElementById('paneContainer').appendChild(statsPane);
-        Tabs.registerGameTab(statsPane, 'Statistics');
+        Tabs.registerGameTab(statsPane, 2 /* Statistics */, 'Statistics');
 
         statsPane.appendChild(drawItemsTable());
     }
@@ -1196,7 +1233,7 @@ var Store;
     function draw() {
         storePane = document.createElement('div');
         document.getElementById('paneContainer').appendChild(storePane);
-        Tabs.registerGameTab(storePane, 'Store');
+        Tabs.registerGameTab(storePane, 4 /* Store */, 'Store');
 
         for (var enumMember in Category) {
             var isValueProperty = parseInt(enumMember, 10) >= 0;
@@ -1659,7 +1696,7 @@ var Equipment;
 
         equipmentPane = document.createElement('div');
         document.getElementById('paneContainer').appendChild(equipmentPane);
-        Tabs.registerGameTab(equipmentPane, 'Equipment');
+        Tabs.registerGameTab(equipmentPane, 3 /* Equipment */, 'Equipment');
     }
     Equipment.draw = draw;
 
@@ -1860,7 +1897,7 @@ var Crafting;
     function draw() {
         storePane = document.createElement('DIV');
         document.getElementById('paneContainer').appendChild(storePane);
-        Tabs.registerGameTab(storePane, 'Crafting');
+        Tabs.registerGameTab(storePane, 5 /* Crafting */, 'Crafting');
 
         processorSection = document.createElement('DIV');
         storePane.appendChild(processorSection);
@@ -3194,7 +3231,7 @@ var Achievements;
     function init() {
         achievementPane = document.createElement('div');
         document.getElementById('paneContainer').appendChild(achievementPane);
-        Tabs.registerGameTab(achievementPane, 'Achievements');
+        Tabs.registerGameTab(achievementPane, 6 /* Achievements */, 'Achievements');
     }
 
     var Achievement = (function () {
@@ -3333,27 +3370,65 @@ var Achievements;
 var Market;
 (function (Market) {
     var marketPane;
+    var orders = new Array();
+    var Long = dcodeIO.Long;
 
     var Order = (function () {
         function Order() {
+            this.closed = true;
         }
+        Order.prototype.summarize = function () {
+            var item = $(this.item).val();
+            var quantity = $(this.quantity).val();
+            var offer = $(this.offer).val();
+
+            if (!Inventory.isItem(item))
+                return;
+            if (!Utils.isNumber(quantity))
+                return;
+            if (!Utils.isNumber(offer))
+                return;
+
+            $(this.summary).text((this.buying ? 'Buying' : 'Selling') + ' ' + Utils.formatNumber(quantity) + ' ' + item + ' @ $' + Utils.formatNumber(offer) + ' each for a total of $' + Utils.formatNumber(offer * quantity) + '.');
+        };
+
+        Order.prototype.submit = function () {
+            var item = $(this.item).val();
+            var quantity = $(this.quantity).val();
+            var offer = $(this.offer).val();
+
+            if (!Inventory.isItem(item))
+                return;
+            if (!Utils.isNumber(quantity))
+                return;
+            if (!Utils.isNumber(offer))
+                return;
+
+            Connection.submitOrder(Inventory.getId(item), Long.fromNumber(quantity), Long.fromNumber(offer), !this.buying);
+            console.log((this.buying ? 'Buying' : 'Selling') + ' ' + quantity + ' ' + Inventory.getId(item) + ' @ $' + offer);
+        };
         return Order;
     })();
     Market.Order = Order;
 
     function init() {
+        if (marketPane)
+            return;
+
         marketPane = document.createElement('DIV');
         document.getElementById('paneContainer').appendChild(marketPane);
-        Tabs.registerGameTab(marketPane, 'Market');
+        Tabs.registerGameTab(marketPane, 7 /* Market */, 'Market');
+
+        for (var i = 0; i < 6; i++)
+            drawTradePane(new Order());
     }
+    Market.init = init;
 
     function drawTradePane(order) {
-        if (!marketPane)
-            init();
-
         var panel = document.createElement('div');
         panel.classList.add('market-order');
         panel.classList.add('closed');
+        order.panel = panel;
 
         var header = document.createElement('div');
         header.textContent = 'Empty';
@@ -3367,12 +3442,20 @@ var Market;
         buy.classList.add('market-control');
         buy.classList.add('buy');
         buy.textContent = 'Buy';
+        buy.addEventListener('click', function () {
+            order.buying = true;
+            orderModal(order);
+        });
         controls.appendChild(buy);
 
         var sell = document.createElement('div');
         sell.classList.add('market-control');
         sell.classList.add('sell');
         sell.textContent = 'Sell';
+        sell.addEventListener('click', function () {
+            order.buying = false;
+            orderModal(order);
+        });
         controls.appendChild(sell);
 
         panel.appendChild(controls);
@@ -3381,9 +3464,89 @@ var Market;
         display.classList.add('market-order-display');
         panel.appendChild(display);
 
+        orders.push(order);
         marketPane.appendChild(panel);
     }
-    Market.drawTradePane = drawTradePane;
+
+    $(window).resize(function () {
+        $(".ui-autocomplete").css('display', 'none');
+    });
+
+    function orderModal(order) {
+        var window = new modal.Window();
+        window.title = order.buying ? "Buy" : "Sell";
+
+        var container = document.createElement('div');
+        var itemContainer = document.createElement('div');
+        var itemLabel = document.createElement('div');
+        itemLabel.textContent = 'Item: ';
+        itemLabel.style.width = '70px';
+        itemLabel.style.display = 'inline-block';
+        var itemName = document.createElement('input');
+        order.item = itemName;
+        itemName.type = 'TEXT';
+        itemName.addEventListener('keyup', function () {
+            order.summarize();
+        });
+        $(itemName).autocomplete({
+            source: Inventory.names,
+            delay: 0,
+            select: function () {
+                order.summarize();
+            }
+        }).data("uiAutocomplete")._renderItem = function (ul, item) {
+            return $("<li>").data("item.autocomplete", item).append("<span>").text(item.label).append('<div style="display:inline-block; float:right;" class=Third-' + Utils.cssifyName(item.label) + '></div>').appendTo(ul);
+        };
+        itemContainer.appendChild(itemLabel);
+        itemContainer.appendChild(itemName);
+        container.appendChild(itemContainer);
+
+        var quantityContainer = document.createElement('div');
+        var quantityLabel = document.createElement('div');
+        quantityLabel.style.width = '70px';
+        quantityLabel.style.display = 'inline-block';
+        var quantityInput = document.createElement('input');
+        order.quantity = quantityInput;
+        quantityInput.type = 'TEXT';
+        quantityInput.addEventListener('keyup', function () {
+            order.summarize();
+        });
+        quantityLabel.textContent = 'Quantity: ';
+        quantityContainer.appendChild(quantityLabel);
+        quantityContainer.appendChild(quantityInput);
+        container.appendChild(quantityContainer);
+
+        var priceContainer = document.createElement('div');
+        var priceLabel = document.createElement('div');
+        priceLabel.textContent = 'Coins: ';
+        priceLabel.style.width = '70px';
+        priceLabel.style.display = 'inline-block';
+        var priceInput = document.createElement('input');
+        priceInput.addEventListener('keyup', function () {
+            order.summarize();
+        });
+        order.offer = priceInput;
+        priceContainer.appendChild(priceLabel);
+        priceContainer.appendChild(priceInput);
+        container.appendChild(priceContainer);
+
+        var summary = document.createElement('div');
+        order.summary = summary;
+        container.appendChild(summary);
+
+        window.addElement(container);
+
+        var cancel = window.addNegativeOption('Cancel');
+        cancel.addEventListener('click', function () {
+            modal.close();
+        });
+        var submit = window.addAffirmativeOption('Submit');
+        submit.addEventListener('click', function () {
+            order.submit();
+        });
+
+        window.show();
+    }
 })(Market || (Market = {}));
 ///<reference path="chat.ts"/>
 ///<reference path="inventory.ts"/>
@@ -3393,6 +3556,7 @@ var Market;
 ///<reference path="equipment.ts"/>
 ///<reference path="crafting.ts"/>
 ///<reference path="typings/jquery/jquery.d.ts"/>
+///<reference path="typings/jqueryui/jqueryui.d.ts"/>
 ///<reference path="typings/dcode/long.d.ts"/>
 ///<reference path="buffs.ts"/>
 ///<reference path="register.ts"/>
@@ -3409,6 +3573,19 @@ var Connection;
     var networkErrorElm;
     var rateLimitedElm;
     var playerCounter;
+    var currentTab;
+
+    (function (Tabs) {
+        Tabs[Tabs["Inventory"] = 1] = "Inventory";
+        Tabs[Tabs["Statistics"] = 2] = "Statistics";
+        Tabs[Tabs["Equipment"] = 3] = "Equipment";
+        Tabs[Tabs["Store"] = 4] = "Store";
+        Tabs[Tabs["Crafting"] = 5] = "Crafting";
+        Tabs[Tabs["Achievements"] = 6] = "Achievements";
+        Tabs[Tabs["Market"] = 7] = "Market";
+    })(Connection.Tabs || (Connection.Tabs = {}));
+    var Tabs = Connection.Tabs;
+    ;
 
     function init() {
         var headerLinks = document.getElementsByClassName('header-links')[0];
@@ -3513,6 +3690,11 @@ var Connection;
         if (msg.Achievements) {
             updateAchievements(msg.Achievements);
         }
+        if (msg.Orders) {
+            for (var i = 0; i < msg.Orders.length; i++) {
+                console.log(msg.Orders[i]);
+            }
+        }
     });
 
     function restart() {
@@ -3535,6 +3717,11 @@ var Connection;
             networkErrorElm.style.display = 'block';
         }
     });
+
+    function changeSelectedTab(selected) {
+        currentTab = selected;
+    }
+    Connection.changeSelectedTab = changeSelectedTab;
 
     function connected() {
         console.log('Connection opened');
@@ -3604,11 +3791,34 @@ var Connection;
                 Achievements.register(achievement.Id, achievement.Name, achievement.RequiredId, achievement.Goal, achievement.Category);
             }
         }
+        Market.init();
     }
+
+    function placeOrder(id, quantity, value, isSelling) {
+        var order = new Komodo.ClientActions.Order();
+        order.ItemId = id;
+        order.ItemQuantity = quantity;
+        order.ItemValue = value;
+        order.IsSelling = isSelling;
+        console.log(order);
+        actions.Orders.push(order);
+    }
+    Connection.placeOrder = placeOrder;
 
     function rateLimit(limited) {
         rateLimitedElm.style.display = limited ? 'block' : 'none';
     }
+
+    function submitOrder(itemId, itemQuantity, itemValue, isSelling) {
+        var order = new Komodo.ClientActions.Order();
+        order.ItemId = itemId;
+        order.ItemQuantity = itemQuantity;
+        order.ItemValue = itemValue;
+        order.IsSelling = isSelling;
+        console.log(order);
+        actions.Orders.push(order);
+    }
+    Connection.submitOrder = submitOrder;
 
     function toggleGatherer(id, enabled) {
         var gathererAction = new Komodo.ClientActions.GathererAction();
@@ -3719,6 +3929,11 @@ var Connection;
     }
     Connection.configureItem = configureItem;
 
+    function requestOrders() {
+        actions.RequestOrders = true;
+    }
+    Connection.requestOrders = requestOrders;
+
     function purchaseItem(id, quantity) {
         var storeAction = new Komodo.ClientActions.StoreAction();
         var purchaseAction = new Komodo.ClientActions.StoreAction.PurchaseAction();
@@ -3772,6 +3987,9 @@ var Connection;
 
     function send(message) {
         if (message.encode64) {
+            if (message.SelectedTab) {
+                message.SelectedTab = currentTab;
+            }
             var encoded = message.encode64();
             Chat.log("Sent " + roughSizeOfObject(encoded) + " bytes to komodo.");
             Chat.log("Decoded: ");

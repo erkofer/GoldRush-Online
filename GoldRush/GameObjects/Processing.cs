@@ -106,11 +106,11 @@ namespace GoldRush
         private ProcessorRecipe SpeechPotion;
         private ProcessorRecipe AlchemyPotion;
 
-        public void Update(int ms)
+        public void Update(long seconds)
         {
             foreach (var processor in Processors)
             {
-                processor.Value.Update(ms);
+                processor.Value.Update(seconds);
             }
         }
 
@@ -228,7 +228,7 @@ namespace GoldRush
                 recipeProgress = 0;
             }
 
-            public void Update(int ms)
+            public void Update(long seconds)
             {
                 if (recipesLeftToCraft == 0)
                 {
@@ -236,7 +236,7 @@ namespace GoldRush
                     return;
                 }
 
-                var ticks = ms / 1000;
+                var ticks = seconds;
                 recipeProgress += ticks * Speed;
 
                 if (recipeProgress < selectedRecipe.Duration) return;

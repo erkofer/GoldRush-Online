@@ -478,3 +478,7 @@ background-image: linear-gradient(to bottom right, #CFCF00 0%, #B8B800 100%);
     color: white;
     background: #546E7A;
 }
+
+.market-order-header {
+    background: #78909c;
+}

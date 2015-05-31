@@ -34,7 +34,7 @@ module Equipment {
 
         equipmentPane = document.createElement('div');
         document.getElementById('paneContainer').appendChild(equipmentPane);
-        Tabs.registerGameTab(equipmentPane, 'Equipment');
+        Tabs.registerGameTab(equipmentPane, Connection.Tabs.Equipment,'Equipment');
     }
 
     export function registerGatherer(id: number) {
