@@ -5,7 +5,6 @@ using Caroline.Domain.Models;
 using Caroline.Persistence;
 using Caroline.Persistence.Models;
 using Caroline.Persistence.Redis;
-using StackExchange.Redis;
 
 namespace Caroline.Domain
 {

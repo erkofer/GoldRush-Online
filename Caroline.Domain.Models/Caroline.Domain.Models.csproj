@@ -65,6 +65,7 @@
     <Compile Include="Results.cs" />
     <Compile Include="UserChatroom.cs" />
     <Compile Include="UserDto.cs" />
+    <Compile Include="UserProfile.cs" />
     <Compile Include="VersionedUpdateResult.cs" />
   </ItemGroup>
   <ItemGroup>

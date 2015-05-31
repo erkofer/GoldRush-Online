@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using StackExchange.Redis;
 
 namespace Caroline.Persistence.Redis
@@ -8,6 +7,8 @@ namespace Caroline.Persistence.Redis
     {
         readonly IDatabaseArea _db;
         readonly IIdentifier<TEntity, double> _scoreIdentifier;
+        static readonly log4net.ILog Log = log4net.LogManager.GetLogger
+            (System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public RedisSortedSetTable(IDatabaseArea db, ISerializer<TEntity> serializer, ISerializer<TId> keySerializer, IIdentifier<TEntity, TId> identifier, IIdentifier<TEntity, double> scoreIdentifier)
             : base(serializer, keySerializer, identifier)
@@ -56,6 +57,14 @@ namespace Caroline.Persistence.Redis
         //    var maxSerial = Serializer.Serialize(max);
         //    return _db.SortedSetLengthByValueAsync(id, minSerial, maxSerial, exclude);
         //}
+
+        public async Task<TEntity> Get(TId id, long rank)
+        {
+            var result = await Range(id, rank, rank);
+            if(result.Length>1)
+                Log.Warn("Redis SortedSetRangeByRankWithScoresAsync returned >1 result when a range of 1 was given.");
+            return result.Length > 0 ? result[1] : default(TEntity);
+        }
 
         public async Task<TEntity[]> Range(TId id, long start = 0, long stop = -1, Order order = Order.Ascending)
         {
@@ -122,5 +131,6 @@ namespace Caroline.Persistence.Redis
         Task<long> RemoveRangeByRank(TId id, long start, long stop);
         Task<long> RemoveRangeByScore(TId id, double start, double stop);
         Task<double?> Score(TEntity entity);
+        Task<TEntity> Get(TId id, long rank);
     }
 }
