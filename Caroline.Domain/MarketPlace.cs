@@ -134,6 +134,29 @@ namespace Caroline.Domain
             return null;
         }
 
+        public async Task<bool> CancelOrder(long id)
+        {
+            UpdateResult result;
+            byte i = 0;
+            do
+            {
+                if (i++ == 20)
+                    throw new TimeoutException();
+
+                var order = await _mongo.Orders.SingleOrDefault(o => o.Id == id);
+                if (order == null)
+                    return false;
+
+                order.UnfulfilledQuantity = 0;
+                var oldVersion = order.Version++;
+                result = await _mongo.Orders.UpdateOneAsync(
+                    o => o.Id == id && o.Version == oldVersion, 
+                    new ObjectUpdateDefinition<StaleOrder>(order));
+
+            } while (!result.IsModifiedCountAvailable || result.ModifiedCount != 1);
+            return true;
+        }
+
         static StaleOrder BuildStaleOrder(FreshOrder freshOrder)
         {
             return new StaleOrder
