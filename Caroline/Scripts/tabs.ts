@@ -1,4 +1,6 @@
-﻿module Tabs {
+﻿///<reference path="connection.ts"/>
+
+module Tabs {
     var lowestTabContainerId: number = 0;
     var buttonContainer = document.getElementById('tabContainer');
     var tabContainer = document.getElementById("paneContainer");
@@ -59,12 +61,18 @@
         css(id: number, className: string) {
             this.tabs[id].button.classList.add(className);
         }
+
+        connectionLink(id: number, connectionTab: Connection.Tabs) {
+            this.tabs[id].connectionTab = connectionTab;
+        }
     }
 
     var gameTabs = new TabContainer(document.getElementById('tabContainer'));
 
-    export function registerGameTab(pane: HTMLElement, css?: string) {
+    export function registerGameTab(pane: HTMLElement, connectionTab: Connection.Tabs, css?: string) {
         var id = gameTabs.newTab(pane);
+        gameTabs.connectionLink(id, connectionTab);
+
         if (css)
             gameTabs.css(id, css);
     }
@@ -93,6 +101,7 @@
     class Tab {
         pane: HTMLElement;
         button: HTMLElement;
+        connectionTab: Connection.Tabs;
 
         deactivate() {
             Utils.cssSwap(this.button, 'active', 'inactive');
@@ -105,6 +114,7 @@
             this.pane.style.display = 'block';
             this.pane.style.overflow = 'visible';
             selectedTab = this.pane;
+            Connection.changeSelectedTab(this.connectionTab);
         }
     }
 }

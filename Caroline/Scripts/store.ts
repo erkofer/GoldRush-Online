@@ -35,7 +35,7 @@
     function draw() {
         storePane = document.createElement('div');
         document.getElementById('paneContainer').appendChild(storePane);
-        Tabs.registerGameTab(storePane, 'Store');
+        Tabs.registerGameTab(storePane, Connection.Tabs.Store,'Store');
 
         for (var enumMember in Category) {
             var isValueProperty = parseInt(enumMember, 10) >= 0;

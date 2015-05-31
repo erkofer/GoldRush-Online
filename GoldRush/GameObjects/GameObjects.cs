@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Caroline.Persistence.Models;
 
 namespace GoldRush
 {
@@ -38,12 +39,13 @@ namespace GoldRush
         public Processing Processing;
         public Achievements Achievements;
         public Dictionary<int,GameObject> All;
-
-        public void Update(int ms)
+        public User User;
+        public long UserId;
+        public void Update(long seconds)
         {
-            Upgrades.Update(ms);
-            Gatherers.Update(ms);
-            Processing.Update(ms);
+            Upgrades.Update(seconds);
+            Gatherers.Update(seconds);
+            Processing.Update(seconds);
         }
 
         internal abstract class GameObject

@@ -161,7 +161,7 @@ namespace GoldRush
         /// <summary>
         /// Updates the duration on all buffs.
         /// </summary>
-        public void Update(int ms)
+        public void Update(long seconds)
         {
             foreach (var upgradePair in All)
             {
@@ -186,7 +186,7 @@ namespace GoldRush
                     buff.TimeActive = 0;
                 }
 
-                buff.Update(ms);
+                buff.Update(seconds);
             }
         }
 
@@ -268,10 +268,10 @@ namespace GoldRush
                 _config = config;
             }
 
-            public void Update(double ms)
+            public void Update(long seconds)
             {
                 if (Active)
-                    TimeActive += (ms / 1000);
+                    TimeActive += seconds;
             }
 
             /// <summary>

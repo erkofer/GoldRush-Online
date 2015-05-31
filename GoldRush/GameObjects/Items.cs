@@ -1,14 +1,24 @@
 ﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+﻿using Caroline.Domain.Models;
+﻿using Caroline.Persistence.Models;
+﻿using GoldRush.Market;
+﻿using MongoDB.Driver;
+using System.Threading.Tasks;
 
 namespace GoldRush
 {
     class Items
     {
+        public List<StaleOrder> Orders = new List<StaleOrder>();
+        public List<long> OrderIds = new List<long>();
+        public IMarketPlace MarketPlace;
+        private Item currency;
+        public User User;
+
         public Items(GameObjects objs)
         {
-
             #region Item Creation
             items.AddRange(new Item[]
             {
@@ -19,10 +29,12 @@ namespace GoldRush
             CopperWire,Tnt
             });
 
-            
+
 
             // If items should have a currency other than coins assign them here.
             // Such as EmptyVial.Currency = ISK;
+
+            currency = Coins;
 
             foreach (var item in items)
                 All.Add(item.Id, item);
@@ -45,14 +57,58 @@ namespace GoldRush
         private List<Item> items = new List<Item>();
         //public List<Item> All { get { return items; } }
 
-        public Dictionary<int, Item> All = new Dictionary<int,Item>();
+        public Dictionary<int, Item> All = new Dictionary<int, Item>();
 
         public void SellAll()
         {
             foreach (var item in items)
                 if (item.IncludeInSellAll)
                     item.Sell(item.Quantity);
-            
+
+        }
+
+        public async Task PlaceOrder(int itemId, long quantity, long value, bool isSelling)
+        {
+            Item item;
+            // confirm the item id is valid
+            if (!All.TryGetValue(itemId, out item)) return;
+            // confirm we have sufficient items if we are selling.
+            if (isSelling && item.Quantity <= quantity) return;
+            // confirm we have sufficient currency if we are buying.
+            if (!isSelling && Coins.Quantity < quantity * value) return;
+
+            await MarketPlace.Transact(new FreshOrder
+            {
+                GameId = User.Id,
+                IsSelling = isSelling,
+                Quantity = quantity,
+                ItemId = itemId,
+                UnitValue = value
+            });
+            // deduct items if we are selling.
+            if (isSelling) item.Quantity -= quantity;
+            // deduct cost if we are buying.
+            if (!isSelling) Coins.Quantity -= quantity * value;
+        }
+
+        public async Task GetOrders()
+        {
+            var orders = await MarketPlace.GetOrders(User.Id);
+            Orders = await orders.ToListAsync();
+           /* for (var i = 0; i < Orders.Count; i++)
+            {
+                var order = Orders[i];
+                var items = await MarketPlace.ClaimOrderContents(order.Id, ClaimField.Items);
+                var coins = await MarketPlace.ClaimOrderContents(order.Id, ClaimField.Money);
+                
+                Item item;
+                All.TryGetValue((int)order.ItemId, out item);
+                if (items != null && item!=null)
+                    item.Quantity += (long)items;
+
+                if (coins != null)
+                    currency.Quantity += (long)coins;
+            }*/
         }
 
         public void Drink(int id)
@@ -73,7 +129,7 @@ namespace GoldRush
 
         public enum Category
         {
-            NOTFORSALE=0,
+            NOTFORSALE = 0,
             ORE = 1,
             GEM = 2,
             INGREDIENT = 3,
@@ -137,13 +193,13 @@ namespace GoldRush
         {
             public Item()
             {
-                
+
             }
 
             private readonly GameConfig.Items.ItemConfig _config;
 
             public Item(GameConfig.Items.ItemConfig config)
-                :base(config)
+                : base(config)
             {
                 _config = config;
                 IncludeInSellAll = false;
@@ -174,8 +230,8 @@ namespace GoldRush
                 {
                     if (value)
                         if (Quantity <= 0) Quantity = 1;
-                    else
-                        if (Quantity > 0) Quantity = 0;
+                        else
+                            if (Quantity > 0) Quantity = 0;
                 }
             }
 
@@ -221,7 +277,7 @@ namespace GoldRush
 
             public void Craft(int iterations)
             {
-               Recipe.Craft(iterations);
+                Recipe.Craft(iterations);
             }
 
             public void Sell()
@@ -245,7 +301,7 @@ namespace GoldRush
             private readonly GameConfig.Items.ResourceConfig _config;
 
             public Resource(GameConfig.Items.ResourceConfig config)
-                :base(config)
+                : base(config)
             {
                 _config = config;
             }
@@ -259,9 +315,9 @@ namespace GoldRush
         internal class Potion : Item
         {
             public Potion(GameConfig.Items.ItemConfig config)
-                :base(config)
+                : base(config)
             {
-                
+
             }
             /// <summary>
             /// Consumes the potion. Set and forget, will be managed by Upgrades class.
@@ -269,7 +325,7 @@ namespace GoldRush
             public void Consume()
             {
                 if (Quantity <= 0) return;
-                if(Buff == null) throw new NotImplementedException(Name + " has no effect assigned to it.");
+                if (Buff == null) throw new NotImplementedException(Name + " has no effect assigned to it.");
                 Buff.TimeActive = 1;
                 Quantity--;
             }
@@ -277,6 +333,6 @@ namespace GoldRush
             public Upgrades.Buff Buff;
         }
 
-       
+
     }
 }

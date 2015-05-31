@@ -21,7 +21,7 @@ namespace Caroline.App
             return _impl.Transact(order);
         }
 
-        public Task<StaleOrder> GetOrder(long id)
+        public Task<StaleOrder> GetOrder(string id)
         {
             return _impl.GetOrder(id);
         }
@@ -31,7 +31,7 @@ namespace Caroline.App
             return _impl.GetOrdersByGame(gameId);
         }
 
-        public Task<long?> ClaimOrderContents(long id, ClaimField field)
+        public Task<long?> ClaimOrderContents(string id, ClaimField field)
         {
             return _impl.ClaimOrderContents(id, field);
         }

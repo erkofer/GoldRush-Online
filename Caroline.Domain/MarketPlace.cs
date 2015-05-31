@@ -2,10 +2,12 @@
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Caroline.Domain.Helpers;
 using Caroline.Domain.Models;
 using Caroline.Persistence;
 using Caroline.Persistence.Extensions;
 using Caroline.Persistence.Models;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using Nito.AsyncEx;
 
@@ -83,9 +85,12 @@ namespace Caroline.Domain
             return freshOrder;
         }
 
-        public Task<StaleOrder> GetOrder(long id)
+        public Task<StaleOrder> GetOrder(string id)
         {
-            return _mongo.Orders.SingleOrDefault(o => o.Id == id);
+            ObjectId objid;
+            if (ObjectIdHelpers.ParseAndLog(id, out objid))
+                return _mongo.Orders.SingleOrDefault(o => o.Id == objid);
+            return null;
         }
 
         public Task<IAsyncCursor<StaleOrder>> GetOrdersByGame(long gameId)
@@ -93,12 +98,15 @@ namespace Caroline.Domain
             return _mongo.Orders.FindAsync(o => o.GameId == gameId);
         }
 
-        public async Task<long?> ClaimOrderContents(long id, ClaimField field)
+        public async Task<long?> ClaimOrderContents(string id, ClaimField field)
         {
+            ObjectId objId;
+            if (!ObjectIdHelpers.ParseAndLog(id, out objId))
+                return null;
             int i;
             for (i = 0; i < 10; i++)
             {
-                var order = await _mongo.Orders.SingleOrDefault(o => o.Id == id);
+                var order = await _mongo.Orders.SingleOrDefault(o => o.Id == objId);
                 if (order == null)
                     return null;
                 long numClaimed;
@@ -221,15 +229,13 @@ namespace Caroline.Domain
                 Log.Warn("Inserting a new order with a version != 0");
                 staleOrder.Version = 0;
             }
-            if (staleOrder.Id != 0)
+            if (staleOrder.Id != ObjectId.Empty)
             {
                 Log.Warn("Inserting a new order with an id != 0");
-                staleOrder.Id = 0;
+                staleOrder.Id = ObjectId.Empty;
             }
 
-            var result = await _mongo.Orders.UpdateOneAsync(o => true, new ObjectUpdateDefinition<StaleOrder>(staleOrder),
-                new UpdateOptions { IsUpsert = true });
-            staleOrder.Id = result.UpsertedId.AsInt64;
+            await _mongo.Orders.InsertOneAsync(staleOrder);
         }
 
         static async Task<VersionedUpdateResult> UpdateStaleOrder(StaleOrder staleOrder)

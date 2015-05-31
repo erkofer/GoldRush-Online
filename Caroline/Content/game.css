@@ -32,6 +32,8 @@ body{
     height: 250px;
 }
 
+.ui-autocomplete { max-height: 200px; overflow-y: scroll; overflow-x: hidden;z-index: 501;}
+
 .header-title {
     height: 40px;
     text-align: center;
@@ -587,6 +589,11 @@ td {
     position: absolute;
 }
 
+.modal-window > div {
+    margin-left: 3px;
+    margin-right: 3px;
+}
+
 .modal-window.opened {
     display: block;
 }
@@ -598,6 +605,8 @@ td {
     -ms-user-select: none;
     user-select: none;
     cursor: default;
+
+    margin: 0 !important;
 
     font-size: 18px;
     width: 100%;
@@ -1005,12 +1014,16 @@ td {
     width: 250px;
     height: 144px;
     border-radius: 3px;
+    display: inline-block;
+    margin: 3px;
 }
 
 .market-order-header {
     width: 100%;
     height: 12px;
     text-align: center;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
 }
 
 .market-control {

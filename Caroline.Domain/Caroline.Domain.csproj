@@ -106,6 +106,7 @@
   <ItemGroup>
     <Compile Include="Bootstrapper.cs" />
     <Compile Include="ChatroomManager.cs" />
+    <Compile Include="Helpers\ObjectIdHelpers.cs" />
     <Compile Include="Identity.cs" />
     <Compile Include="MarketPlace.cs" />
     <Compile Include="MathHelpers.cs" />

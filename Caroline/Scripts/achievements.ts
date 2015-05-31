@@ -14,7 +14,7 @@
     function init() {
         achievementPane = document.createElement('div');
         document.getElementById('paneContainer').appendChild(achievementPane);
-        Tabs.registerGameTab(achievementPane, 'Achievements');
+        Tabs.registerGameTab(achievementPane, Connection.Tabs.Achievements,'Achievements');
     }
 
     class Achievement {

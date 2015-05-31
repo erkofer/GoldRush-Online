@@ -63,5 +63,7 @@ message SaveState
 		optional int32 Id=1;
 		optional int64 Value=2;
 	}
-	repeated Statistic Statistics=9;
+	repeated Statistic Statistics=9;         
+
+	repeated int64 OrderIds = 10;
 }

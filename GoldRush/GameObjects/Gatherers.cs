@@ -64,18 +64,18 @@ namespace GoldRush
             All.Add(BigTexan.Id, BigTexan);
         }
 
-        public void Update(int ms)
+        public void Update(long seconds)
         {
             List<Gatherer> fuelConsumingGatherers = new List<Gatherer>();
             foreach (var gatherer in All)// gatherer with machines that do not consume fuel first.
             {
                 if(gatherer.Value.Fuel != null) fuelConsumingGatherers.Add(gatherer.Value);
-                else gatherer.Value.Mine(ms);
+                else gatherer.Value.Mine(seconds);
             }
 
             foreach (var gatherer in fuelConsumingGatherers)
             {
-                gatherer.Mine(ms);
+                gatherer.Mine(seconds);
             }
         }
 
@@ -84,7 +84,7 @@ namespace GoldRush
         {
             if (AntiCheat(x, y))
             {
-                Player.Mine(1000);
+                Player.Mine(1);
                 Game.Statistics.RockClicked.Value++;
                 AntiCheatNextChange--;
             }
@@ -213,7 +213,7 @@ namespace GoldRush
             /// </summary>
             private bool recalculate=true;
 
-            int factorial(int i)
+            long factorial(long i)
             {
                 if (i <= 1)
                     return 1;
@@ -265,7 +265,7 @@ namespace GoldRush
             /// Gathers resources based on time.
             /// </summary>
             /// <param name="ms">Time that has passed since last mine.</param>
-            public void Mine(double ms)
+            public void Mine(long seconds)
             {
                 if (!Enabled) return;
 
@@ -290,7 +290,7 @@ namespace GoldRush
                 resourcesGained *= fuelEfficiency;
 
                 resourcesGained += resourceBuffer;
-                resourcesGained *= (ms / 1000); // gathers resources based on time passed.
+                resourcesGained *= seconds; // gathers resources based on time passed.
                 // Stores excess resources in the resource buffer.
                 resourceBuffer = resourcesGained - Math.Floor(resourcesGained);
                 resourcesGained = Math.Floor(resourcesGained);
@@ -301,7 +301,7 @@ namespace GoldRush
 
                 if (PossibleResources.Count <= 0) return;
 
-                if (ms <= 10000) // if less than ten seconds have passed since we last mined.
+                if (seconds <= 10) // if less than ten seconds have passed since we last mined.
                 {
                     for (var i = 0; i < resourcesGained; i++)
                     {
@@ -321,13 +321,13 @@ namespace GoldRush
                 {
                     for (var i = 0; i < PossibleResources.Count; i++)
                     {
-                        double ticks = (ms / 1000);
+                        double ticks = seconds;
 
                         double chance = ((double)PossibleResources[i].Probability / totaledProbability);
                         double r = chance * resourcesGained;
                         double luck = ((double)_game.Random.Next(0, 11) / 10);
                         double probability = 1 / Math.Pow(2.71828, r);
-                        int resourcesToGain = 0;
+                        long resourcesToGain = 0;
                         
                         if(r < 10)
                         {
@@ -343,7 +343,7 @@ namespace GoldRush
                             bool increase = _game.Random.NextDouble() >= 0.5;
                             double change = (double) _game.Random.Next(1, 3)/10;
                             
-                            resourcesToGain = (int)Math.Floor(increase ? (1+change) * expectedOutput : (1-change)*expectedOutput);
+                            resourcesToGain = (long)Math.Floor(increase ? (1+change) * expectedOutput : (1-change)*expectedOutput);
                         }
                         PossibleResources[i].Quantity+=resourcesToGain;
                     }

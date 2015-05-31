@@ -1,4 +1,6 @@
 ﻿using System.Threading.Tasks;
+using Caroline.Domain.Models;
+using MongoDB.Driver;
 
 namespace GoldRush.APIs
 {
@@ -10,7 +12,7 @@ namespace GoldRush.APIs
         public async Task<UpdateDto> Update(UpdateArgs args)
         {
             var cachedGameState = args.Session.CachedGameState;
-            var fullGameState = _game.Update(args.ClientActions);
+            var fullGameState = await _game.Update(args.ClientActions,args.MarketPlace,args.User);
 
                 args.Session.CachedGameState = fullGameState;
 
@@ -18,6 +20,16 @@ namespace GoldRush.APIs
             var sendState = cachedGameState != null
                 ? fullGameState.Compress(cachedGameState)
                 : fullGameState;
+    /*
+            var mp = args.MarketPlace;
+            var orders = await mp.GetOrders(123);
+            var ordersList = await orders.ToListAsync();
+            var orderone = ordersList[0];
+            
+            // if moneyGained is null, order doesnt exist in db
+            long? moneyGained = 0;
+            if (orderone.UnclaimedMoneyRecieved != 0)
+                moneyGained = await mp.ClaimOrderContents(orderone.Id, ClaimField.Money);*/
 
             return new UpdateDto { GameState = sendState, Score = _game.Score };
         }
