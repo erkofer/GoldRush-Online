@@ -12,6 +12,10 @@
 /Caroline/App_Data
 /Caroline/bin
 /Caroline/obj
+/Caroline/Scripts/connection.js
+/Caroline/Scripts/game.js
+/Caroline/Scripts/game.min.js
+/Caroline/Scripts/inventory.js
 /Caroline.App/bin
 /Caroline.App/obj
 /Caroline.App.Models/bin

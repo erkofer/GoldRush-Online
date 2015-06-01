@@ -142,6 +142,33 @@ namespace Caroline.Domain
             return null;
         }
 
+        public async Task<bool> CancelOrder(string id)
+        {
+            ObjectId objId;
+            if (!ObjectIdHelpers.ParseAndLog(id, out objId))
+                return false;
+
+            UpdateResult result;
+            byte i = 0;
+            do
+            {
+                if (i++ == 20)
+                    throw new TimeoutException();
+
+                var order = await _mongo.Orders.SingleOrDefault(o => o.Id == objId);
+                if (order == null)
+                    return false;
+
+                order.UnfulfilledQuantity = 0;
+                var oldVersion = order.Version++;
+                result = await _mongo.Orders.UpdateOneAsync(
+                    o => o.Id == objId && o.Version == oldVersion,
+                    new ObjectUpdateDefinition<StaleOrder>(order));
+
+            } while (!result.IsModifiedCountAvailable || result.ModifiedCount != 1);
+            return true;
+        }
+
         static StaleOrder BuildStaleOrder(FreshOrder freshOrder)
         {
             return new StaleOrder
@@ -218,7 +245,7 @@ namespace Caroline.Domain
         static async Task<VersionedUpdateResult> UpdateStaleOrder(StaleOrder staleOrder)
         {
             var oldVersion = staleOrder.Version++;
-            var result = await _mongo.Orders.UpdateOneAsync(o => o.Id == staleOrder.Id && o.Version == oldVersion, new ObjectUpdateDefinition<StaleOrder>(staleOrder));
+            var result = await _mongo.Orders.ReplaceOneAsync(o => o.Id == staleOrder.Id && o.Version == oldVersion, staleOrder, new UpdateOptions { IsUpsert = true });
             if (result.ModifiedCount == 1)
                 return VersionedUpdateResult.Success;
 

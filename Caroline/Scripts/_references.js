@@ -1,6 +1,5 @@
 ﻿/// <autosync enabled="true" />
 /// <reference path="bytebufferab.js" />
-/// <reference path="game.min.js" />
 /// <reference path="jquery-1.10.2.js" />
 /// <reference path="jquery-ui-1.11.4.js" />
 /// <reference path="jquery.signalr-2.1.2.js" />

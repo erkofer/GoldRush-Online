@@ -89,6 +89,7 @@
     <Compile Include="CarolineDb.cs" />
     <Compile Include="CarolineMongoDb.cs" />
     <Compile Include="CarolineRedisDb.cs" />
+    <Compile Include="Extensions\EnumerableEx.cs" />
     <Compile Include="Extensions\MongoCollectionEx.cs" />
     <Compile Include="RedisUserStore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

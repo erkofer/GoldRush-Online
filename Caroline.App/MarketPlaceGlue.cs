@@ -35,5 +35,10 @@ namespace Caroline.App
         {
             return _impl.ClaimOrderContents(id, field);
         }
+
+        public Task<bool> CancelOrder(string id)
+        {
+            return _impl.CancelOrder(id);
+        }
     }
 }
