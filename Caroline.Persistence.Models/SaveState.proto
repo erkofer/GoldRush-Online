@@ -66,4 +66,12 @@ message SaveState
 	repeated Statistic Statistics=9;         
 
 	repeated int64 OrderIds = 10;
+
+	message Order {
+		optional string Id=1;
+		optional int32 Position=2;
+	}
+	repeated Order Orders=11;
+
+	optional int64 TimeSinceMarketUpdate=12;
 }

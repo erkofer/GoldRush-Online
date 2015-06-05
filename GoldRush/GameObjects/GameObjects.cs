@@ -14,6 +14,7 @@ namespace GoldRush
             Random = new Random();
             Statistics = new Statistics();
             Items = new Items(this);
+            Items.GameNotification += Notification;
             Gatherers = new Gatherers(this);
             Processing = new Processing(this);
             Upgrades = new Upgrades(this);
@@ -21,7 +22,8 @@ namespace GoldRush
             Store = new Store(this);
             Achievements = new Achievements(this);
             // Add all gameobjects to a big dictionary.
-            All = new Dictionary<int,GameObject>();
+            All = new Dictionary<int, GameObject>();
+            Notifications = new List<GameNotification>();
             foreach (var item in Items.All) { All.Add(item.Key, item.Value); }
             foreach (var gatherer in Gatherers.All) { All.Add(gatherer.Key, gatherer.Value); }
             foreach (var upgrade in Upgrades.All) { All.Add(upgrade.Key, upgrade.Value); }
@@ -38,11 +40,19 @@ namespace GoldRush
         public Crafting Crafting;
         public Processing Processing;
         public Achievements Achievements;
-        public Dictionary<int,GameObject> All;
+        public Dictionary<int, GameObject> All;
+        public List<GameNotification> Notifications;
         public User User;
         public long UserId;
-        public void Update(long seconds)
+
+        private void Notification(object sender, GameNotificationEventArgs e)
         {
+            Notifications.Add(new GameNotification { Message = e.Message, Tag = e.Tag });
+        }
+
+        public async Task Update(long seconds)
+        {
+            await Items.Update(seconds);
             Upgrades.Update(seconds);
             Gatherers.Update(seconds);
             Processing.Update(seconds);
@@ -52,7 +62,7 @@ namespace GoldRush
         {
             protected GameObject()
             {
-                
+
             }
 
             private readonly GameConfig.Config _config;
@@ -66,7 +76,7 @@ namespace GoldRush
             /// <summary>
             /// Unique identifier used for interfacing with clients.
             /// </summary>
-            public int Id { get { return _config.Id;} }
+            public int Id { get { return _config.Id; } }
 
             /// <summary>
             /// The prerequisite for this GameObject.

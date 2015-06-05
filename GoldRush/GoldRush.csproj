@@ -64,6 +64,7 @@
     <Compile Include="GameObjects\Crafting.cs" />
     <Compile Include="GameObjects\GameConfig.cs" />
     <Compile Include="APIs\KomodoSessionFactory.cs" />
+    <Compile Include="GameObjects\GameNotification.cs" />
     <Compile Include="GameObjects\GameObjects.cs" />
     <Compile Include="GameObjects\Gatherers.cs" />
     <Compile Include="GameObjects\Items.cs" />
@@ -72,6 +73,7 @@
     <Compile Include="GameObjects\Store.cs" />
     <Compile Include="APIs\KomodoSession.cs" />
     <Compile Include="Market\IMarketPlace.cs" />
+    <Compile Include="Market\Order.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GameObjects\Upgrades.cs" />
   </ItemGroup>

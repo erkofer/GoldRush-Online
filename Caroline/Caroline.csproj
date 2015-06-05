@@ -37,7 +37,7 @@
     <TypeScriptSourceMap>true</TypeScriptSourceMap>
     <OutputPath>bin\</OutputPath>
     <TypeScriptModuleKind>amd</TypeScriptModuleKind>
-    <TypeScriptSourceMap> Scripts/utils.ts Scripts/ajax.ts Scripts/modal.ts Scripts/objects.ts Scripts/register.ts Scripts/rock.ts Scripts/tabs.ts Scripts/connection.ts Scripts/chat.ts Scripts/buffs.ts Scripts/inventory.ts Scripts/equipment.ts Scripts/store.ts Scripts/stats.ts Scripts/crafting.ts Scripts/achievements.ts Scripts/market.ts</TypeScriptSourceMap>
+    <TypeScriptSourceMap> Scripts/utils.ts Scripts/ajax.ts Scripts/modal.ts Scripts/pheidippides.ts Scripts/objects.ts Scripts/register.ts Scripts/rock.ts Scripts/tabs.ts Scripts/connection.ts Scripts/chat.ts Scripts/buffs.ts Scripts/inventory.ts Scripts/equipment.ts Scripts/store.ts Scripts/stats.ts Scripts/crafting.ts Scripts/achievements.ts Scripts/market.ts</TypeScriptSourceMap>
     <TypeScriptOutFile>game.js</TypeScriptOutFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -57,10 +57,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AutoMapper">
-      <HintPath>..\packages\AutoMapper.3.3.0\lib\net40\AutoMapper.dll</HintPath>
+      <HintPath>..\packages\AutoMapper.3.3.1\lib\net40\AutoMapper.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="AutoMapper.Net4">
-      <HintPath>..\packages\AutoMapper.3.3.0\lib\net40\AutoMapper.Net4.dll</HintPath>
+    <Reference Include="AutoMapper.Net4, Version=3.3.1.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\AutoMapper.3.3.1\lib\net40\AutoMapper.Net4.dll</HintPath>
     </Reference>
     <Reference Include="JetBrains.Annotations, Version=8.0.5.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -471,6 +473,7 @@
     <TypeScriptCompile Include="Scripts\market.ts" />
     <TypeScriptCompile Include="Scripts\modal.ts" />
     <TypeScriptCompile Include="Scripts\objects.ts" />
+    <TypeScriptCompile Include="Scripts\pheidippides.ts" />
     <TypeScriptCompile Include="Scripts\register.ts" />
     <TypeScriptCompile Include="Scripts\rock.ts" />
     <TypeScriptCompile Include="Scripts\stats.ts" />
@@ -532,5 +535,5 @@
   </Target>
   <Target Name="AfterBuild">
   </Target>
-  <Import Project="..\packages\AutoMapper.3.3.0\tools\AutoMapper.targets" Condition="Exists('..\packages\AutoMapper.3.3.0\tools\AutoMapper.targets')" />
+  <Import Project="..\packages\AutoMapper.3.3.1\tools\AutoMapper.targets" Condition="Exists('..\packages\AutoMapper.3.3.1\tools\AutoMapper.targets')" />
 </Project>

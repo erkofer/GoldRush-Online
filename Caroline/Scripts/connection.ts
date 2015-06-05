@@ -1,4 +1,5 @@
-﻿///<reference path="chat.ts"/>
+﻿///<reference path="pheidippides.ts"/>
+///<reference path="chat.ts"/>
 ///<reference path="inventory.ts"/>
 ///<reference path="stats.ts"/>
 ///<reference path="store.ts"/>
@@ -134,8 +135,13 @@ module Connection {
             updateAchievements(msg.Achievements);
         }
         if (msg.Orders) {
-            for (var i = 0; i < msg.Orders.length; i++) {
-                console.log(msg.Orders[i]);
+            if(msg.OrdersSent == true)
+                Market.updateOrders(msg.Orders);
+        }
+        if (msg.Notifications) {
+            for (var i = 0; i < msg.Notifications.length; i++) {
+                var notification = msg.Notifications[i];
+                Pheidippides.deliver(notification.Tag, notification.Message);
             }
         }
     });
@@ -227,7 +233,6 @@ module Connection {
         if (schema.Achievements) {
             for (var i = 0; i < schema.Achievements.length; i++) {
                 var achievement = schema.Achievements[i];
-                console.log(achievement);
                 Achievements.register(achievement.Id, achievement.Name, achievement.RequiredId, achievement.Goal, achievement.Category);
             }
         }
@@ -240,7 +245,6 @@ module Connection {
         order.ItemQuantity = quantity;
         order.ItemValue = value;
         order.IsSelling = isSelling;
-        console.log(order);
         actions.Orders.push(order);
     }
 
@@ -248,12 +252,19 @@ module Connection {
         rateLimitedElm.style.display = limited ? 'block' : 'none';
     }
 
-    export function submitOrder(itemId: number, itemQuantity: Long, itemValue: Long, isSelling: boolean) {
+    export function cancelOrder(position: number) {
+        var cancel = new Komodo.ClientActions.OrderCancel();
+        cancel.Slot = position;
+        actions.Cancels.push(cancel);
+    }
+
+    export function submitOrder(position: number, itemId: number, itemQuantity: Long, itemValue: Long, isSelling: boolean) {
         var order = new Komodo.ClientActions.Order();
         order.ItemId = itemId;
         order.ItemQuantity = itemQuantity;
         order.ItemValue = itemValue;
         order.IsSelling = isSelling;
+        order.Position = position;
         console.log(order);
         actions.Orders.push(order);
     }
@@ -335,6 +346,13 @@ module Connection {
         var potionAction = new Komodo.ClientActions.PotionAction();
         potionAction.Id = id;
         actions.PotionActions.push(potionAction);
+    }
+
+    export function claim(slot: number,coins:boolean) {
+        var claimAction = new Komodo.ClientActions.OrderClaim();
+        claimAction.Slot = slot;
+        claimAction.Coins = coins;
+        actions.Claims.push(claimAction);
     }
 
     export function mine(x: number, y: number) {

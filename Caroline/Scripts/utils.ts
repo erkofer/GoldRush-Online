@@ -90,8 +90,8 @@
         var day = localDate.toISOString().split('-')[2].split('T')[0];
 
         var hours = +time.split(':')[0];
-        var minutes = +(time.split(':')[1]).split(' ')[0];
-        var amOrPm = time.split(':')[1].split(' ')[1];
+        var minutes = +(time.split(':')[1]).substring(0, 2);
+        var amOrPm = time.split(' ')[1];
 
 
         var dateString = month + '/'

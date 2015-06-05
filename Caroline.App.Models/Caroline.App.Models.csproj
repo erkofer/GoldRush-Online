@@ -56,6 +56,9 @@
     <ProtoBuf Include="descriptor.proto" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="obj\Release\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="BeforeBuild">
     <Copy SourceFiles="$(SolutionDir)\Caroline.App.Models\csharp_options.proto" DestinationFolder="$(SolutionDir)\Caroline\Content" />

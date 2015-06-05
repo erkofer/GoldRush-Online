@@ -189,7 +189,17 @@ message GameState {
 		optional int64 ItemId=6[default = -100];
 		optional bool IsSelling=7;
 		optional int64 UnfulfilledQuantity=8[default=-100];
+		optional int32 Slot=9[default=-100];
+		optional bool IsCanceled=10;
 	}
 	repeated Order Orders=15;
+
+	message Notification {
+		optional string Message = 1;
+		optional string Tag = 2;
+	}
+	repeated Notification Notifications=16;
+
+	optional bool OrdersSent=17;
 } 
 

@@ -272,7 +272,7 @@ module Inventory {
         itemQuantity.textContent = Utils.formatNumber(0);
         itemQuantity.style.verticalAlign = 'top';
         itemQuantity.style.marginTop = '8px';
-        itemQuantity.style.display = 'inline-block'
+        itemQuantity.style.display = 'inline-block';
         itemElement.appendChild(itemQuantity);
 
         var itemValue = document.createElement('DIV');
@@ -412,6 +412,13 @@ module Inventory {
         return 0;
     }
 
+    export function getName(id: number) {
+        for (var i = 0; i < names.length; i++) {
+            if (names[i].id == id) return names[i].label;
+        }
+        return 'undefined';
+    }
+
     export function addItem(id: number, name: string, worth: number, category: number) {
         if(!items[id]) // If we haven't already added this item.
             add(new Item(id, name, worth,category));
@@ -434,7 +441,7 @@ module Inventory {
             if (items[id].category != Category.NFS && items[id].category != null)
                 items[id].container.style.display = quantity == 0 ? 'none' : 'inline-block';
             else
-                items[id].container.style.display = Objects.getLifeTimeTotal(id) == 0 ? 'none' : 'inline-block';
+                items[id].container.style.display = (Objects.getLifeTimeTotal(id) == 0 && quantity == 0) ? 'none' : 'inline-block';
             limitTextQuantity();
         });
     }

@@ -76,6 +76,7 @@ message ClientActions
 		optional int64 ItemQuantity=2;
 		optional int64 ItemValue=3;
 		optional bool IsSelling=4;
+		optional int32 Position=5;
 	}
 	repeated Order Orders = 9;
 
@@ -91,4 +92,15 @@ message ClientActions
 	optional Tabs SelectedTab=10;
 
 	optional bool RequestOrders=11;
+
+	message OrderClaim {
+		optional int32 Slot=1;
+		optional bool Coins=2;
+	}
+	repeated OrderClaim Claims=12;
+
+	message OrderCancel{
+		optional int32 Slot=1;
+	}
+	repeated OrderCancel Cancels=13;
 }

@@ -1,5 +1,6 @@
 ﻿﻿using System;
-using System.Collections.Generic;
+﻿using System.CodeDom;
+﻿using System.Collections.Generic;
 using System.Linq;
 ﻿using Caroline.Domain.Models;
 ﻿using Caroline.Persistence.Models;
@@ -12,7 +13,10 @@ namespace GoldRush
     class Items
     {
         public List<StaleOrder> Orders = new List<StaleOrder>();
-        public List<long> OrderIds = new List<long>();
+        public List<SaveOrder> SavedOrders = new List<SaveOrder>();
+        public bool SentOrders;
+        public long SecondsSinceMarketUpdate;
+        private int SecondsBetweenMarketUpdates = 20;
         public IMarketPlace MarketPlace;
         private Item currency;
         public User User;
@@ -59,25 +63,55 @@ namespace GoldRush
 
         public Dictionary<int, Item> All = new Dictionary<int, Item>();
 
+        public event GameNotificationEventHandler GameNotification;
+
+        private void SendGameNotification(string message, string tag)
+        {
+            var handler = GameNotification;
+            var args = new GameNotificationEventArgs { Message = message, Tag = tag };
+
+            if (handler != null)
+                handler(this, args);
+        }
+
         public void SellAll()
         {
             foreach (var item in items)
                 if (item.IncludeInSellAll)
                     item.Sell(item.Quantity);
-
         }
 
-        public async Task PlaceOrder(int itemId, long quantity, long value, bool isSelling)
+        public async Task Update(long seconds)
         {
+            SecondsSinceMarketUpdate += seconds;
+            if (SecondsSinceMarketUpdate >= SecondsBetweenMarketUpdates) await GetOrders();
+        }
+
+        public async Task PlaceOrder(int position, int itemId, long quantity, long value, bool isSelling)
+        {
+            if (!ValidateOrderPosition(position)) return;
+
             Item item;
             // confirm the item id is valid
-            if (!All.TryGetValue(itemId, out item)) return;
+            if (!All.TryGetValue(itemId, out item))
+            {
+                SendGameNotification("Item id "+itemId+" is invalid.", "chat");
+                return;
+            }
             // confirm we have sufficient items if we are selling.
-            if (isSelling && item.Quantity <= quantity) return;
+            if (isSelling && item.Quantity < quantity)
+            {
+                SendGameNotification("You cannot sell more items than you have.", "chat");
+                return;
+            }
             // confirm we have sufficient currency if we are buying.
-            if (!isSelling && Coins.Quantity < quantity * value) return;
+            if (!isSelling && Coins.Quantity < quantity*value)
+            {
+                SendGameNotification("You cannot spend more coins than you have.","chat");
+                return;
+            }
 
-            await MarketPlace.Transact(new FreshOrder
+            var order = await MarketPlace.Transact(new FreshOrder
             {
                 GameId = User.Id,
                 IsSelling = isSelling,
@@ -89,26 +123,106 @@ namespace GoldRush
             if (isSelling) item.Quantity -= quantity;
             // deduct cost if we are buying.
             if (!isSelling) Coins.Quantity -= quantity * value;
+
+            SavedOrders.Add(new SaveOrder { Id = order.Id.ToString(), Position = position });
+            await GetOrders();
+        }
+
+        private bool ValidateOrderPosition(int position)
+        {
+            // confirm it is a valid position
+            if (position < 0 || position > 5)
+            {
+                SendGameNotification("Slot " + position+" does not exist.", "chat");
+                return false;
+            }
+            /* Add checks for premium and registered users.
+             * i.e. if(position == 1 && !User.Registered)
+             * if(position > 1 && !User.Premium)
+             */
+            // confirm there is not an order already occupying this position.
+            for (var i = 0; i < SavedOrders.Count; i++)
+            {
+                if (SavedOrders[i].Position != position) continue;
+
+                SendGameNotification("There is already an order in slot " + position+".", "chat");
+                return false;
+            }
+
+            return true;
+        }
+
+        private string GetIdFromPosition(int position)
+        {
+            for (var i = 0; i < SavedOrders.Count; i++)
+            {
+                var savedOrder = SavedOrders[i];
+                if (savedOrder.Position != position) continue;
+                return savedOrder.Id;
+            }
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Claims fulfilled contents of order.
+        /// </summary>
+        /// <param name="position">Which slot the order is on the client.</param>
+        /// <param name="claimField"></param>
+        /// <returns></returns>
+        public async Task ClaimOrder(int position, ClaimField claimField)
+        {
+            var id = GetIdFromPosition(position);
+            if (id != string.Empty) await ClaimOrderContents(id, claimField);
+            else SendGameNotification("You cannot collect from an order that does not exist.", "chat");
+            await GetOrders();
+        }
+
+        public async Task CancelOrder(int position)
+        {
+            var id = GetIdFromPosition(position);
+            if (id != string.Empty) await MarketPlace.CancelOrder(id);
+            else SendGameNotification("You cannot cancel an order that does not exist.","chat");
+            await GetOrders();
+        }
+
+        private async Task ClaimOrderContents(string id, ClaimField claimField)
+        {
+            var contents = await MarketPlace.ClaimOrderContents(id, claimField) ?? 0;
+            switch (claimField)
+            {
+                case ClaimField.Money:
+                    currency.Quantity += contents;
+                    break;
+                case ClaimField.Items:
+                    var order = await MarketPlace.GetOrder(id);
+                    Item item;
+                    All.TryGetValue((int)order.ItemId, out item);
+                    if (item != null) item.Quantity += contents;
+                    break;
+            }
         }
 
         public async Task GetOrders()
         {
-            var orders = await MarketPlace.GetOrders(User.Id);
-            Orders = await orders.ToListAsync();
-           /* for (var i = 0; i < Orders.Count; i++)
+            Orders.Clear();
+            List<SaveOrder> fulfilledOrders = new List<SaveOrder>();
+            for (var i = 0; i < SavedOrders.Count; i++)
             {
-                var order = Orders[i];
-                var items = await MarketPlace.ClaimOrderContents(order.Id, ClaimField.Items);
-                var coins = await MarketPlace.ClaimOrderContents(order.Id, ClaimField.Money);
-                
-                Item item;
-                All.TryGetValue((int)order.ItemId, out item);
-                if (items != null && item!=null)
-                    item.Quantity += (long)items;
+                var orderId = SavedOrders[i].Id;
+                var order = await MarketPlace.GetOrder(orderId);
+                if (order.IsEmpty())
+                {
+                    fulfilledOrders.Add(SavedOrders[i]);
+                    continue;
+                }
+                Orders.Add(order);
+            }
+            // empty save of fulfilled orders
+            for (var i = 0; i < fulfilledOrders.Count; i++)
+                SavedOrders.Remove(fulfilledOrders[i]);
 
-                if (coins != null)
-                    currency.Quantity += (long)coins;
-            }*/
+            SentOrders = true;
+            SecondsSinceMarketUpdate = 0;
         }
 
         public void Drink(int id)
@@ -270,22 +384,12 @@ namespace GoldRush
 
             public GoldRush.Crafting.Recipe Recipe { get; set; }
 
-            public void Craft()
-            {
-                Craft(1);
-            }
-
-            public void Craft(int iterations)
+            public void Craft(int iterations=1)
             {
                 Recipe.Craft(iterations);
             }
 
-            public void Sell()
-            {
-                Sell(1);
-            }
-
-            public void Sell(long iterations)
+            public void Sell(long iterations=1)
             {
                 iterations = Math.Min(Quantity, iterations);
                 Quantity -= iterations;
