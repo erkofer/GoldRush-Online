@@ -62,6 +62,7 @@ namespace Caroline.Domain
                 // stale order advantage, give stale order the difference in price
                 var differenceToRefund = MathHelpers.Difference(staleOrder.UnitValue, freshOrder.UnitValue) * unitsTransacted;
                 staleOrder.TotalMoneyRecieved += differenceToRefund;
+                staleOrder.UnclaimedMoneyRecieved += differenceToRefund;
 
                 var result = await UpdateStaleOrder(staleOrder);
                 switch (result)

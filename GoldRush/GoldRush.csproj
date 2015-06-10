@@ -72,6 +72,7 @@
     <Compile Include="GameObjects\Statistics.cs" />
     <Compile Include="GameObjects\Store.cs" />
     <Compile Include="APIs\KomodoSession.cs" />
+    <Compile Include="GameObjects\Tutorial.cs" />
     <Compile Include="Market\IMarketPlace.cs" />
     <Compile Include="Market\Order.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

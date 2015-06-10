@@ -663,8 +663,8 @@ namespace GoldRush
             public ProcessorRecipeEfficiencyUpgradeEffect(GameObjects game, Processing.Processor[] processors, int increase)
                 : base(game)
             {
-                this._processors = processors;
-                this._increase = increase;
+                _processors = processors;
+                _increase = increase;
             }
             public override void Activate()
             {
@@ -705,7 +705,7 @@ namespace GoldRush
             public ProcessorUnlockUpgradeEffect(GameObjects game, Processing.Processor[] processors)
                 : base(game)
             {
-                this._processors = processors;
+                _processors = processors;
             }
 
             public override void Activate()

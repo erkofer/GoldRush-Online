@@ -2,8 +2,9 @@
 using System.Security.AccessControl;
 using GoldRush;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Threading.Tasks;
 
-namespace GoldRushTesting
+namespace GoldRush.Tests
 {
     [TestClass]
     public class ItemsTest
@@ -92,12 +93,12 @@ namespace GoldRushTesting
         }
 
         [TestMethod]
-        public void PotionConsume()
+        public async Task PotionConsume()
         {
             var game = GetGame();
             game.objs.Items.SpeechPotion.Quantity = 1;
             game.objs.Items.SpeechPotion.Consume();
-
+            await game.objs.Update(1);
             Assert.AreEqual(6, game.objs.Items.Copper.Value);
         }
 

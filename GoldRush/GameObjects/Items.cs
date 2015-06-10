@@ -2,6 +2,7 @@
 ﻿using System.CodeDom;
 ﻿using System.Collections.Generic;
 using System.Linq;
+﻿using System.Security.AccessControl;
 ﻿using Caroline.Domain.Models;
 ﻿using Caroline.Persistence.Models;
 ﻿using GoldRush.Market;
@@ -20,6 +21,7 @@ namespace GoldRush
         public IMarketPlace MarketPlace;
         private Item currency;
         public User User;
+        private GameObjects.Notifier notify;
 
         public Items(GameObjects objs)
         {
@@ -32,12 +34,10 @@ namespace GoldRush
             EmptyVial,Gunpowder,Logs,Oil,Coins,ClickingPotion,SmeltingPotion,SpeechPotion,AlchemyPotion,
             CopperWire,Tnt
             });
-
-
+            notify = objs.Notify;
 
             // If items should have a currency other than coins assign them here.
             // Such as EmptyVial.Currency = ISK;
-
             currency = Coins;
 
             foreach (var item in items)
@@ -58,21 +58,9 @@ namespace GoldRush
                 item.Quantity = 100;*/
 
         }
+
         private List<Item> items = new List<Item>();
-        //public List<Item> All { get { return items; } }
-
         public Dictionary<int, Item> All = new Dictionary<int, Item>();
-
-        public event GameNotificationEventHandler GameNotification;
-
-        private void SendGameNotification(string message, string tag)
-        {
-            var handler = GameNotification;
-            var args = new GameNotificationEventArgs { Message = message, Tag = tag };
-
-            if (handler != null)
-                handler(this, args);
-        }
 
         public void SellAll()
         {
@@ -95,19 +83,19 @@ namespace GoldRush
             // confirm the item id is valid
             if (!All.TryGetValue(itemId, out item))
             {
-                SendGameNotification("Item id "+itemId+" is invalid.", "chat");
+                notify("Item id " + itemId + " is invalid.", "chat");
                 return;
             }
             // confirm we have sufficient items if we are selling.
             if (isSelling && item.Quantity < quantity)
             {
-                SendGameNotification("You cannot sell more items than you have.", "chat");
+                notify("You cannot sell more items than you have.", "chat");
                 return;
             }
             // confirm we have sufficient currency if we are buying.
             if (!isSelling && Coins.Quantity < quantity*value)
             {
-                SendGameNotification("You cannot spend more coins than you have.","chat");
+                notify("You cannot spend more coins than you have.", "chat");
                 return;
             }
 
@@ -133,7 +121,7 @@ namespace GoldRush
             // confirm it is a valid position
             if (position < 0 || position > 5)
             {
-                SendGameNotification("Slot " + position+" does not exist.", "chat");
+                notify("Slot " + position + " does not exist.", "chat");
                 return false;
             }
             /* Add checks for premium and registered users.
@@ -145,7 +133,7 @@ namespace GoldRush
             {
                 if (SavedOrders[i].Position != position) continue;
 
-                SendGameNotification("There is already an order in slot " + position+".", "chat");
+                notify("There is already an order in slot " + position + ".", "chat");
                 return false;
             }
 
@@ -173,7 +161,7 @@ namespace GoldRush
         {
             var id = GetIdFromPosition(position);
             if (id != string.Empty) await ClaimOrderContents(id, claimField);
-            else SendGameNotification("You cannot collect from an order that does not exist.", "chat");
+            else notify("You cannot collect from an order that does not exist.", "chat");
             await GetOrders();
         }
 
@@ -181,7 +169,7 @@ namespace GoldRush
         {
             var id = GetIdFromPosition(position);
             if (id != string.Empty) await MarketPlace.CancelOrder(id);
-            else SendGameNotification("You cannot cancel an order that does not exist.","chat");
+            else notify("You cannot cancel an order that does not exist.", "chat");
             await GetOrders();
         }
 

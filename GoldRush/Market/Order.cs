@@ -21,16 +21,14 @@ namespace GoldRush.Market
         public static bool IsCanceled(this StaleOrder order)
         {
             if (order.TotalItemsRecieved > 0 && order.TotalMoneyRecieved > 0) return true;
-            if (order.UnfulfilledQuantity == 0)
+            if (order.UnfulfilledQuantity != 0) return false;
+            if (order.IsSelling)
             {
-                if (order.IsSelling)
-                {
-                    if (order.Quantity != order.TotalMoneyRecieved/order.UnitValue) return true;
-                }
-                else
-                {
-                    if (order.Quantity != order.TotalItemsRecieved) return true;
-                }
+                if (order.Quantity != order.TotalMoneyRecieved/order.UnitValue) return true;
+            }
+            else
+            {
+                if (order.Quantity != order.TotalItemsRecieved) return true;
             }
             return false;
         }

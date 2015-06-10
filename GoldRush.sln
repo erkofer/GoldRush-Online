@@ -5,7 +5,7 @@ VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoldRush", "GoldRush\GoldRush.csproj", "{60AA2D41-1721-46B8-954C-76BEAEC6199F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoldRushTesting", "GoldRushTesting\GoldRushTesting.csproj", "{AF6318B6-3414-41F3-B366-03310F3EA858}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoldRush.Tests", "GoldRushTesting\GoldRush.Tests.csproj", "{AF6318B6-3414-41F3-B366-03310F3EA858}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caroline", "Caroline\Caroline.csproj", "{5CC5B959-EB6C-4BBA-A388-247A83039003}"
 EndProject

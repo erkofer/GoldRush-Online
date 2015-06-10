@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 using Caroline.Persistence.Models;
@@ -11,10 +12,12 @@ namespace GoldRush
     {
         public GameObjects()
         {
+            Notifications = new List<GameNotification>();
+            Notify = (message, tag) => Notifications.Add(new GameNotification() { Message = message, Tag = tag });
+
             Random = new Random();
             Statistics = new Statistics();
             Items = new Items(this);
-            Items.GameNotification += Notification;
             Gatherers = new Gatherers(this);
             Processing = new Processing(this);
             Upgrades = new Upgrades(this);
@@ -23,11 +26,14 @@ namespace GoldRush
             Achievements = new Achievements(this);
             // Add all gameobjects to a big dictionary.
             All = new Dictionary<int, GameObject>();
-            Notifications = new List<GameNotification>();
             foreach (var item in Items.All) { All.Add(item.Key, item.Value); }
             foreach (var gatherer in Gatherers.All) { All.Add(gatherer.Key, gatherer.Value); }
             foreach (var upgrade in Upgrades.All) { All.Add(upgrade.Key, upgrade.Value); }
+
+            //public Notify Notifier = (message, tag) => Notifications.Add(new GameNotification(){Message = message,Tag=tag});
         }
+        public delegate void Notifier(string message, string tag);
+        public Notifier Notify;
 
         public Random Random;
         public Statistics Statistics;
@@ -45,10 +51,6 @@ namespace GoldRush
         public User User;
         public long UserId;
 
-        private void Notification(object sender, GameNotificationEventArgs e)
-        {
-            Notifications.Add(new GameNotification { Message = e.Message, Tag = e.Tag });
-        }
 
         public async Task Update(long seconds)
         {

@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using GoldRush;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace GoldRushTesting
+namespace GoldRush.Tests
 {
     [TestClass]
     public class UpgradesTest
@@ -106,11 +107,11 @@ namespace GoldRushTesting
         /// The Speech Potion lasts 45 seconds. We ensure it is correctly deactivated.
         /// </summary>
         [TestMethod]
-        public void BuffDecay()
+        public async Task BuffDecay()
         {
             var game = GetGame();
             game.objs.Upgrades.SpeechBuff.Activate();
-            game.objs.Upgrades.SpeechBuff.Update(46000);
+            await game.objs.Update(46);
 
             Assert.AreEqual(5, game.objs.Items.Copper.Value);
         }

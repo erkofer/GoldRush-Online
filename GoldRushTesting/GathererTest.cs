@@ -4,7 +4,7 @@ using System.Linq;
 using GoldRush;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace GoldRushTesting
+namespace GoldRush.Tests
 {
     [TestClass]
     public class GathererTest
@@ -22,7 +22,7 @@ namespace GoldRushTesting
         {
             var game = GetGame();
             game.objs.Gatherers.Pumpjack.Quantity = 1;
-            game.objs.Gatherers.Pumpjack.Mine(5000);
+            game.objs.Gatherers.Pumpjack.Mine(5);
 
             Assert.AreEqual(1, game.objs.Items.Oil.Quantity);
         }
@@ -31,7 +31,7 @@ namespace GoldRushTesting
         public void GuaranteeedNoCollect()
         {
             var game = GetGame();
-            game.objs.Gatherers.Pumpjack.Mine(1000);
+            game.objs.Gatherers.Pumpjack.Mine(1);
 
             Assert.AreEqual(0, game.objs.Items.Oil.Quantity);
         }
@@ -48,7 +48,7 @@ namespace GoldRushTesting
             };
            
             game.objs.Gatherers.Miner.Quantity = 1;
-            game.objs.Gatherers.Miner.Mine(10000);
+            game.objs.Gatherers.Miner.Mine(10);
 
             long resourceCount = 0;
             foreach (var resource in baseResources)
@@ -67,7 +67,7 @@ namespace GoldRushTesting
                 game.objs.Items.Stone, game.objs.Items.Copper, game.objs.Items.Iron, game.objs.Items.Silver,
                 game.objs.Items.Gold, game.objs.Items.Opal, game.objs.Items.Jade, game.objs.Items.Topaz
             };
-            game.objs.Gatherers.Miner.Mine(1999);
+            game.objs.Gatherers.Miner.Mine(1);
             Assert.AreEqual(0, baseResources.Sum(resource => resource.Quantity));
         }
 
@@ -81,8 +81,8 @@ namespace GoldRushTesting
                 game.objs.Items.Gold, game.objs.Items.Opal, game.objs.Items.Jade, game.objs.Items.Topaz
             };
             game.objs.Gatherers.Miner.Quantity = 1;
-            game.objs.Gatherers.Miner.Mine(1000);
-            game.objs.Gatherers.Miner.Mine(1000);
+            game.objs.Gatherers.Miner.Mine(1);
+            game.objs.Gatherers.Miner.Mine(1);
             Assert.AreEqual(1, baseResources.Sum(resource => resource.Quantity));
         }
     }
