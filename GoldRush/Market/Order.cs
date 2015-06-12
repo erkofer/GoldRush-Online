@@ -20,15 +20,19 @@ namespace GoldRush.Market
 
         public static bool IsCanceled(this StaleOrder order)
         {
-            if (order.TotalItemsRecieved > 0 && order.TotalMoneyRecieved > 0) return true;
+            // if there is still unfulfilled quantity then we are not cancelled.
             if (order.UnfulfilledQuantity != 0) return false;
+
             if (order.IsSelling)
             {
-                if (order.Quantity != order.TotalMoneyRecieved/order.UnitValue) return true;
+                // if we've received less money than we requested.
+                var expectedIncome = order.Quantity*order.UnitValue;
+                if (order.TotalMoneyRecieved < expectedIncome) return true;
             }
             else
             {
-                if (order.Quantity != order.TotalItemsRecieved) return true;
+                // if the amount of item we received is less than we requested. it's cancelled.
+                if (order.TotalItemsRecieved < order.Quantity) return true;
             }
             return false;
         }

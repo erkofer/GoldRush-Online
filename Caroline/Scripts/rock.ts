@@ -1,4 +1,6 @@
-﻿module Rock {
+﻿///<reference path="tutorial.ts"/>
+
+module Rock {
     var canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('rock');
     var particleCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('particles');
     var context = canvas.getContext('2d');

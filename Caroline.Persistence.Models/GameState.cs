@@ -115,6 +115,11 @@ namespace Caroline.Persistence.Models
 
             newState._OrdersSent = _OrdersSent;
 
+            if (_CurrentTutorial != oldState._CurrentTutorial)
+            {
+                newState._CurrentTutorial = _CurrentTutorial;
+            }
+
             return newState;
         }
         public partial class Item : ICompressable<Item>, IIdentifiableObject

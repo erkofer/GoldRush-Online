@@ -1157,3 +1157,15 @@ td {
 .sell {
     float: right;
 }
+
+.tutorial {
+    color: white;
+    border-radius: 3px;
+    border: 1px solid red;
+    background: darkred;
+    max-width: 150px; 
+}
+
+.tutorial.closed {
+    display: none;
+}

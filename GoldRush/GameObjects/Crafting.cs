@@ -9,13 +9,10 @@ using System.Threading.Tasks;
 
 namespace GoldRush
 {
-    class Crafting
+    class Crafting : INotifier
     {
-        private GameObjects.Notifier notify;
-
         public Crafting(GameObjects objs)
         {
-            notify = objs.Notify;
 
             // Item Recipes
             CopperWire = new Recipe();
@@ -94,7 +91,7 @@ namespace GoldRush
             {
                 var name = recipe.Resultants[0].Item.Name;
                 var quantity = recipe.Resultants[0].Quantity;
-                notify("Insufficient resources to craft " + iterations * quantity + " " + name+".", "chat");
+                Notify(new GameNotification("Insufficient resources to craft " + iterations * quantity + " " + name+".", "chat"));
             }
         }
 
@@ -196,6 +193,16 @@ namespace GoldRush
             public void Provide(int iterations = 1)
             {
                 Item.Quantity += Quantity * iterations;
+            }
+        }
+
+        public event GameNotificationEventHandler GameNotification;
+
+        private void Notify(GameNotification notification)
+        {
+            if (GameNotification != null)
+            {
+                GameNotification(this,new GameNotificationEventArgs(){Notification = notification});
             }
         }
     }

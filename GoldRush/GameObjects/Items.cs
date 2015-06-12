@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace GoldRush
 {
-    class Items
+    class Items : INotifier
     {
         public List<StaleOrder> Orders = new List<StaleOrder>();
         public List<SaveOrder> SavedOrders = new List<SaveOrder>();
@@ -21,7 +21,6 @@ namespace GoldRush
         public IMarketPlace MarketPlace;
         private Item currency;
         public User User;
-        private GameObjects.Notifier notify;
 
         public Items(GameObjects objs)
         {
@@ -34,7 +33,6 @@ namespace GoldRush
             EmptyVial,Gunpowder,Logs,Oil,Coins,ClickingPotion,SmeltingPotion,SpeechPotion,AlchemyPotion,
             CopperWire,Tnt
             });
-            notify = objs.Notify;
 
             // If items should have a currency other than coins assign them here.
             // Such as EmptyVial.Currency = ISK;
@@ -83,19 +81,19 @@ namespace GoldRush
             // confirm the item id is valid
             if (!All.TryGetValue(itemId, out item))
             {
-                notify("Item id " + itemId + " is invalid.", "chat");
+                Notify(new GameNotification("Item id " + itemId + " is invalid.", "chat"));
                 return;
             }
             // confirm we have sufficient items if we are selling.
             if (isSelling && item.Quantity < quantity)
             {
-                notify("You cannot sell more items than you have.", "chat");
+                Notify(new GameNotification("You cannot sell more items than you have.", "chat"));
                 return;
             }
             // confirm we have sufficient currency if we are buying.
-            if (!isSelling && Coins.Quantity < quantity*value)
+            if (!isSelling && Coins.Quantity < quantity * value)
             {
-                notify("You cannot spend more coins than you have.", "chat");
+                Notify(new GameNotification("You cannot spend more coins than you have.", "chat"));
                 return;
             }
 
@@ -121,7 +119,7 @@ namespace GoldRush
             // confirm it is a valid position
             if (position < 0 || position > 5)
             {
-                notify("Slot " + position + " does not exist.", "chat");
+                Notify(new GameNotification("Slot " + position + " does not exist.", "chat"));
                 return false;
             }
             /* Add checks for premium and registered users.
@@ -133,7 +131,7 @@ namespace GoldRush
             {
                 if (SavedOrders[i].Position != position) continue;
 
-                notify("There is already an order in slot " + position + ".", "chat");
+                Notify(new GameNotification("There is already an order in slot " + position + ".", "chat"));
                 return false;
             }
 
@@ -161,7 +159,7 @@ namespace GoldRush
         {
             var id = GetIdFromPosition(position);
             if (id != string.Empty) await ClaimOrderContents(id, claimField);
-            else notify("You cannot collect from an order that does not exist.", "chat");
+            else Notify(new GameNotification("You cannot collect from an order that does not exist.", "chat"));
             await GetOrders();
         }
 
@@ -169,7 +167,7 @@ namespace GoldRush
         {
             var id = GetIdFromPosition(position);
             if (id != string.Empty) await MarketPlace.CancelOrder(id);
-            else notify("You cannot cancel an order that does not exist.", "chat");
+            else Notify(new GameNotification("You cannot cancel an order that does not exist.", "chat"));
             await GetOrders();
         }
 
@@ -372,12 +370,12 @@ namespace GoldRush
 
             public GoldRush.Crafting.Recipe Recipe { get; set; }
 
-            public void Craft(int iterations=1)
+            public void Craft(int iterations = 1)
             {
                 Recipe.Craft(iterations);
             }
 
-            public void Sell(long iterations=1)
+            public void Sell(long iterations = 1)
             {
                 iterations = Math.Min(Quantity, iterations);
                 Quantity -= iterations;
@@ -426,5 +424,14 @@ namespace GoldRush
         }
 
 
+        public event GameNotificationEventHandler GameNotification;
+
+        private void Notify(GameNotification notification)
+        {
+            if (GameNotification != null)
+            {
+                GameNotification(this, new GameNotificationEventArgs { Notification = notification });
+            }
+        }
     }
 }

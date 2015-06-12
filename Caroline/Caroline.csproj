@@ -37,7 +37,7 @@
     <TypeScriptSourceMap>true</TypeScriptSourceMap>
     <OutputPath>bin\</OutputPath>
     <TypeScriptModuleKind>amd</TypeScriptModuleKind>
-    <TypeScriptSourceMap> Scripts/utils.ts Scripts/ajax.ts Scripts/modal.ts Scripts/pheidippides.ts Scripts/objects.ts Scripts/register.ts Scripts/rock.ts Scripts/tabs.ts Scripts/connection.ts Scripts/chat.ts Scripts/buffs.ts Scripts/inventory.ts Scripts/equipment.ts Scripts/store.ts Scripts/stats.ts Scripts/crafting.ts Scripts/achievements.ts Scripts/market.ts</TypeScriptSourceMap>
+    <TypeScriptSourceMap> Scripts/utils.ts Scripts/ajax.ts Scripts/modal.ts Scripts/tutorial.ts Scripts/pheidippides.ts Scripts/objects.ts Scripts/register.ts Scripts/rock.ts Scripts/tabs.ts Scripts/connection.ts Scripts/chat.ts Scripts/buffs.ts Scripts/inventory.ts Scripts/equipment.ts Scripts/store.ts Scripts/stats.ts Scripts/crafting.ts Scripts/achievements.ts Scripts/market.ts</TypeScriptSourceMap>
     <TypeScriptOutFile>game.js</TypeScriptOutFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -480,6 +480,7 @@
     <TypeScriptCompile Include="Scripts\store.ts" />
     <TypeScriptCompile Include="Scripts\tabs.ts" />
     <TypeScriptCompile Include="Scripts\tooltip.ts" />
+    <TypeScriptCompile Include="Scripts\tutorial.ts" />
     <TypeScriptCompile Include="Scripts\typings\dcode\long.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\jqueryui\jqueryui.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\jquery\jquery.d.ts" />

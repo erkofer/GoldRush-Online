@@ -13,17 +13,22 @@ namespace GoldRush
         public GameObjects()
         {
             Notifications = new List<GameNotification>();
-            Notify = (message, tag) => Notifications.Add(new GameNotification() { Message = message, Tag = tag });
 
             Random = new Random();
             Statistics = new Statistics();
             Items = new Items(this);
+            Items.GameNotification += Notification;
+
             Gatherers = new Gatherers(this);
             Processing = new Processing(this);
             Upgrades = new Upgrades(this);
+
             Crafting = new Crafting(this);
+            Crafting.GameNotification += Notification;
+
             Store = new Store(this);
             Achievements = new Achievements(this);
+            Tutorial = new Tutorial(this);
             // Add all gameobjects to a big dictionary.
             All = new Dictionary<int, GameObject>();
             foreach (var item in Items.All) { All.Add(item.Key, item.Value); }
@@ -32,25 +37,27 @@ namespace GoldRush
 
             //public Notify Notifier = (message, tag) => Notifications.Add(new GameNotification(){Message = message,Tag=tag});
         }
-        public delegate void Notifier(string message, string tag);
-        public Notifier Notify;
 
         public Random Random;
         public Statistics Statistics;
         public Items Items;
-        //GameId = 200
         public Upgrades Upgrades;
-        //GameId =400
         public Gatherers Gatherers;
         public Store Store;
         public Crafting Crafting;
         public Processing Processing;
         public Achievements Achievements;
+        public Tutorial Tutorial;
         public Dictionary<int, GameObject> All;
         public List<GameNotification> Notifications;
         public User User;
         public long UserId;
 
+
+        private void Notification(object sender, GameNotificationEventArgs e)
+        {
+            Notifications.Add(e.Notification);
+        }
 
         public async Task Update(long seconds)
         {

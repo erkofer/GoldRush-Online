@@ -201,5 +201,7 @@ message GameState {
 	repeated Notification Notifications=16;
 
 	optional bool OrdersSent=17;
+
+	optional string CurrentTutorial=18;
 } 
 

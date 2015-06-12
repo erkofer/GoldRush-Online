@@ -361,6 +361,7 @@ namespace GoldRush
                     Tag = notification.Tag
                 });
             }
+            state.CurrentTutorial = objs.Tutorial.GetActiveTutorialTitle();
         }
 
         private void WriteMarketData(GameState state)

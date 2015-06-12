@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Caroline.Domain.Helpers;
 using Caroline.Domain.Models;
@@ -51,18 +52,26 @@ namespace Caroline.Domain
                 var unitsTransacted = Math.Min(staleOrder.UnfulfilledQuantity, freshOrder.UnfulfilledQuantity);
                 freshOrder.UnfulfilledQuantity -= unitsTransacted;
                 staleOrder.UnfulfilledQuantity -= unitsTransacted;
-
-                // exchange money and items
-                var moneyExchanged = staleOrder.UnitValue * unitsTransacted;
+                
+                var unitValue = isStaleOrderSelling 
+                    ? Math.Max(staleOrder.UnitValue, freshOrder.UnitValue) 
+                    : Math.Min(staleOrder.UnitValue, freshOrder.UnitValue);
+                
+                //var moneyExchanged = staleOrder.UnitValue * unitsTransacted;
+                var moneyExchanged = unitValue * unitsTransacted;
                 sellOrder.TotalMoneyRecieved += moneyExchanged;
                 sellOrder.UnclaimedMoneyRecieved += moneyExchanged;
                 buyOrder.TotalItemsRecieved += unitsTransacted;
                 buyOrder.UnclaimedItemsRecieved += unitsTransacted;
 
                 // stale order advantage, give stale order the difference in price
-                var differenceToRefund = MathHelpers.Difference(staleOrder.UnitValue, freshOrder.UnitValue) * unitsTransacted;
-                staleOrder.TotalMoneyRecieved += differenceToRefund;
-                staleOrder.UnclaimedMoneyRecieved += differenceToRefund;
+                if (!isStaleOrderSelling)
+                {
+                    var differenceToRefund = MathHelpers.Difference(staleOrder.UnitValue, freshOrder.UnitValue)*
+                                             unitsTransacted;
+                    staleOrder.TotalMoneyRecieved += differenceToRefund;
+                    staleOrder.UnclaimedMoneyRecieved += differenceToRefund;
+                }
 
                 var result = await UpdateStaleOrder(staleOrder);
                 switch (result)
@@ -145,6 +154,45 @@ namespace Caroline.Domain
 
         public async Task<bool> CancelOrder(string id)
         {
+            var i = 0;
+            while (i < 20)
+            {
+                i++;
+
+                var order = await GetOrder(id);
+
+                var remaining = order.UnfulfilledQuantity;
+                if (order.IsSelling)
+                {
+                    order.TotalItemsRecieved += remaining;
+                    order.UnclaimedItemsRecieved += remaining;
+                }
+                else
+                {
+                    var refund = remaining*order.UnitValue;
+                    order.TotalMoneyRecieved += refund;
+                    order.UnclaimedMoneyRecieved += refund;
+                }
+                order.UnfulfilledQuantity = 0;
+
+                var updateResult = await UpdateStaleOrder(order);
+                switch (updateResult)
+                {
+                    case VersionedUpdateResult.Success:
+                        return true;
+                    case VersionedUpdateResult.WrongVersion:
+                        continue;
+                    case VersionedUpdateResult.DoesNotExist:
+                        return false;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+            throw new TimeoutException();
+        }
+ 
+       /* public async Task<bool> CancelOrder(string id)
+        {
             ObjectId objId;
             if (!ObjectIdHelpers.ParseAndLog(id, out objId))
                 return false;
@@ -160,7 +208,20 @@ namespace Caroline.Domain
                 if (order == null)
                     return false;
 
+                var remaining = order.UnfulfilledQuantity;
+                if (order.IsSelling)
+                {
+                    order.TotalItemsRecieved += remaining;
+                    order.UnclaimedItemsRecieved += remaining;
+                }
+                else
+                {
+                    var refund = remaining * order.UnitValue;
+                    order.TotalMoneyRecieved += refund;
+                    order.UnclaimedMoneyRecieved += refund;
+                }
                 order.UnfulfilledQuantity = 0;
+
                 var oldVersion = order.Version++;
                 result = await _mongo.Orders.UpdateOneAsync(
                     o => o.Id == objId && o.Version == oldVersion,
@@ -168,7 +229,7 @@ namespace Caroline.Domain
 
             } while (!result.IsModifiedCountAvailable || result.ModifiedCount != 1);
             return true;
-        }
+        }*/
 
         static StaleOrder BuildStaleOrder(FreshOrder freshOrder)
         {

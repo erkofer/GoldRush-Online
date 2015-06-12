@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
+using Caroline.Persistence.Models;
 
 namespace GoldRush
 {
@@ -121,6 +122,19 @@ namespace GoldRush
             public int Points { get { return config.Points; } }
         }
 
+        internal class GameObjectQuantityAchievement : Achievement
+        {
+            public GameObjectQuantityAchievement(GoldRush.GameConfig.Achievements.AchievementConfig config)
+                : base(config)
+            {
+
+            }
+
+            public override long Progress
+            {
+                get { return GameObject.Quantity; }
+            }
+        }
 
         internal class ItemAlltimeQuantityAchievement : Achievement
         {

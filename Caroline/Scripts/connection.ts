@@ -14,6 +14,7 @@
 ///<reference path="modal.ts"/>
 ///<reference path="tooltip.ts"/>
 ///<reference path="ajax.ts"/>
+///<reference path="tutorial.ts"/>
 ///<reference path="achievements.ts"/>
 ///<reference path="market.ts"/>
 
@@ -143,6 +144,10 @@ module Connection {
                 var notification = msg.Notifications[i];
                 Pheidippides.deliver(notification.Tag, notification.Message);
             }
+        }
+        if (msg.CurrentTutorial) {
+            Tutorial.activateStage(msg.CurrentTutorial);
+            console.log(msg.CurrentTutorial);
         }
     });
 
