@@ -2,7 +2,7 @@
 
 namespace Caroline.Persistence.Redis
 {
-    public interface IEntityHashTable<TEntity, in TId, TField>
+    public interface IEntityHashTable<TEntity, in TId, TField> : IDatabaseTable
     {
         Task<bool> Delete(TId id, TField member);
         Task<long> Delete(TId id, TField[] members);

@@ -34,5 +34,26 @@ namespace Caroline.Persistence.Redis.Extensions
             var result = (RedisValue[])await db.ScriptEvaluateAsync(scripts.TryLock, new[] { key }, new RedisValue[] { (int)expire.TotalMilliseconds });
             return new TryLockResult((bool)result[0], TimeSpan.FromMilliseconds((int)result[1]));
         }
+
+        public static async Task<bool> SortedSetPush(this IDatabase db, CarolineScriptsRepo scripts,
+            RedisKey key, RedisValue value, IndexSide side, double scoreOffset = 1)
+        {
+            string pushStr;
+            switch (side)
+            {
+                case IndexSide.Left:
+                    scoreOffset = -scoreOffset;
+                    pushStr = "0";
+                    break;
+                case IndexSide.Right:
+                    pushStr = "1";
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("side");
+            }
+
+            return (bool) await db.ScriptEvaluateAsync(scripts.ZPush, new[] {key},
+                new RedisValue[] {value, pushStr, scoreOffset.ToStringInvariant()});
+        }
     }
 }

@@ -7,20 +7,16 @@ namespace Caroline.Persistence.Redis
 {
     class RedisEntityListTable<TEntity, TId> : RedisEntityTableBase<TEntity, TId>, IEntityListTable<TEntity, TId>
     {
-        readonly IDatabase _db;
-        readonly CarolineScriptsRepo _scripts;
-
         public RedisEntityListTable(IDatabaseArea db, ISerializer<TEntity> serializer, ISerializer<TId> keySerializer, IIdentifier<TEntity, TId> identifier)
             : base(serializer, keySerializer, identifier)
         {
-            _db = db;
-            _scripts = db.Scripts;
+            Database = db;
         }
 
         public async Task<TEntity> GetByIndex(TId id, long index)
         {
             var key = KeySerializer.Serialize(id);
-            var result = await _db.ListGetByIndexAsync(key, index);
+            var result = await Database.ListGetByIndexAsync(key, index);
             return Deserialize(result, id);
         }
 
@@ -30,9 +26,9 @@ namespace Caroline.Persistence.Redis
             switch (side)
             {
                 case IndexSide.Left:
-                    return _db.ListInsertBeforeAsync(key, pivot, value);
+                    return Database.ListInsertBeforeAsync(key, pivot, value);
                 case IndexSide.Right:
-                    return _db.ListInsertAfterAsync(key, pivot, value);
+                    return Database.ListInsertAfterAsync(key, pivot, value);
                 default:
                     throw new ArgumentOutOfRangeException("side");
             }
@@ -45,10 +41,10 @@ namespace Caroline.Persistence.Redis
             switch (side)
             {
                 case IndexSide.Left:
-                    result = await _db.ListLeftPopAsync(key);
+                    result = await Database.ListLeftPopAsync(key);
                     break;
                 case IndexSide.Right:
-                    result = await _db.ListRightPopAsync(key);
+                    result = await Database.ListRightPopAsync(key);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException("side");
@@ -62,7 +58,7 @@ namespace Caroline.Persistence.Redis
                 throw new ArgumentException("count must be greater than or equal to 0.", "count");
 
             var key = KeySerializer.Serialize(id);
-            var result = await _db.ListPopManyAsync(_scripts, key, count, side);
+            var result = await Database.ListPopManyAsync(Database.Scripts, key, count, side);
             
             var ret = new TEntity[result.Length];
             for (var i = 0; i < ret.Length; i++)
@@ -78,9 +74,9 @@ namespace Caroline.Persistence.Redis
             switch (side)
             {
                 case IndexSide.Left:
-                    return _db.ListLeftPushAsync(key, serial);
+                    return Database.ListLeftPushAsync(key, serial);
                 case IndexSide.Right:
-                    return _db.ListRightPushAsync(key, serial);
+                    return Database.ListRightPushAsync(key, serial);
                 default:
                     throw new ArgumentOutOfRangeException("side");
             }
@@ -89,13 +85,13 @@ namespace Caroline.Persistence.Redis
         public Task<long> Length(TId id)
         {
             var tid = KeySerializer.Serialize(id);
-            return _db.ListLengthAsync(tid);
+            return Database.ListLengthAsync(tid);
         }
 
         public async Task<TEntity[]> Range(TId id, long start = 0, long stop = -1)
         {
             var key = KeySerializer.Serialize(id);
-            var results = await _db.ListRangeAsync(key, start, stop);
+            var results = await Database.ListRangeAsync(key, start, stop);
             var ret = new TEntity[results.Length];
             for (var i = 0; i < results.Length; i++)
             {
@@ -108,14 +104,14 @@ namespace Caroline.Persistence.Redis
         {
             var key = KeySerializer.Serialize(id);
             var serial = Serializer.Serialize(value);
-            return _db.ListRemoveAsync(key, serial, count);
+            return Database.ListRemoveAsync(key, serial, count);
         }
 
-        public async Task<TEntity> RightPushLeftPop(TId source, TId destination)
+        public async Task<TEntity> RightPopLeftPush(TId source, TId destination)
         {
             var tidSource = KeySerializer.Serialize(source);
             var tidDestination = KeySerializer.Serialize(destination);
-            var result = await _db.ListRightPopLeftPushAsync(tidSource, tidDestination);
+            var result = await Database.ListRightPopLeftPushAsync(tidSource, tidDestination);
             return Deserialize(result, destination);
         }
 
@@ -124,14 +120,16 @@ namespace Caroline.Persistence.Redis
             var id = Identifier.GetId(entity);
             var key = KeySerializer.Serialize(id);
             var serial = Serializer.Serialize(entity);
-            return _db.ListSetByIndexAsync(key, index, serial);
+            return Database.ListSetByIndexAsync(key, index, serial);
         }
 
         public Task Trim(TId id, long start, long stop)
         {
             var key = KeySerializer.Serialize(id);
-            return _db.ListTrimAsync(key, start, stop);
+            return Database.ListTrimAsync(key, start, stop);
         }
+
+        public IDatabaseArea Database { get; private set; }
     }
 
     public enum IndexSide : byte
@@ -140,7 +138,7 @@ namespace Caroline.Persistence.Redis
         Right
     }
 
-    public interface IEntityListTable<TEntity, in TId>
+    public interface IEntityListTable<TEntity, in TId> : IDatabaseTable
     {
         Task<TEntity> GetByIndex(TId id, long index);
         Task<long> InsertAt(TId id, RedisValue pivot, RedisValue value, IndexSide side);
@@ -150,7 +148,7 @@ namespace Caroline.Persistence.Redis
         Task<long> Length(TId id);
         Task<TEntity[]> Range(TId id, long start = 0, long stop = -1);
         Task<long> Remove(TId id, TEntity value, long count = 0);
-        Task<TEntity> RightPushLeftPop(TId source, TId destination);
+        Task<TEntity> RightPopLeftPush(TId source, TId destination);
         Task SetByIndex(TEntity entity, long index);
         Task Trim(TId id, long start, long stop);
     }

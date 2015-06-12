@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Caroline.Persistence.Redis.Extensions;
 using StackExchange.Redis;
 
 namespace Caroline.Persistence.Redis
@@ -23,6 +24,13 @@ namespace Caroline.Persistence.Redis
             var score = _scoreIdentifier.GetId(entity);
             var serial = Serializer.Serialize(entity);
             return _db.SortedSetAddAsync(id, serial, score);
+        }
+
+        public Task<bool> Push(TEntity entity, IndexSide side, double scoreOffset = 1)
+        {
+            var id = KeySerializer.Serialize(Identifier.GetId(entity));
+            var serial = Serializer.Serialize(entity);
+            return _db.SortedSetPush(_db.Scripts, id, serial, side, scoreOffset);
         }
 
         public Task<long> CombineAndStore(SetOperation operation, TId destination, TId[] keys, double[] weights, Aggregate aggregate = Aggregate.Sum)
@@ -122,6 +130,7 @@ namespace Caroline.Persistence.Redis
     public interface ISortedSetTable<TEntity, TId>
     {
         Task<bool> Add(TEntity entity);
+        Task<bool> Push(TEntity entity, IndexSide side, double scoreOffset = 1);
         Task<long> CombineAndStore(SetOperation operation, TId destination, TId[] keys, double[] weights, Aggregate aggregate = Aggregate.Sum);
         Task<double> Increment(TEntity entity, double value = 1);
         Task<long> Length(TId key, double min = double.NegativeInfinity, double max = double.PositiveInfinity, Exclude exclude = Exclude.None);

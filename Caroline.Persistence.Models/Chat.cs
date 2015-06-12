@@ -65,4 +65,19 @@ namespace Caroline.Persistence.Models
     {
         public long Id { get; set; }
     }
+
+    public partial class MessageLogNotification : IIdentifiableEntity<string>, IIdentifiableEntity<GameSessionEndpoint> {
+        
+        GameSessionEndpoint IIdentifiableEntity<GameSessionEndpoint>.Id
+        {
+            get { return Endpoint; }
+            set { Endpoint = value; }
+        }
+
+        string IIdentifiableEntity<string>.Id
+        {
+            get { return ChatroomId; }
+            set { ChatroomId = value; }
+        }
+    }
 }

@@ -87,6 +87,7 @@ namespace Caroline.Persistence
         }
 
         public ISortedSetTable<ChatroomMessage, string> ChatroomMessages { get; private set; }
+
         public RedisLongTable ChatroomMessagesIdIncrement { get; private set; }
 
         public IEntityHashTable<ChatroomSubscriber, string, long> ChatroomSubscribers { get; private set; }

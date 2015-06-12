@@ -17,6 +17,24 @@ message GameSession
 	optional GameState CachedGameState = 1;
 	optional RateLimit RateLimit = 2;
 	optional int64 LastChatMessageRecieved = 3;
+	
+	// GameSessionEndpoint field is defined in
+	// partial .cs class, so it doesnt get
+	// included when serializing gameSession
+}
+
+message GameSessionEndpoint 
+{
+	optional int64 GameId = 1;
+	optional IpEndpoint EndPoint = 2;
+}
+
+message IpEndpoint
+{
+	optional string LocalIp = 1;
+	optional string LocalPort = 2;
+	optional string RemoteIp = 3;
+	optional string RemotePort = 4;
 }
 
 message RateLimit

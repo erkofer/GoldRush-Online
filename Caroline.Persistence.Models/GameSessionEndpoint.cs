@@ -3,22 +3,13 @@ using Caroline.Persistence.Redis.Extensions;
 
 namespace Caroline.Persistence.Models
 {
-    public class GameSessionEndpoint : IIdentifiableEntity<string>
+    public partial class GameSessionEndpoint : IIdentifiableEntity<string>
     {
-        public GameSessionEndpoint()
-        {
-            
-        }
-
         public GameSessionEndpoint(IpEndpoint endpoint, long gameId)
         {
             EndPoint = endpoint;
             GameId = gameId;
         }
-
-        public IpEndpoint EndPoint { get; set; }
-
-        public long GameId { get; set; }
 
         string IIdentifiableEntity<string>.Id
         {

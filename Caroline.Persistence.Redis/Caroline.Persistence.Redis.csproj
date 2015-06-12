@@ -107,6 +107,7 @@
     <EmbeddedResource Include="RedisScripts\IncrementExpiry.lua" />
     <EmbeddedResource Include="RedisScripts\TryLock.lua" />
     <EmbeddedResource Include="RedisScripts\PopMany.lua" />
+    <EmbeddedResource Include="RedisScripts\ZPush.lua" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

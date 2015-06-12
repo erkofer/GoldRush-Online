@@ -55,16 +55,18 @@ namespace Caroline.App
             return ret;
         }
 
-        static readonly HashSet<string> Developers = new HashSet<string> { "Tristyn", "Hunter" };
-        static readonly HashSet<string> Moderators = new HashSet<string> { "Ell dubs" };
-        static readonly HashSet<string> Server = new HashSet<string> { "Server" };
+        static readonly Dictionary<string, string> Permissions = new Dictionary<string, string>
+        {
+            {"Tristyn", "developer"},
+            {"Hunter", "developer"},
+            {"Ell dubs", "moderator"},
+            {"Server", "server"}
+        };
 
         string GetPermissions(string sender)
         {
-            if (Developers.Contains(sender)) return "developer";
-            if (Moderators.Contains(sender)) return "moderator";
-            if (Server.Contains(sender)) return "server";
-            return string.Empty;
+            string permission;
+            return Permissions.TryGetValue(sender, out permission) ? permission : string.Empty;
         }
     }
 }

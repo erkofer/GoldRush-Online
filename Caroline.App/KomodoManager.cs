@@ -24,7 +24,7 @@ namespace Caroline.App
                 return new GameState { IsError = true, IsRateLimited = true };
 
             var user = await userDto.GetUser();
-            
+
             // get game save
             var save = await userDto.GetGame();
             var chat = await ChatManager.CreateAsync();
@@ -34,9 +34,9 @@ namespace Caroline.App
             game.Load(new LoadArgs { SaveState = save });
 
             var marketPlace = new MarketPlaceGlue(await MarketPlace.CreateAsync());
-            
+
             // update save with new input
-            var updateDto = await game.Update(new UpdateArgs { ClientActions = input, Session = session, MarketPlace = marketPlace, User=user,UserId = user.Id});
+            var updateDto = await game.Update(new UpdateArgs { ClientActions = input, Session = session, MarketPlace = marketPlace, User = user });
 
             var errors = await SendMessages(user, input, chat);
             var messages = await chat.GetRecentMessages(session.LastChatMessageRecieved);

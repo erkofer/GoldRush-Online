@@ -161,6 +161,19 @@ namespace Caroline.Domain
                     return false;
 
                 order.UnfulfilledQuantity = 0;
+                var remaining = order.UnfulfilledQuantity;
+                if (order.IsSelling)
+                {
+                    order.TotalItemsRecieved += remaining;
+                    order.UnclaimedItemsRecieved += remaining;
+                }
+                else
+                {
+                    var refund = remaining * order.UnitValue;
+                    order.TotalMoneyRecieved += refund;
+                    order.UnclaimedMoneyRecieved += refund;
+                }
+
                 var oldVersion = order.Version++;
                 result = await _mongo.Orders.UpdateOneAsync(
                     o => o.Id == objId && o.Version == oldVersion,
