@@ -41,8 +41,8 @@ namespace Caroline.App
             var errors = await SendMessages(user, input, chat);
             var messages = await chat.GetRecentMessages(session.LastChatMessageRecieved);
             updateDto.GameState.Messages.AddRange(errors);
-            updateDto.GameState.Messages.AddRange(messages);
-            session.LastChatMessageRecieved += messages.Length;
+            updateDto.GameState.Messages.AddRange(messages.Item1);
+            session.LastChatMessageRecieved = messages.Item2;
 
             // save to the database
             var saveDto = game.Save();
@@ -87,7 +87,7 @@ namespace Caroline.App
 
                 if (!user.IsAnonymous)
                 {
-                    await manager.SendPublicMessage(action.Chat.GlobalMessage, user);
+                    await manager.SendMessage(action.Chat.GlobalMessage, user);
                 }
                 else
                     ret.Add(BuildServerMessage("You must be registered to send chat messages."));

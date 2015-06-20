@@ -71,9 +71,8 @@ namespace Caroline.Domain
             // todo: chat swear filtering and shitty fuck tits
 
             // update message list in chatroom
-            var messageIndex = await _db.ChatroomMessagesIdIncrement.IncrementAsync(chatroom);
-            var messageDto = new ChatroomMessage { Id = chatroom, Message = message, UserName = sender.UserName, UserId = sender.Id, Index = messageIndex, Permissions = permissions, Time = DateTime.UtcNow.ToShortTimeString() };
-            if (!await _db.ChatroomMessages.Add(messageDto))
+            var messageDto = new ChatroomMessage { Id = chatroom, Message = message, UserName = sender.UserName, UserId = sender.Id, Permissions = permissions, Time = DateTime.UtcNow.ToShortTimeString() };
+            if (!await _db.ChatroomMessages.Push(messageDto, IndexSide.Right))
             {
                 // an existing message was overwritten, should never happen
                 Log.Warn("Chatroom message with a unique id was overwritten!");
@@ -83,6 +82,7 @@ namespace Caroline.Domain
                 // trim messages
                 await _db.ChatroomMessages.RemoveRangeByRank(messageDto.Id, 0, -TransientChatroomMaxMessages);
 
+            // ====== huge new chat system dump here, it will die with Tristyns involvement sadly ======
             /* TODO: chat overhaul: changes to make chatrooms with many users (eg: public chat) scale better
                  * Instead of a capped per-user List<ChatroomNotifications>, change to a uncapped per-session List<ChatroomId> ChatroomsWithModifications
                  * and a uncapped per-chatroom List<UserId> UsersThatAreUpToDate.
@@ -131,36 +131,32 @@ namespace Caroline.Domain
 
              return SendMessageResult.Success;
         }
-        
-        public Task<long> GetChatroomMessageIndex(string chatroom)
-        {
-            return _db.ChatroomMessagesIdIncrement.Get(chatroom);
-        }
 
         public async Task<GameState.ChatMessage[]> GetRecentMessages(string chatroom, long lastMessageRecieved)
         {
+            throw new NotImplementedException();
             //if(start < 0)
             //    throw new ArgumentException("start must be equal to or greater than 0.", "start");
             //if(count <= 0)
             //    throw new ArgumentException("count must be greater than 0", "count");
-            if (lastMessageRecieved < 0)
-                throw new ArgumentException("lastMessageRecieved must be equal to or greater than 0.",
-                    "lastMessageRecieved");
+            //if (lastMessageRecieved < 0)
+            //    throw new ArgumentException("lastMessageRecieved must be equal to or greater than 0.",
+            //        "lastMessageRecieved");
 
-            var messages = await _db.ChatroomMessages.Range(chatroom, lastMessageRecieved);
-            var ret = new GameState.ChatMessage[messages.Length];
-            for (var i = 0; i < ret.Length; i++)
-            {
-                var mes = messages[i];
-                ret[i] = new GameState.ChatMessage
-                {
-                    Text = mes.Message,
-                    Permissions = mes.Permissions,
-                    Time = mes.Time,
-                    Sender = mes.UserName
-                };
-            }
-            return ret;
+            //var messages = await _db.ChatroomMessages.Range(chatroom, lastMessageRecieved);
+            //var ret = new GameState.ChatMessage[messages.Length];
+            //for (var i = 0; i < ret.Length; i++)
+            //{
+            //    var mes = messages[i];
+            //    ret[i] = new GameState.ChatMessage
+            //    {
+            //        Text = mes.Message,
+            //        Permissions = mes.Permissions,
+            //        Time = mes.Time,
+            //        Sender = mes.UserName
+            //    };
+            //}
+            //return ret;
         }
 
         public async Task<InviteResult> InviteUser(string chatroom, long inviter, long invited)
