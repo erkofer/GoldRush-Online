@@ -9,9 +9,11 @@ using System.Threading.Tasks;
 
 namespace GoldRush
 {
-    class Crafting
+    class Crafting : INotifier
     {
-        public Crafting(GameObjects objs){
+        public Crafting(GameObjects objs)
+        {
+
             // Item Recipes
             CopperWire = new Recipe();
             CopperWire.Ingredients.Add(new Ingredient(objs.Items.Copper, 1000));
@@ -46,10 +48,10 @@ namespace GoldRush
             All.Add(ChainsawsT4.Resultants[0].Item.Id, ChainsawsT4);
 
             ReinforcedFurnace = new Recipe();
-            ReinforcedFurnace.Ingredients.Add(new Ingredient(objs.Items.Stone,50000));
-            ReinforcedFurnace.Ingredients.Add(new Ingredient(objs.Items.IronBar,100));
-            ReinforcedFurnace.Resultants.Add(new Ingredient(objs.Upgrades.ReinforcedFurnace,1));
-            All.Add(ReinforcedFurnace.Resultants[0].Item.Id,ReinforcedFurnace);
+            ReinforcedFurnace.Ingredients.Add(new Ingredient(objs.Items.Stone, 50000));
+            ReinforcedFurnace.Ingredients.Add(new Ingredient(objs.Items.IronBar, 100));
+            ReinforcedFurnace.Resultants.Add(new Ingredient(objs.Upgrades.ReinforcedFurnace, 1));
+            All.Add(ReinforcedFurnace.Resultants[0].Item.Id, ReinforcedFurnace);
 
             LargerCauldron = new Recipe();
             LargerCauldron.Ingredients.Add(new Ingredient(objs.Items.IronBar, 50));
@@ -57,9 +59,9 @@ namespace GoldRush
             All.Add(LargerCauldron.Resultants[0].Item.Id, LargerCauldron);
 
             Backpack = new Recipe();
-            Backpack.Ingredients.Add(new Ingredient(objs.Items.CopperWire,100));
-            Backpack.Resultants.Add(new Ingredient(objs.Upgrades.Backpack,1));
-            All.Add(Backpack.Resultants[0].Item.Id,Backpack);
+            Backpack.Ingredients.Add(new Ingredient(objs.Items.CopperWire, 100));
+            Backpack.Resultants.Add(new Ingredient(objs.Upgrades.Backpack, 1));
+            All.Add(Backpack.Resultants[0].Item.Id, Backpack);
 
             DeeperTunnels = new Recipe();
             DeeperTunnels.Ingredients.Add(new Ingredient(objs.Items.Tnt, 500));
@@ -79,14 +81,21 @@ namespace GoldRush
         private Recipe LargerCauldron;
         private Recipe Backpack;
         private Recipe DeeperTunnels;
-        
 
-        public void Craft(int id, int quantity)
+
+        public void Craft(int id, int iterations)
         {
-            All[id].Craft(quantity);
+            var recipe = All[id];
+            
+            if (!recipe.Craft(iterations))
+            {
+                var name = recipe.Resultants[0].Item.Name;
+                var quantity = recipe.Resultants[0].Quantity;
+                Notify(new GameNotification("Insufficient resources to craft " + iterations * quantity + " " + name+".", "chat"));
+            }
         }
 
-        
+
 
         /// <summary>
         /// A collection of ingredients and resultants.
@@ -111,53 +120,38 @@ namespace GoldRush
             }
 
             /// <summary>
-            /// Determines if the player has enough ingredients to craft the recipe.
-            /// </summary>
-            /// <returns>Whether the player has the required ingredients.</returns>
-            private bool Has()
-            {
-                return Has(1);
-            }
-
-            /// <summary>
             /// Determines if the player has enough ingredients to craft the recipe a number of times.
             /// </summary>
             /// <param name="iterations">The number of crafting iterations.</param>
             /// <returns>Whether the player has the required ingredients.</returns>
-            public bool Has(int iterations)
+            public bool Has(int iterations = 1)
             {
                 foreach (Ingredient ingredient in Ingredients)
                     if (ingredient.Item.Quantity < ingredient.Quantity * iterations) return false;
-                
+
                 return true;
             }
 
-            /// <summary>
-            /// Consumes all the ingredients and provides all the resultants.
-            /// </summary>
-            public virtual void Craft()
-            {
-                Craft(1);
-            }
 
             /// <summary>
             /// Consumes all the ingredients and provides all the resultants.
             /// </summary>
             /// <param name="iterations">The number of iterations to craft.</param>
-            public virtual void Craft(int iterations)
+            public virtual bool Craft(int iterations = 1)
             {
-                if (Has(iterations))
-                {
-                    foreach (var ingredient in Ingredients)
-                        ingredient.Consume(iterations);
+                if (!Has(iterations)) return false;
 
-                    foreach (var resultant in Resultants)
-                        resultant.Provide(iterations);
-                }
+                foreach (var ingredient in Ingredients)
+                    ingredient.Consume(iterations);
+
+                foreach (var resultant in Resultants)
+                    resultant.Provide(iterations);
+
+                return true;
             }
         }
 
-        
+
 
         /// <summary>
         /// A GameObject and quantity to be used in recipes.
@@ -176,55 +170,39 @@ namespace GoldRush
             /// <summary>
             /// Determines whether we have enough items to consume this ingredient.
             /// </summary>
-            /// <returns>Whether we have enough of items.</returns>
-            public bool Has()
-            {
-                return Has(1);
-            }
-
-            /// <summary>
-            /// Determines whether we have enough items to consume this ingredient.
-            /// </summary>
             /// <param name="iterations">The amount of this ingredient we want.</param>
             /// <returns>Whether we have enough of items.</returns>
-            public bool Has(int iterations)
+            public bool Has(int iterations = 1)
             {
                 return Item.Quantity >= Quantity * iterations;
-            }
-
-            /// <summary>
-            /// Deducts this ingredients worth of items from the player.
-            /// </summary>
-            public void Consume()
-            {
-                Consume(1);
             }
 
             /// <summary>
             /// Deducts this ingredients worth of items from the player a number of times.
             /// </summary>
             /// <param name="iterations">The number of iterations of this ingredient to deduct.</param>
-            public void Consume(int iterations)
+            public void Consume(int iterations = 1)
             {
                 Item.Quantity -= Quantity * iterations;
             }
 
             /// <summary>
-            /// Gives this ingredients worth of items.
-            /// </summary>
-            public void Provide()
-            {
-                Provide(1);
-            }
-
-
-            /// <summary>
             /// Gives this ingredients worth of items a number of times.
             /// </summary>
             /// <param name="iterations">The number of iterations of this ingredient to give.</param>
-            public void Provide(int iterations)
+            public void Provide(int iterations = 1)
             {
                 Item.Quantity += Quantity * iterations;
+            }
+        }
+
+        public event GameNotificationEventHandler GameNotification;
+
+        private void Notify(GameNotification notification)
+        {
+            if (GameNotification != null)
+            {
+                GameNotification(this,new GameNotificationEventArgs(){Notification = notification});
             }
         }
     }

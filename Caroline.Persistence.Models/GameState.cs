@@ -110,6 +110,16 @@ namespace Caroline.Persistence.Models
             for (int i = 0; i < _Orders.Count; i++)
                 newState._Orders.Add(_Orders[i].Clone());
 
+            for (int i = 0; i < _Notifications.Count; i++)
+                newState._Notifications.Add(_Notifications[i].Clone());
+
+            newState._OrdersSent = _OrdersSent;
+
+            if (_CurrentTutorial != oldState._CurrentTutorial)
+            {
+                newState._CurrentTutorial = _CurrentTutorial;
+            }
+
             return newState;
         }
         public partial class Item : ICompressable<Item>, IIdentifiableObject
@@ -473,6 +483,14 @@ namespace Caroline.Persistence.Models
             public Order Clone()
             {
                 return (Order)MemberwiseClone();
+            }
+        }
+
+        public partial class Notification
+        {
+            public Notification Clone()
+            {
+                return (Notification) MemberwiseClone();
             }
         }
     }

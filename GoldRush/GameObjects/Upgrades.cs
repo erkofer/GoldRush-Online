@@ -10,75 +10,116 @@ namespace GoldRush
 {
     class Upgrades
     {
-        public GameObjects game;
-
         public Upgrades(GameObjects game)
         {
-            var oreMiningMachines = new []{ game.Gatherers.Player, game.Gatherers.Miner, game.Gatherers.Drill, game.Gatherers.Excavator, game.Gatherers.Crusher };
+            InitializeUpgrades(game);
+            InitializeBuffs(game);
+        }
 
-            //TODO: Create configurations for upgrades and buffs.
-            this.game = game;
-            #region Upgrades
+        private void InitializeBuffs(GameObjects game)
+        {
+            SpeechBuff = new Buff(new ItemValueUpgradeEffect(game, 1.2), GameConfig.Upgrades.SpeechBuff);
+            game.Items.SpeechPotion.Buff = SpeechBuff;
+            Buffs.Add(SpeechBuff.Id, SpeechBuff);
+
+            ClickingBuff = new Buff(new EfficiencyMagnitudeUpgradeEffect(game,
+                new[] {game.Gatherers.Player},
+                2), GameConfig.Upgrades.ClickingBuff);
+            game.Items.ClickingPotion.Buff = ClickingBuff;
+            Buffs.Add(ClickingBuff.Id, ClickingBuff);
+
+            SmeltingBuff = new Buff(new ProcessorEfficiencyUpgradeEffect(game,
+                new[] {game.Processing.Furnace},
+                1.25), GameConfig.Upgrades.SmeltingBuff);
+            game.Items.SmeltingPotion.Buff = SmeltingBuff;
+            Buffs.Add(SmeltingBuff.Id, SmeltingBuff);
+
+            AlchemyBuff = new Buff(new ProcessorRecipeEfficiencyUpgradeEffect(game,
+                new[] {game.Processing.Furnace},
+                2), GameConfig.Upgrades.AlchemyBuff);
+            game.Items.AlchemyPotion.Buff = AlchemyBuff;
+            Buffs.Add(AlchemyBuff.Id, AlchemyBuff);
+        }
+
+        private void InitializeUpgrades(GameObjects game)
+        {
+            var oreMiningMachines = new[] { game.Gatherers.Player, game.Gatherers.Miner, game.Gatherers.Drill, game.Gatherers.Excavator, game.Gatherers.Crusher };
+
             Foreman = new Upgrade(new EfficiencyMagnitudeUpgradeEffect(game,
-                new [] {game.Gatherers.Miner,
-                    game.Gatherers.Lumberjack},
-                1.15),GameConfig.Upgrades.Foreman);
-            All.Add(Foreman.Id,Foreman);
-            
+                new[]
+                {
+                    game.Gatherers.Miner,
+                    game.Gatherers.Lumberjack
+                },
+                1.15), GameConfig.Upgrades.Foreman);
+            All.Add(Foreman.Id, Foreman);
+
             Backpack = new Upgrade(new ResourceUpgradeEffect(game,
-                new []{game.Gatherers.Lumberjack},
-                new[]{game.Items.Cubicula,
+                new[] {game.Gatherers.Lumberjack},
+                new[]
+                {
+                    game.Items.Cubicula,
                     game.Items.BitterRoot,
                     game.Items.Thornberries,
-                    game.Items.Transfruit}), GameConfig.Upgrades.Backpack);
+                    game.Items.Transfruit
+                }), GameConfig.Upgrades.Backpack);
             All.Add(Backpack.Id, Backpack);
 
             Botanist = new Upgrade(new ResourceUpgradeEffect(game,
-                new []{game.Gatherers.Lumberjack},
-                new [] {game.Items.IronFlower,
+                new[] {game.Gatherers.Lumberjack},
+                new[]
+                {
+                    game.Items.IronFlower,
                     game.Items.TongtwistaFlower,
-                    game.Items.MeltingNuts}), GameConfig.Upgrades.Botanist);
+                    game.Items.MeltingNuts
+                }), GameConfig.Upgrades.Botanist);
             Botanist.Requires = Backpack;
             All.Add(Botanist.Id, Botanist);
 
             Researcher = new Upgrade(new ResourceUpgradeEffect(game,
                 oreMiningMachines,
-                new []{game.Items.Sapphire,
+                new[]
+                {
+                    game.Items.Sapphire,
                     game.Items.Emerald,
-                    game.Items.Ruby}),GameConfig.Upgrades.Researcher);
+                    game.Items.Ruby
+                }), GameConfig.Upgrades.Researcher);
             All.Add(Researcher.Id, Researcher);
 
-            ClickUpgradeT1 = new Upgrade(new BaseEfficiencyUpgradeEffect(game,new[]{game.Gatherers.Player},1),GameConfig.Upgrades.ClickUpgradeT1);
+            ClickUpgradeT1 = new Upgrade(new BaseEfficiencyUpgradeEffect(game, new[] {game.Gatherers.Player}, 1),
+                GameConfig.Upgrades.ClickUpgradeT1);
             All.Add(ClickUpgradeT1.Id, ClickUpgradeT1);
 
-            ClickUpgradeT2 = new Upgrade(new BaseEfficiencyUpgradeEffect(game, new[] { game.Gatherers.Player }, 5), GameConfig.Upgrades.ClickUpgradeT2);
+            ClickUpgradeT2 = new Upgrade(new BaseEfficiencyUpgradeEffect(game, new[] {game.Gatherers.Player}, 5),
+                GameConfig.Upgrades.ClickUpgradeT2);
             ClickUpgradeT2.Requires = ClickUpgradeT1;
             All.Add(ClickUpgradeT2.Id, ClickUpgradeT2);
 
-            ClickUpgradeT3 = new Upgrade(new BaseEfficiencyUpgradeEffect(game, new[] { game.Gatherers.Player }, 10), GameConfig.Upgrades.ClickUpgradeT3);
+            ClickUpgradeT3 = new Upgrade(new BaseEfficiencyUpgradeEffect(game, new[] {game.Gatherers.Player}, 10),
+                GameConfig.Upgrades.ClickUpgradeT3);
             ClickUpgradeT3.Requires = ClickUpgradeT2;
             All.Add(ClickUpgradeT3.Id, ClickUpgradeT3);
-            
+
             // Craftable
             ChainsawsT1 = new Upgrade(new EfficiencyUpgradeEffect(game,
-                new []{game.Gatherers.Lumberjack},
-                0.25),GameConfig.Upgrades.ChainsawsT1);
+                new[] {game.Gatherers.Lumberjack},
+                0.25), GameConfig.Upgrades.ChainsawsT1);
             All.Add(ChainsawsT1.Id, ChainsawsT1);
 
             ChainsawsT2 = new Upgrade(new EfficiencyUpgradeEffect(game,
-                new[] { game.Gatherers.Lumberjack },
+                new[] {game.Gatherers.Lumberjack},
                 0.5), GameConfig.Upgrades.ChainsawsT2);
             ChainsawsT2.Requires = ChainsawsT1;
             All.Add(ChainsawsT2.Id, ChainsawsT2);
 
             ChainsawsT3 = new Upgrade(new EfficiencyUpgradeEffect(game,
-                new[] { game.Gatherers.Lumberjack },
+                new[] {game.Gatherers.Lumberjack},
                 1), GameConfig.Upgrades.ChainsawsT3);
             ChainsawsT3.Requires = ChainsawsT2;
             All.Add(ChainsawsT3.Id, ChainsawsT3);
 
             ChainsawsT4 = new Upgrade(new EfficiencyUpgradeEffect(game,
-                new[] { game.Gatherers.Lumberjack },
+                new[] {game.Gatherers.Lumberjack},
                 1), GameConfig.Upgrades.ChainsawsT4);
             ChainsawsT4.Requires = ChainsawsT3;
             All.Add(ChainsawsT4.Id, ChainsawsT4);
@@ -89,73 +130,47 @@ namespace GoldRush
             All.Add(ReinforcedFurnace.Id, ReinforcedFurnace);
 
             LargerCauldron = new Upgrade(new ProcessorCapacityUpgradeEffect(game,
-                new[] { game.Processing.Cauldron },
+                new[] {game.Processing.Cauldron},
                 9), GameConfig.Upgrades.LargerCauldron);
             All.Add(LargerCauldron.Id, LargerCauldron);
 
             DeeperTunnels = new Upgrade(new ResourceUpgradeEffect(game,
                 oreMiningMachines,
-                new []{game.Items.Uranium,game.Items.Titanium}),GameConfig.Upgrades.DeeperTunnels);
-            All.Add(DeeperTunnels.Id,DeeperTunnels);
+                new[] {game.Items.Uranium, game.Items.Titanium}), GameConfig.Upgrades.DeeperTunnels);
+            All.Add(DeeperTunnels.Id, DeeperTunnels);
 
             IronPickaxe = new Upgrade(new ProbabilityUpgradeEffect(game,
-               new []{game.Gatherers.Player},
-               1.05), GameConfig.Upgrades.IronPickaxe);
-            All.Add(IronPickaxe.Id,IronPickaxe);
+                new[] {game.Gatherers.Player},
+                1.05), GameConfig.Upgrades.IronPickaxe);
+            All.Add(IronPickaxe.Id, IronPickaxe);
 
             SteelPickaxe = new Upgrade(new ProbabilityUpgradeEffect(game,
-               new[] { game.Gatherers.Player },
-               1.1), GameConfig.Upgrades.SteelPickaxe);
+                new[] {game.Gatherers.Player},
+                1.1), GameConfig.Upgrades.SteelPickaxe);
             SteelPickaxe.Requires = IronPickaxe;
             All.Add(SteelPickaxe.Id, SteelPickaxe);
 
             GoldPickaxe = new Upgrade(new ProbabilityUpgradeEffect(game,
-               new[] { game.Gatherers.Player },
-               1.15), GameConfig.Upgrades.GoldPickaxe);
+                new[] {game.Gatherers.Player},
+                1.15), GameConfig.Upgrades.GoldPickaxe);
             GoldPickaxe.Requires = SteelPickaxe;
             All.Add(GoldPickaxe.Id, GoldPickaxe);
 
             DiamondPickaxe = new Upgrade(new ProbabilityUpgradeEffect(game,
-               new[] { game.Gatherers.Player },
-               1.25), GameConfig.Upgrades.DiamondPickaxe);
+                new[] {game.Gatherers.Player},
+                1.25), GameConfig.Upgrades.DiamondPickaxe);
             DiamondPickaxe.Requires = GoldPickaxe;
             All.Add(DiamondPickaxe.Id, DiamondPickaxe);
 
             Furnace = new Upgrade(new ProcessorUnlockUpgradeEffect(game,
                 new[] {game.Processing.Furnace}), GameConfig.Upgrades.Furnace);
             game.Processing.Furnace.Requires = Furnace;
-            All.Add(Furnace.Id,Furnace);
+            All.Add(Furnace.Id, Furnace);
 
             Cauldron = new Upgrade(new ProcessorUnlockUpgradeEffect(game,
-                new[] { game.Processing.Cauldron }), GameConfig.Upgrades.Cauldron);
+                new[] {game.Processing.Cauldron}), GameConfig.Upgrades.Cauldron);
             game.Processing.Cauldron.Requires = Cauldron;
-            All.Add(Cauldron.Id,Cauldron);
-            #endregion
-
-            #region Buffs
-            SpeechBuff = new Buff(new ItemValueUpgradeEffect(game, 1.2),GameConfig.Upgrades.SpeechBuff);
-            game.Items.SpeechPotion.Buff = SpeechBuff;
-            Buffs.Add(SpeechBuff.Id, SpeechBuff);
-
-            ClickingBuff = new Buff(new EfficiencyMagnitudeUpgradeEffect(game,
-                new[] {game.Gatherers.Player},
-                2),GameConfig.Upgrades.ClickingBuff);
-            game.Items.ClickingPotion.Buff = ClickingBuff;
-            Buffs.Add(ClickingBuff.Id, ClickingBuff);
-
-            SmeltingBuff = new Buff(new ProcessorEfficiencyUpgradeEffect(game,
-                new [] {game.Processing.Furnace},
-                1.25),GameConfig.Upgrades.SmeltingBuff);
-            game.Items.SmeltingPotion.Buff = SmeltingBuff;
-            Buffs.Add(SmeltingBuff.Id, SmeltingBuff);
-
-            AlchemyBuff = new Buff(new ProcessorRecipeEfficiencyUpgradeEffect(game,
-                new[] {game.Processing.Furnace},
-                2),GameConfig.Upgrades.AlchemyBuff);
-            game.Items.AlchemyPotion.Buff = AlchemyBuff;
-            Buffs.Add(AlchemyBuff.Id,AlchemyBuff);
-
-            #endregion
+            All.Add(Cauldron.Id, Cauldron);
         }
 
         /// <summary>
@@ -234,20 +249,16 @@ namespace GoldRush
 
             public virtual void Activate()
             {
-                if (!Active)
-                {
-                    Active = true;
-                    Effect.Activate();
-                }
+                if (Active) return;
+                Active = true;
+                Effect.Activate();
             }
 
             public virtual void Deactivate()
             {
-                if (Active)
-                {
-                    Active = false;
-                    Effect.Deactivate();
-                }
+                if (!Active) return;
+                Active = false;
+                Effect.Deactivate();
             }
 
             public override string Tooltip
@@ -255,12 +266,12 @@ namespace GoldRush
                 get { return Effect.Tooltip; }
             }
 
-            public UpgradeEffect Effect { get; set; }
+            private UpgradeEffect Effect { get; set; }
         }
 
         internal class Buff : Upgrade
         {
-            private GameConfig.Upgrades.BuffConfig _config;
+            private readonly GameConfig.Upgrades.BuffConfig _config;
 
             public Buff(UpgradeEffect effect, GameConfig.Upgrades.BuffConfig config)
                 : base(effect, config)
@@ -647,27 +658,27 @@ namespace GoldRush
 
         class ProcessorRecipeEfficiencyUpgradeEffect : UpgradeEffect
         {
-            Processing.Processor[] processors;
-            int increase;
+            readonly Processing.Processor[] _processors;
+            readonly int _increase;
             public ProcessorRecipeEfficiencyUpgradeEffect(GameObjects game, Processing.Processor[] processors, int increase)
                 : base(game)
             {
-                this.processors = processors;
-                this.increase = increase;
+                _processors = processors;
+                _increase = increase;
             }
             public override void Activate()
             {
-                foreach (var processor in processors)
+                foreach (var processor in _processors)
                 {
-                    processor.RecipesCraftedPerIteration += increase;
+                    processor.RecipesCraftedPerIteration += _increase;
                 }
             }
 
             public override void Deactivate()
             {
-                foreach (var processor in processors)
+                foreach (var processor in _processors)
                 {
-                    processor.RecipesCraftedPerIteration -= increase;
+                    processor.RecipesCraftedPerIteration -= _increase;
                 }
             }
 
@@ -677,35 +688,35 @@ namespace GoldRush
                 {
                     List<string> names = new List<string>();
 
-                    foreach (var processor in processors)
+                    foreach (var processor in _processors)
                         names.Add(processor.Name);
 
                     string concatenatedNames = String.Join(",", names);
 
-                    return concatenatedNames + " craft an additional " + increase + " recipes per iteration.";
+                    return concatenatedNames + " craft an additional " + _increase + " recipes per iteration.";
                 }
             }
         }
 
         class ProcessorUnlockUpgradeEffect : UpgradeEffect
         {
-            Processing.Processor[] processors;
+            readonly Processing.Processor[] _processors;
 
             public ProcessorUnlockUpgradeEffect(GameObjects game, Processing.Processor[] processors)
                 : base(game)
             {
-                this.processors = processors;
+                _processors = processors;
             }
 
             public override void Activate()
             {
-                foreach (var processor in processors)
+                foreach (var processor in _processors)
                     processor.Quantity = 1;
             }
 
             public override void Deactivate()
             {
-                foreach (var processor in processors)
+                foreach (var processor in _processors)
                     processor.Quantity = 0;
             }
 
@@ -715,7 +726,7 @@ namespace GoldRush
                 {
                     List<string> names = new List<string>();
 
-                    foreach (var processor in processors)
+                    foreach (var processor in _processors)
                         names.Add(processor.Name);
 
                     string concatenatedNames = String.Join(",", names);

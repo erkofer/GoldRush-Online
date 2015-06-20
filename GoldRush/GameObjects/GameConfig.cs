@@ -279,6 +279,15 @@ namespace GoldRush
             public static AchievementConfig MinerT3 = new AchievementConfig() { Name = "Carpal Tunneling", Type = GoldRush.Achievements.AchievementType.RockClicks, Goal = 1000 * 10, Points = 2 };
 
             public static AchievementConfig OilT1 = new AchievementConfig() { Name = "Eminent Domain", Type=GoldRush.Achievements.AchievementType.Oil, Goal = 1, Points = 1 };
+
+            //Tutorial achievements. 
+             
+            // Click the rock a couple of times to gather some resources!
+            public static AchievementConfig TutorialMining = new AchievementConfig() { Goal = 10 };
+            // Sell enough resources to earn 1,000 coins.
+            public static AchievementConfig TutorialSelling = new AchievementConfig() { Goal = 1000 };
+            // Hire a miner!
+            public static AchievementConfig TutorialGatherers = new AchievementConfig() { Goal = 1 };
         }
         //1500-1800
         public static class Statistics

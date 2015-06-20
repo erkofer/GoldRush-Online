@@ -67,7 +67,7 @@ namespace Caroline.App
             if (lastMessageRecieved != null)
             {
                 if (result.Length > 0)
-                    take = Math.Max(Math.Min(Math.Min((long)result[0].Index, result.Length) - lastMessageRecieved.Value, maxMessagesReturned), 0);
+                    take = Math.Max(Math.Min((long)result[0].Index - lastMessageRecieved.Value, maxMessagesReturned), 0);
                 else
                     return new Tuple<GameState.ChatMessage[], long>(new GameState.ChatMessage[0], 0);
             }

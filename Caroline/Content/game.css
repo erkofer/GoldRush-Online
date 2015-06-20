@@ -275,7 +275,7 @@ body{
     border-radius: 5px;
     position: absolute;
     max-width: 225px;
-    z-index: 100;
+    z-index: 1000;
     pointer-events: none;
 
     -webkit-animation: tooltip 0.3s 1;
@@ -1016,6 +1016,7 @@ td {
     border-radius: 3px;
     display: inline-block;
     margin: 3px;
+    overflow: hidden;
 }
 
 .market-order-header {
@@ -1059,10 +1060,112 @@ td {
     display: block;
 }
 
+.market-progress-container {
+    height: 16px;
+    box-shadow: inset 1px 3px 10px 0px #ABABAB;
+    -webkit-box-shadow: inset 1px 3px 10px 0px #ABABAB;
+    -moz-box-shadow: inset 1px 3px 10px 0px #ABABAB;
+    -o-box-shadow: inset 1px 3px 10px 0px #ABABAB;
+}
+
+.market-progress {
+    height: 16px;
+    background: green;
+}
+
+.market-info-bottom {
+    position: relative;
+    width: 250px;
+}
+
+.market-claims-container {
+    display: inline-block;
+    width: 80px;
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+}
+
+.market-claims {
+    color: white;
+    width: 32px;
+    height: 32px;
+    padding: 3px;
+    position: relative;
+    display: inline-block;
+    background: #78909C;
+    border-radius: 3px;
+    margin: 1px;
+    
+    transition: all 0.2s;
+}
+
+.market-claims:hover {
+    background: #90A4AE;
+}
+
+.market-claims-text {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    font-size: 10px;
+}
+
+.market-image-container {
+    color: white;
+    position: relative;
+    height: 64px;
+    width: 64px;
+    display: inline-block;
+    overflow: hidden;
+    float: left;
+    padding: 3px;
+    border-radius: 3px;
+    background: #78909C;
+}
+
+.market-order-info {
+    margin-left: 74px;
+    height: 90px;
+}
+
+.market-order-edit {
+    float: right;
+    position: relative;
+    padding: 3px;
+    border-radius: 3px;
+    background: #78909c;
+    display: inline-block;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.market-order-edit:hover {
+    background: #90A4AE;
+}
+
+.market-image-quantity {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+}
+
 .buy {
     float: left;
 }
 
 .sell {
     float: right;
+}
+
+.tutorial {
+    color: white;
+    border-radius: 3px;
+    border: 1px solid red;
+    background: darkred;
+    max-width: 150px; 
+}
+
+.tutorial.closed {
+    display: none;
 }

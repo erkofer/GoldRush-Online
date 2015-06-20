@@ -1,5 +1,5 @@
-﻿//<reference path="connection.ts"/>
-
+﻿///<reference path="connection.ts"/>
+///<reference path="pheidippides.ts"/>
 module Chat {
     declare var Komodo: { ClientActions: any; }
     var chatWindow;
@@ -116,6 +116,10 @@ module Chat {
             chatWindow.appendChild(chatSendingContainer);
 
             document.body.appendChild(chatWindow);
+
+            Pheidippides.sprint(chatWindow, "chat", function(elm, msg) {
+                Chat.receiveGlobalMessage("SERVER", msg, new Date().toLocaleTimeString(), "server");
+            });
         }
     }
     initialize();
