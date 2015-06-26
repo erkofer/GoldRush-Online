@@ -19,7 +19,7 @@ namespace Caroline.Persistence.Redis
 
         public IDatabaseArea CreateSubArea(RedisKey area)
         {
-            return new DatabaseWrapper(_db, area, Scripts);
+            return new DatabaseWrapper(this, area);
         }
 
         public IDatabase Parent

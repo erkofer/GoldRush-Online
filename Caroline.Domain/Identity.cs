@@ -63,7 +63,7 @@ namespace Caroline.Domain
 
         public Task<ScoreEntry[]> GetLeaderboardEntries(long start = 0, long end = long.MaxValue)
         {
-            return _redis.HighScores.Range("lb", start, end, Order.Descending);
+            return _redis.HighScores.RangeByRank("lb", start, end, Order.Descending);
         }
 
         public Task SetLeaderboardEntry(long userId, long value)

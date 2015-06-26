@@ -4,11 +4,16 @@ using StackExchange.Redis;
 
 namespace Caroline.Persistence.Redis
 {
-    public interface IEntityTable<TEntity, in TId>
+    public interface IEntityTable<TEntity, in TId> : IDatabaseTable
     {
         Task<TEntity> Get(TId id);
         Task<bool> Set(TEntity entity, TimeSpan? expiry = null, When when = When.Always);
         Task<TEntity> GetSet(TEntity entity, TimeSpan? expiry = null);
         Task<bool> Delete(TId id);
+    }
+
+    public interface IDatabaseTable
+    {
+        IDatabaseArea Database { get; }
     }
 }

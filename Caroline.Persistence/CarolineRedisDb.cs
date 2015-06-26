@@ -75,8 +75,7 @@ namespace Caroline.Persistence
                     DatabaseAreaEx.Objects.StringSerializer,
                     DatabaseAreaEx.Objects<ScoreEntry, string>.Identifier, DatabaseAreaEx.Objects<ScoreEntry, double>.Identifier),
 
-                ChatroomMessages = db.SetSortedListString<ChatroomMessage>("cm"),
-                ChatroomMessagesIdIncrement = db.Long("cm-lng"),
+                ChatroomMessages = db.SetSortedListString<ChatroomMessage>("crm"),
                 ChatroomSubscribers = db.SetHashStringLong<ChatroomSubscriber>("cs"),
                 ChatroomInvitations = db.SetHashStringLong<ChatroomInvitation>("ci"),
                 ChatroomOptions = db.SetString<ChatroomOptions>("co"),
@@ -87,7 +86,6 @@ namespace Caroline.Persistence
         }
 
         public ISortedSetTable<ChatroomMessage, string> ChatroomMessages { get; private set; }
-        public RedisLongTable ChatroomMessagesIdIncrement { get; private set; }
 
         public IEntityHashTable<ChatroomSubscriber, string, long> ChatroomSubscribers { get; private set; }
 

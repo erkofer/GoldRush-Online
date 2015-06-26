@@ -4,7 +4,7 @@ using StackExchange.Redis;
 
 namespace Caroline.Persistence.Redis
 {
-    public interface IStringTable
+    public interface IStringTable : IDatabaseTable
     {
         Task<string> Get(string id);
         Task<bool> Set(string id, string value, TimeSpan? expiry = null, When when = When.Always);

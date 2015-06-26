@@ -10,18 +10,18 @@ namespace Caroline.Persistence.Redis
     public class DatabaseWrapper : IDatabaseArea
     {
         [NotNull]
-        readonly IDatabase _impl;
+        readonly IDatabaseArea _impl;
         readonly RedisKey _prefix;
         readonly CarolineScriptsRepo _scripts;
 
-        public DatabaseWrapper([NotNull] IDatabase impl, RedisKey prefix, CarolineScriptsRepo scripts)
+        public DatabaseWrapper([NotNull] IDatabaseArea impl, RedisKey prefix)
         {
             if (impl == null) throw new ArgumentNullException("impl");
             _impl = impl;
+            _scripts = _impl.Scripts;
 #pragma warning disable 612 // suppressed. RedisKey.Prepend() is prefered, but that mutates the RedisKey. + is pure but creates object allocations
             _prefix = prefix + ":";
 #pragma warning restore 612
-            _scripts = scripts;
         }
 
         public Task<TimeSpan> PingAsync(CommandFlags flags = CommandFlags.None)
@@ -1397,10 +1397,11 @@ namespace Caroline.Persistence.Redis
 
         public IDatabaseArea CreateSubArea(RedisKey area)
         {
-            return new DatabaseWrapper(_impl, area, Scripts);
+            return new DatabaseWrapper(_impl, area);
         }
 
         public IDatabase Parent { get { return _impl; } }
         public CarolineScriptsRepo Scripts { get { return _scripts; } }
+        public RedisKey KeyPrefix { get { return _prefix; } }
     }
 }

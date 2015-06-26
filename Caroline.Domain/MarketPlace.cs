@@ -52,7 +52,7 @@ namespace Caroline.Domain
                 var unitsTransacted = Math.Min(staleOrder.UnfulfilledQuantity, freshOrder.UnfulfilledQuantity);
                 freshOrder.UnfulfilledQuantity -= unitsTransacted;
                 staleOrder.UnfulfilledQuantity -= unitsTransacted;
-                
+
                 var unitValue = isStaleOrderSelling 
                     ? Math.Max(staleOrder.UnitValue, freshOrder.UnitValue) 
                     : Math.Min(staleOrder.UnitValue, freshOrder.UnitValue);
@@ -69,7 +69,7 @@ namespace Caroline.Domain
                 {
                     var differenceToRefund = MathHelpers.Difference(staleOrder.UnitValue, freshOrder.UnitValue)*
                                              unitsTransacted;
-                    staleOrder.TotalMoneyRecieved += differenceToRefund;
+                staleOrder.TotalMoneyRecieved += differenceToRefund;
                     staleOrder.UnclaimedMoneyRecieved += differenceToRefund;
                 }
 
@@ -191,46 +191,6 @@ namespace Caroline.Domain
             throw new TimeoutException();
         }
  
-       /* public async Task<bool> CancelOrder(string id)
-        {
-            ObjectId objId;
-            if (!ObjectIdHelpers.ParseAndLog(id, out objId))
-                return false;
-
-            UpdateResult result;
-            byte i = 0;
-            do
-            {
-                if (i++ == 20)
-                    throw new TimeoutException();
-
-                var order = await _mongo.Orders.SingleOrDefault(o => o.Id == objId);
-                if (order == null)
-                    return false;
-
-                var remaining = order.UnfulfilledQuantity;
-                if (order.IsSelling)
-                {
-                    order.TotalItemsRecieved += remaining;
-                    order.UnclaimedItemsRecieved += remaining;
-                }
-                else
-                {
-                    var refund = remaining * order.UnitValue;
-                    order.TotalMoneyRecieved += refund;
-                    order.UnclaimedMoneyRecieved += refund;
-                }
-                order.UnfulfilledQuantity = 0;
-
-                var oldVersion = order.Version++;
-                result = await _mongo.Orders.UpdateOneAsync(
-                    o => o.Id == objId && o.Version == oldVersion,
-                    new ObjectUpdateDefinition<StaleOrder>(order));
-
-            } while (!result.IsModifiedCountAvailable || result.ModifiedCount != 1);
-            return true;
-        }*/
-
         static StaleOrder BuildStaleOrder(FreshOrder freshOrder)
         {
             return new StaleOrder

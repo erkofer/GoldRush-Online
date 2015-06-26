@@ -7,22 +7,19 @@ namespace Caroline.Persistence.Redis
 {
     public class RedisEntityTable<TEntity, TId> : RedisEntityTableBase<TEntity, TId>, IEntityTable<TEntity, TId>
     {
-        readonly IDatabase _db;
-        readonly CarolineScriptsRepo _scripts;
         readonly TimeSpan? _defaultExpiry;
 
         public RedisEntityTable(IDatabaseArea db, ISerializer<TEntity> serializer, ISerializer<TId> keySerialzer, IIdentifier<TEntity, TId> identifier, TimeSpan? defaultExpiry = null)
             : base(serializer, keySerialzer, identifier)
         {
-            _db = db;
-            _scripts = db.Scripts;
+            Database = db;
             _defaultExpiry = defaultExpiry;
         }
 
         public async Task<TEntity> Get(TId id)
         {
             var tid = KeySerializer.Serialize(id);
-            var serial = await _db.StringGetAsync(tid);
+            var serial = await Database.StringGetAsync(tid);
             var entity = Deserialize(serial, id);
             return entity;
         }
@@ -32,7 +29,7 @@ namespace Caroline.Persistence.Redis
             var id = Identifier.GetId(entity);
             var key = KeySerializer.Serialize(id);
             var value = Serializer.Serialize(entity);
-            return await _db.StringSetAsync(key, value, expiry ?? _defaultExpiry, when);
+            return await Database.StringSetAsync(key, value, expiry ?? _defaultExpiry, when);
         }
 
         public async Task<TEntity> GetSet(TEntity entity, TimeSpan? expiry = null)
@@ -43,17 +40,19 @@ namespace Caroline.Persistence.Redis
             expiry = expiry ?? _defaultExpiry;
             RedisValue previousSerial;
             if (expiry == null)
-                previousSerial = await _db.StringGetSetAsync(key, value);
+                previousSerial = await Database.StringGetSetAsync(key, value);
             else
-                previousSerial = await _db.StringGetSetExpiryAsync(_scripts, key, value, expiry.Value);
+                previousSerial = await Database.StringGetSetExpiryAsync(Database.Scripts, key, value, expiry.Value);
 
             return Deserialize(previousSerial, id);
         }
 
         public Task<bool> Delete(TId id)
         {
-            return _db.KeyDeleteAsync(KeySerializer.Serialize(id));
+            return Database.KeyDeleteAsync(KeySerializer.Serialize(id));
         }
+
+        public IDatabaseArea Database { get; private set; }
     }
 
     public abstract class RedisEntityTableBase<TEntity, TId> : RedisEntityTableBase<TId>

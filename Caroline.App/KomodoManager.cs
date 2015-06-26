@@ -24,7 +24,7 @@ namespace Caroline.App
                 return new GameState { IsError = true, IsRateLimited = true };
 
             var user = await userDto.GetUser();
-            
+
             // get game save
             var save = await userDto.GetGame();
             var chat = await ChatManager.CreateAsync();
@@ -34,15 +34,15 @@ namespace Caroline.App
             game.Load(new LoadArgs { SaveState = save });
 
             var marketPlace = new MarketPlaceGlue(await MarketPlace.CreateAsync());
-            
+
             // update save with new input
-            var updateDto = await game.Update(new UpdateArgs { ClientActions = input, Session = session, MarketPlace = marketPlace, User=user,UserId = user.Id});
+            var updateDto = await game.Update(new UpdateArgs { ClientActions = input, Session = session, MarketPlace = marketPlace, User = user });
 
             var errors = await SendMessages(user, input, chat);
             var messages = await chat.GetRecentMessages(session.LastChatMessageRecieved);
             updateDto.GameState.Messages.AddRange(errors);
-            updateDto.GameState.Messages.AddRange(messages);
-            session.LastChatMessageRecieved += messages.Length;
+            updateDto.GameState.Messages.AddRange(messages.Item1);
+            session.LastChatMessageRecieved = messages.Item2;
 
             // save to the database
             var saveDto = game.Save();
@@ -87,7 +87,7 @@ namespace Caroline.App
 
                 if (!user.IsAnonymous)
                 {
-                    await manager.SendPublicMessage(action.Chat.GlobalMessage, user);
+                    await manager.SendMessage(action.Chat.GlobalMessage, user);
                 }
                 else
                     ret.Add(BuildServerMessage("You must be registered to send chat messages."));

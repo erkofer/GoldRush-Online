@@ -7,38 +7,37 @@ namespace Caroline.Persistence.Redis
 {
     class RedisStringTable : IStringTable
     {
-        readonly IDatabase _db;
         private readonly TimeSpan? _defaultExpiry;
-        private readonly CarolineScriptsRepo _scripts;
 
         public RedisStringTable(IDatabaseArea db, TimeSpan? defaultExpiry = null)
         {
-            _db = db;
+            Database = db;
             _defaultExpiry = defaultExpiry;
-            _scripts = db.Scripts;
         }
 
         public async Task<string> Get(string id)
         {
-            return await _db.StringGetAsync(id);
+            return await Database.StringGetAsync(id);
         }
 
         public Task<bool> Set(string id, string value, TimeSpan? expiry = null, When when = When.Always)
         {
-            return _db.StringSetAsync(id, value, expiry ?? _defaultExpiry, when);
+            return Database.StringSetAsync(id, value, expiry ?? _defaultExpiry, when);
         }
 
         public async Task<string> GetSet(string id, string setValue, TimeSpan? expiry = null)
         {
             expiry = expiry ?? _defaultExpiry;
             if (expiry.HasValue)
-                return await _db.StringGetSetExpiryAsync(_scripts, id, setValue, expiry.Value);
-            return await _db.StringGetSetAsync(id, setValue);
+                return await Database.StringGetSetExpiryAsync(Database.Scripts, id, setValue, expiry.Value);
+            return await Database.StringGetSetAsync(id, setValue);
         }
 
         public Task<bool> Delete(string id)
         {
-            return _db.KeyDeleteAsync(id);
+            return Database.KeyDeleteAsync(id);
         }
+
+        public IDatabaseArea Database { get; private set; }
     }
 }

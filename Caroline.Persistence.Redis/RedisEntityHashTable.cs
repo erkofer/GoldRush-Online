@@ -6,7 +6,7 @@ namespace Caroline.Persistence.Redis
     class RedisEntityHashTable<TEntity, TId, TField>
         : RedisEntityTableBase<TEntity, TId>, IEntityHashTable<TEntity, TId, TField>
     {
-        readonly IDatabase _db;
+        readonly IDatabaseArea _db;
         readonly ISerializer<TField> _fieldSerializer;
         private readonly IIdentifier<TEntity, TField> _fieldIdentifier;
 
@@ -132,5 +132,7 @@ namespace Caroline.Persistence.Redis
             _fieldIdentifier.SetId(ent, field);
             return ent;
         }
+
+        public IDatabaseArea Database { get { return _db; } }
     }
 }

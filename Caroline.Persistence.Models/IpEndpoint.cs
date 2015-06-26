@@ -3,12 +3,8 @@ using System.Collections.Generic;
 
 namespace Caroline.Persistence.Models
 {
-    public struct IpEndpoint
+    public partial class IpEndpoint
     {
-        readonly string _localIp;
-        readonly string _localPort;
-        readonly string _remoteIp;
-        readonly string _remotePort;
         public const char Delimiter = '-';
 
         public IpEndpoint(string localIp, string localPort, string remoteIp, string remotePort)
@@ -18,13 +14,13 @@ namespace Caroline.Persistence.Models
             if (remoteIp == null) throw new ArgumentNullException("remoteIp");
             if (remotePort == null) throw new ArgumentNullException("remotePort");
 
-            _localIp = localIp;
-            _localPort = localPort;
-            _remoteIp = remoteIp;
-            _remotePort = remotePort;
+            LocalIp = localIp;
+            LocalPort = localPort;
+            RemoteIp = remoteIp;
+            RemotePort = remotePort;
         }
 
-        public static IpEndpoint? TryParse(IDictionary<string, object> owinEnvironment)
+        public static IpEndpoint TryParse(IDictionary<string, object> owinEnvironment)
         {
             if (owinEnvironment == null) throw new ArgumentNullException("owinEnvironment");
 
@@ -38,19 +34,6 @@ namespace Caroline.Persistence.Models
             return new IpEndpoint(localIp, localPort, remoteIp, remotePort);
         }
 
-        public static bool TryParse(IDictionary<string, object> owinEnvironment, out IpEndpoint endpoint)
-        {
-            var result = TryParse(owinEnvironment);
-            if (result != null)
-            {
-                endpoint = result.Value;
-                return true;
-            }
-
-            endpoint = default (IpEndpoint);
-            return false;
-        }
-
         public static string Serialize(IpEndpoint ip)
         {
             //var ret = new byte[24];
@@ -59,10 +42,10 @@ namespace Caroline.Persistence.Models
             //BitConverter.GetBytes(ip._remoteIp).CopyTo(ret, 12);
             //BitConverter.GetBytes(ip._remotePort).CopyTo(ret, 20);
             //return ret;
-            var sourceIp = ip._localIp;
-            var sourcePort = ip._localPort;
-            var destIp = ip._remoteIp;
-            var destPort = ip._remotePort;
+            var sourceIp = ip.LocalIp;
+            var sourcePort = ip.LocalPort;
+            var destIp = ip.RemoteIp;
+            var destPort = ip.RemotePort;
 
             var ret = new char[sourceIp.Length + sourcePort.Length + destIp.Length + destPort.Length + 3];
             var destIndex = 0;
@@ -94,26 +77,6 @@ namespace Caroline.Persistence.Models
                 split[1],
                 split[2],
                 split[3]);
-        }
-
-        public string LocalIp
-        {
-            get { return _localIp; }
-        }
-
-        public string LocalPort
-        {
-            get { return _localPort; }
-        }
-
-        public string RemoteIp
-        {
-            get { return _remoteIp; }
-        }
-
-        public string RemotePort
-        {
-            get { return _remotePort; }
         }
     }
 }

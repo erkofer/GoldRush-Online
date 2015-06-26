@@ -2,7 +2,6 @@
 using System.Web;
 using Caroline.Api;
 using Caroline.App;
-using Caroline.Persistence;
 using Caroline.Persistence.Models;
 using Caroline.Persistence.Redis;
 using Microsoft.AspNet.Identity;
@@ -43,8 +42,8 @@ namespace Caroline.Connections
         async Task Update(IRequest request, string connectionId, string data = null)
         {
             var actions = data != null ? ProtoBufHelpers.Deserialize<ClientActions>(data) : null;
-            IpEndpoint endpoint;
-            if (!IpEndpoint.TryParse(request.Environment, out endpoint))
+            var endpoint = IpEndpoint.TryParse(request.Environment);
+            if (endpoint == null)
                 throw new Exception("Can not get IP addresses from owin environment.");
             var userId = HttpContext.Current.User.Identity.GetUserId<long>();
             if (userId == 0)
