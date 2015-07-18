@@ -12,6 +12,7 @@ namespace Caroline.Persistence.Models
     {
         // User identity generation?
         public long Id { get; set; }
+
         public async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<User, long> manager)
         {
             // Note the authenticationType must match the one defined in CookieAuthenticationOptions.AuthenticationType

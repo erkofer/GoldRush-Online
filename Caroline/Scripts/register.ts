@@ -4,6 +4,7 @@ module Account {
     var userButton;
     var userSpan;
     var contextMenu;
+    var dismissedNotifications = new Array<Notification>();
 
     export var signedIn = false;
 
@@ -11,6 +12,57 @@ module Account {
     var loginErrors;
 
     var mouseTimeout;
+
+    class Notification {
+        message: string;
+        type: string;
+    }
+
+    export function fetchNotifications() {
+        var request = $.ajax({
+            type: 'GET',
+            url: '/Api/Notifications',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            success: function (request) {
+                console.log(request);
+                request = JSON.parse(request);
+                console.log(request);
+                for (var i = 0; i < request.Notifications.length; i++) {
+                    var alreadyDeclined = false;
+                    var notificationJson = request.Notifications[i];
+                    var notification = new Notification();
+                    notification.message = notificationJson.Message;
+                    notification.type = notificationJson.Type;
+
+                    for (var x = 0; x < dismissedNotifications.length; x++) {
+                        var disNotification = dismissedNotifications[x];
+                        if (disNotification.message == notification.message && disNotification.type == notification.type) {
+                            alreadyDeclined = true;
+                        }
+                    }
+
+                    if (!alreadyDeclined) {
+                        dismissedNotifications.push(notification);
+                        var container = document.getElementById("notificationContainer");
+                        var notificationContainer = document.createElement("div");
+                        notificationContainer.classList.add("server-notification");
+                        notificationContainer.classList.add(notification.type.toLowerCase());
+                        notificationContainer.textContent = notification.message;
+                        var notificationDismisser = document.createElement("div");
+                        notificationDismisser.classList.add("server-notification-dismisser");
+                        notificationDismisser.addEventListener('click', function() {
+                            notificationContainer.style.display = 'none';
+                        });
+                        notificationContainer.appendChild(notificationDismisser);
+
+                        container.appendChild(notificationContainer);
+                    }
+                }
+            }
+        });
+    }
+    setInterval(fetchNotifications, 30000);
+    fetchNotifications();
 
     module Leaderboard {
         export var currentlyInspecting = 0;
@@ -58,7 +110,7 @@ module Account {
                 load(currentlyInspecting, currentlyInspecting + 20, leaderboardList);
             });
 
-            navigateSpecific.addEventListener('keyup', function(e) {
+            navigateSpecific.addEventListener('keyup', function (e) {
                 if (e.keyCode == 13) { // if they pressed enter.
                     var text = (<HTMLInputElement>e.currentTarget).value;
                     if (!Utils.isNumber(text)) return;
@@ -101,6 +153,14 @@ module Account {
         container.onmouseleave = function () {
             mouseTimeout = setTimeout(hideMenu, 250);
         }
+
+        userButton = document.createElement('DIV');
+        userButton.classList.add('account-user');
+        userSpan = document.createElement('SPAN');
+        userButton.appendChild(userSpan);
+        container.appendChild(userButton);
+
+
         // Anon stuff.
         var loginButton = document.createElement('DIV');
         loginButton.textContent = 'Sign in';
@@ -119,13 +179,8 @@ module Account {
             registerModal();
         });
         container.appendChild(registerButton);
-        // Registered stuff.
-        var optionsButton = document.createElement('DIV');
-        optionsButton.textContent = 'Options';
-        optionsButton.classList.add('account-option');
-        optionsButton.classList.add('registered-account-option');
-        container.appendChild(optionsButton);
 
+        // Registered stuff.
         var logoffButton = document.createElement('DIV');
         logoffButton.textContent = 'Sign out';
         logoffButton.classList.add('account-option');
@@ -135,25 +190,34 @@ module Account {
         });
         container.appendChild(logoffButton);
 
+        var optionsButton = document.createElement('DIV');
+        optionsButton.textContent = 'Options';
+        optionsButton.classList.add('account-option');
+        optionsButton.classList.add('registered-account-option');
+        container.appendChild(optionsButton);
 
-        userButton = document.createElement('DIV');
-        userButton.classList.add('account-user');
-        userSpan = document.createElement('SPAN');
-        userButton.appendChild(userSpan);
-        container.appendChild(userButton);
-
-        document.body.appendChild(container);
+        $(".header")[0].appendChild(container);
+        //document.body.appendChild(container);
         userButton.addEventListener('click', function () {
             toggleMenu();
         });
+        var highscoresContainer = document.createElement('div');
+        highscoresContainer.style.display = 'inline-block';
+        highscoresContainer.classList.add('header-button');
+        tooltip.create(highscoresContainer, "Leaderboards");
 
-        var highscoresLink = document.createElement('SPAN');
-        highscoresLink.textContent = 'Leaderboards';
-        highscoresLink.addEventListener('click', function () {
+        var highscoresLink = document.createElement('div');
+        highscoresLink.classList.add('Scores');
+        highscoresLink.style.display = 'inline-block';
+        highscoresLink.style.position = 'absolute';
+        highscoresLink.style.top = '2px';
+        highscoresLink.style.left = '2px';
+        highscoresContainer.addEventListener('click', function () {
             Leaderboard.open();
         });
+        highscoresContainer.appendChild(highscoresLink);
         highscoresLink.style.cursor = 'pointer';
-        document.getElementsByClassName('header-links')[0].appendChild(highscoresLink);
+        document.getElementsByClassName('header-links')[0].appendChild(highscoresContainer);
 
         info();
     }
@@ -370,6 +434,7 @@ module Account {
             }
         });
     }
+
 
     export function info() {
         var request = $.ajax({

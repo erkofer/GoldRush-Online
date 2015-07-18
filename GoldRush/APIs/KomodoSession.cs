@@ -31,7 +31,7 @@ namespace GoldRush.APIs
                     if (orderone.UnclaimedMoneyRecieved != 0)
                         moneyGained = await mp.ClaimOrderContents(orderone.Id, ClaimField.Money);*/
 
-            return new UpdateDto { GameState = sendState, Score = _game.Score };
+            return new UpdateDto { GameState = sendState, Score = _game.Score, LastActive = _game.LastUpdate};
         }
 
         public SaveDto Save()

@@ -8,6 +8,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoldRush.Tests", "GoldRushTesting\GoldRush.Tests.csproj", "{AF6318B6-3414-41F3-B366-03310F3EA858}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caroline", "Caroline\Caroline.csproj", "{5CC5B959-EB6C-4BBA-A388-247A83039003}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7C642ADD-543A-4232-B21E-D823E3A3B81C} = {7C642ADD-543A-4232-B21E-D823E3A3B81C}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PublishScripts", "PublishScripts", "{74EFAE0E-D7A9-418B-9116-3AEC28FF89A1}"
 	ProjectSection(SolutionItems) = preProject

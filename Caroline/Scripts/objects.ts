@@ -1,13 +1,13 @@
 ﻿module Objects {
     var gameobjects = new Array<GameObject>();
-
+    import Long = dcodeIO.Long;
     class GameObject {
         constructor() {
-            this.quantity = 0;
+            this.quantity = Long.fromNumber(0);
         }
 
         name: string;
-        quantity: number;
+        quantity: Long;
         maxQuantity: number;
         lifeTimeTotal: number;
         tooltip: string;
@@ -26,15 +26,15 @@
         return gameobjects[id].name;
     }
 
-    export function setQuantity(id: number, quantity: number) {
+    export function setQuantity(id: number, quantity: Long) {
         gameobjects[id].quantity = quantity;
     }
 
-    export function getQuantity(id: number) {
+    export function getQuantity(id: number): Long {
         var gameobject = gameobjects[id];
         if (gameobject) return gameobject.quantity;
 
-        return 0;
+        return Long.fromNumber(0);
     }
 
     export function setMaxQuantity(id: number, maxQuantity: number) {

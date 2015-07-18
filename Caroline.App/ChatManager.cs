@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Caroline.Domain;
 using Caroline.Persistence;
 using Caroline.Persistence.Models;
 using Caroline.Persistence.Redis;
@@ -37,7 +38,7 @@ namespace Caroline.App
                 Message = message,
                 UserName = sender.UserName,
                 UserId = sender.Id,
-                Permissions = GetPermissions(sender.UserName),
+                Permissions = GetPermissions(sender),
                 Time = DateTime.UtcNow.ToShortTimeString()
             };
             return _db.ChatroomMessages.Push(dto, IndexSide.Right);
@@ -60,7 +61,7 @@ namespace Caroline.App
 
         public async Task<Tuple<GameState.ChatMessage[], long>> GetRecentMessages(long? lastMessageRecieved = null)
         {
-            const long maxMessagesReturned = 10;
+            const long maxMessagesReturned = 25;
             var result = await _db.ChatroomMessages.RangeByScore(PublicChatroom, double.PositiveInfinity, double.NegativeInfinity, Exclude.Stop, Order.Descending, 0, maxMessagesReturned);
 
             long take;
@@ -92,20 +93,23 @@ namespace Caroline.App
             return new Tuple<GameState.ChatMessage[], long>(ret, index);
         }
 
-        static readonly Dictionary<string, string> Permissions = new Dictionary<string, string>
+        /*static readonly Dictionary<string, string> Permissions = new Dictionary<string, string>
         {
             {"Tristyn", "developer"},
             {"Hunter", "developer"},
             {"Ell dubs", "moderator"},
             {"Server", "server"}
-        };
+        };*/
 
         CarolineRedisDb _db;
 
-        string GetPermissions(string sender)
+        string GetPermissions(User sender)
         {
             string permission;
-            return Permissions.TryGetValue(sender, out permission) ? permission : string.Empty;
+            if (UserAuthorizer.IsAdministrator(sender)) return "developer";
+            if (UserAuthorizer.IsModerator(sender)) return "moderator";
+            if (sender.UserName == "Server") return "server";
+            return string.Empty;
         }
     }
 }

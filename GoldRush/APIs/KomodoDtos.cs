@@ -16,6 +16,10 @@ namespace GoldRush.APIs
     {
         public GameState GameState { get; set; }
         public long Score { get; set; }
+        /// <summary>
+        /// The last time this user has requested an update to their GameState.
+        /// </summary>
+        public long LastActive { get; set; }
     }
 
     public class SaveDto

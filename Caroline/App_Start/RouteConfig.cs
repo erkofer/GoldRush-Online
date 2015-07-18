@@ -19,6 +19,15 @@ namespace Caroline
                 url: "{controller}/{action}/{id}",
                 defaults: new {controller = "Game", action = "Index", id = UrlParameter.Optional}
                 );
+            routes.MapRoute(
+                name: "Admin",
+                url: "admin/{action}/{id}/",
+                defaults: new {controller="Admin",action="Index",id=UrlParameter.Optional}
+                );
+            routes.MapRoute(
+                name: "AdministrateUser",
+                url: "admin/account/{id}/{command}",
+                defaults: new { controller = "Admin", action = "Account" });
         }
     }
 }

@@ -103,4 +103,6 @@ message ClientActions
 		optional int32 Slot=1;
 	}
 	repeated OrderCancel Cancels=13;
+
+	optional string SessionId = 14;
 }

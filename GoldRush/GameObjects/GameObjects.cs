@@ -29,7 +29,9 @@ namespace GoldRush
             Store = new Store(this);
             Achievements = new Achievements(this);
             Tutorial = new Tutorial(this);
+
             // Add all gameobjects to a big dictionary.
+
             All = new Dictionary<int, GameObject>();
             foreach (var item in Items.All) { All.Add(item.Key, item.Value); }
             foreach (var gatherer in Gatherers.All) { All.Add(gatherer.Key, gatherer.Value); }
@@ -52,7 +54,7 @@ namespace GoldRush
         public List<GameNotification> Notifications;
         public User User;
         public long UserId;
-
+        public OfflineRecord OfflineRecord;
 
         private void Notification(object sender, GameNotificationEventArgs e)
         {
@@ -61,10 +63,49 @@ namespace GoldRush
 
         public async Task Update(long seconds)
         {
-            await Items.Update(seconds);
-            Upgrades.Update(seconds);
-            Gatherers.Update(seconds);
-            Processing.Update(seconds);
+            // record some information for the user if they are gone for a while.
+            var recordData = seconds > 30;
+            OfflineRecord offlineRecord = null;
+            if (recordData)
+            {
+                offlineRecord = new OfflineRecord {TimeGone = seconds};
+                foreach (var item in Items.All)
+                {
+                    offlineRecord.Items.Add(item.Key,new OfflineRecord.Item{Id=item.Key,InitialValue = item.Value.Quantity});
+                }
+            }
+
+            while (seconds > 0)
+            {
+                var extraSeconds = Upgrades.SecondsToPotionExpiry();
+                long secondsThisLoop;
+                if (extraSeconds > 0 && extraSeconds < seconds)
+                {
+                    secondsThisLoop = (long) extraSeconds;
+                }
+                else
+                {
+                    secondsThisLoop = seconds;
+                }
+
+                await Items.Update(seconds);
+                Upgrades.Update(seconds);
+                Gatherers.Update(seconds);
+                Processing.Update(seconds);
+
+                seconds -= secondsThisLoop;
+            }
+
+            if (recordData)
+            {
+                foreach (var item in Items.All)
+                {
+                    OfflineRecord.Item recordItem;
+                    if (offlineRecord.Items.TryGetValue(item.Value.Id, out recordItem))
+                        recordItem.EndValue = item.Value.Quantity;
+                }
+            }
+            OfflineRecord = offlineRecord;
         }
 
         internal abstract class GameObject

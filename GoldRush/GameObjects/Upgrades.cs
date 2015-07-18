@@ -103,24 +103,24 @@ namespace GoldRush
             // Craftable
             ChainsawsT1 = new Upgrade(new EfficiencyUpgradeEffect(game,
                 new[] {game.Gatherers.Lumberjack},
-                0.25), GameConfig.Upgrades.ChainsawsT1);
+                0.05), GameConfig.Upgrades.ChainsawsT1);
             All.Add(ChainsawsT1.Id, ChainsawsT1);
 
             ChainsawsT2 = new Upgrade(new EfficiencyUpgradeEffect(game,
                 new[] {game.Gatherers.Lumberjack},
-                0.5), GameConfig.Upgrades.ChainsawsT2);
+                0.1), GameConfig.Upgrades.ChainsawsT2);
             ChainsawsT2.Requires = ChainsawsT1;
             All.Add(ChainsawsT2.Id, ChainsawsT2);
 
             ChainsawsT3 = new Upgrade(new EfficiencyUpgradeEffect(game,
                 new[] {game.Gatherers.Lumberjack},
-                1), GameConfig.Upgrades.ChainsawsT3);
+                0.2), GameConfig.Upgrades.ChainsawsT3);
             ChainsawsT3.Requires = ChainsawsT2;
             All.Add(ChainsawsT3.Id, ChainsawsT3);
 
             ChainsawsT4 = new Upgrade(new EfficiencyUpgradeEffect(game,
                 new[] {game.Gatherers.Lumberjack},
-                1), GameConfig.Upgrades.ChainsawsT4);
+                0.4), GameConfig.Upgrades.ChainsawsT4);
             ChainsawsT4.Requires = ChainsawsT3;
             All.Add(ChainsawsT4.Id, ChainsawsT4);
 
@@ -171,6 +171,16 @@ namespace GoldRush
                 new[] {game.Processing.Cauldron}), GameConfig.Upgrades.Cauldron);
             game.Processing.Cauldron.Requires = Cauldron;
             All.Add(Cauldron.Id, Cauldron);
+
+            Geologist = new Upgrade(new ResourceUpgradeEffect(game,
+                oreMiningMachines,
+                new[]
+                {
+                    game.Items.Diamond,
+                    game.Items.Quartz,
+                    game.Items.Onyx
+                }), GameConfig.Upgrades.Geologist);
+            All.Add(Geologist.Id, Geologist);
         }
 
         /// <summary>
@@ -203,6 +213,21 @@ namespace GoldRush
 
                 buff.Update(seconds);
             }
+        }
+
+        public double SecondsToPotionExpiry()
+        {
+            var greatestDuration = 0.0;
+            foreach (var buffPair in Buffs)
+            {
+                var buff = buffPair.Value;
+                if (buff.TimeActive == 0) continue;
+
+                var timeRemaining = buff.Duration - buff.TimeActive;
+                if (timeRemaining > greatestDuration) 
+                    greatestDuration = timeRemaining;
+            }
+            return greatestDuration;
         }
 
         public Dictionary<int, Upgrade> All = new Dictionary<int, Upgrade>();
@@ -238,6 +263,8 @@ namespace GoldRush
 
         public Upgrade Furnace;
         public Upgrade Cauldron;
+
+        public Upgrade Geologist;
 
         internal class Upgrade : GameObjects.GameObject
         {

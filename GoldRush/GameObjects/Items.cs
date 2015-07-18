@@ -84,6 +84,12 @@ namespace GoldRush
                 Notify(new GameNotification("Item id " + itemId + " is invalid.", "chat"));
                 return;
             }
+            // prohibit trading of certain items.
+            if (!item.Tradeable)
+            {
+                Notify(new GameNotification("You cannot trade " + item.Name + ".", "chat"));
+                return;
+            }
             // confirm we have sufficient items if we are selling.
             if (isSelling && item.Quantity < quantity)
             {
@@ -322,6 +328,8 @@ namespace GoldRush
                     quantity = value;
                 }
             }
+
+            public bool Tradeable { get { return _config.Tradeable; } }
 
             public override bool Active
             {

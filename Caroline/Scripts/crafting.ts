@@ -66,6 +66,7 @@
         name: string;
         isItem: boolean;
         row: HTMLElement;
+        button: HTMLElement;
 
         ingredients = new Array<Ingredient>();
         resultants = new Array<Ingredient>();
@@ -233,7 +234,7 @@
             recipe.ingredients[x].quantityDiv = ingredientQuantity;
             ingredientQuantity.style.display = 'inline-block';
             ingredientQuantity.style.verticalAlign = 'super';
-            var requiredIngredients = Long.fromNumber(recipe.ingredients[x].quantity).lessThanOrEqual(Long.fromNumber(Objects.getQuantity(recipe.ingredients[x].id)));
+            var requiredIngredients = Long.fromNumber(recipe.ingredients[x].quantity).lessThanOrEqual(Objects.getQuantity(recipe.ingredients[x].id));
             ingredientQuantity.style.color = (requiredIngredients) ? 'darkgreen' : 'darkred';
             ingredientQuantity.textContent = Utils.formatNumber(recipe.ingredients[x].quantity);
             ingredientImage.classList.add("Half-" + Utils.cssifyName(Objects.lookupName(recipe.ingredients[x].id)));
@@ -369,7 +370,7 @@
         if (!processor) return;
 
         var progressChanged = false;
-        
+        var durationChanged = false;
 
         Utils.ifNotDefault(selectedRecipe, function () {
             processor.selectedRecipe = selectedRecipe;
@@ -382,6 +383,7 @@
 
         Utils.ifNotDefault(operationDuration, function () {
             processor.operationDuration = operationDuration;
+            durationChanged = true;
         });
 
         Utils.ifNotDefault(capacity, function () {
@@ -392,6 +394,10 @@
             processor.completedOperations = completedOperations;
             progressChanged = true;
         });
+
+        if (durationChanged) {
+            processor.totalOperationCompletionTime = 0;
+        }
 
         if (progressChanged) {
             if (processor.totalOperations <= 0 || processor.completedOperations == processor.totalOperations) {
@@ -470,7 +476,7 @@
             }
 
             if (processor.requiredId != 0) //if it requires something
-                processor.container.style.display = Objects.getQuantity(processor.requiredId) > 0 ? 'block' : 'none';
+                processor.container.style.display = Objects.getQuantity(processor.requiredId).greaterThan(Long.fromNumber(0)) ? 'block' : 'none';
         });
     }
     setInterval(processorBars, 10);
@@ -479,13 +485,23 @@
         if (!storePane) return;
 
         recipes.forEach(recipe => {
+            var ready = true;
             var quantity = Objects.getQuantity(recipe.id);
-            recipe.row.style.display = (quantity == -1 || !recipe.isItem && quantity > 0) ? 'none' : '';
+            recipe.row.style.display = (quantity.equals(Long.fromNumber(-1)) || !recipe.isItem && quantity.greaterThan(Long.fromNumber(0))) ? 'none' : '';
             recipe.ingredients.forEach(ingredient => {
                 var ingQuantity = Objects.getQuantity(ingredient.id);
-                var hasIngredients = Long.fromNumber(ingredient.quantity).lessThanOrEqual(Long.fromNumber(ingQuantity));
+                var hasIngredients = Long.fromNumber(ingredient.quantity).lessThanOrEqual(ingQuantity);
                 ingredient.quantityDiv.style.color = (hasIngredients) ? 'darkgreen' : 'darkred';
+                if (!hasIngredients)
+                    ready = false;
             });
+            if (!ready) {
+                if (!recipe.button.classList.contains('inactive'))
+                    recipe.button.classList.add('inactive');
+            } else {
+                if (recipe.button.classList.contains('inactive'))
+                    recipe.button.classList.remove('inactive');
+            }
         });
 
         processors.forEach(processor => {
@@ -604,6 +620,7 @@
 
             if (cellDescriptions[i] == "Action") {
                 var craftBtn = Utils.createButton('Craft', '');
+                recipe.button = craftBtn;
                 craftBtn.addEventListener('click', function () {
                     Connection.craftRecipe(recipe.id, 1);
                 }, false);

@@ -1,6 +1,7 @@
 ﻿module modal {
     var timeOpened = 0;
     var modalPane;
+    var modalQueue = new Array<Window>();
     export var activeWindow;
     export var intervalIdentifier;
 
@@ -96,6 +97,9 @@
         }
 
         show() {
+            if(modalQueue.indexOf(this) === -1)
+                modalQueue.push(this);
+
             if (!this.container.classList.contains("opened"))
                 this.container.classList.add("opened");
             if (!modalPane.classList.contains("opened"))
@@ -111,12 +115,15 @@
                 this.container.classList.remove("opened");
             if (modalPane.classList.contains("opened"))
                 modalPane.classList.remove("opened");
+            activeWindow = null;
+            modalQueue.pop();
         }
     }
 
     function updatePosition() {
         if (!modal.activeWindow) {
             clearInterval(modal.intervalIdentifier);
+            if (modalQueue.length > 0) modalQueue[modalQueue.length - 1].show();
         } else {
             var containerDimensions = modal.activeWindow.container.getBoundingClientRect();
             modal.activeWindow.container.style.left = (window.innerWidth / 2) - ((containerDimensions.right - containerDimensions.left) / 2) + "px";

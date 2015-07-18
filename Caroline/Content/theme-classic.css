@@ -67,6 +67,11 @@ color:white;
     color: white;
 }
 
+.button.inactive {
+    background: linear-gradient(#7f7f7f, #494949);
+    color: lightgray;
+}
+
 .header{
     /* IE10 Consumer Preview */ 
 background-image: -ms-linear-gradient(top, #A9A9A9 0%, #989898 100%);
@@ -318,40 +323,64 @@ background-image: linear-gradient(to bottom, #718EA4 0%, #668094 100%);
 
 .account-manager {
     background: #496D89;
+    color: white;
 }
 
-.account-user{
-    /* Note: This gradient may render differently in browsers that don't support the unprefixed gradient syntax */
 
-/* IE10 Consumer Preview */ 
-background-image: -ms-linear-gradient(top left, #496D89 0%, #3A576E 100%);
+.account-user{
+    /* IE10 Consumer Preview */ 
+background-image: -ms-linear-gradient(top, #9F9F9F 0%, #8D8D8D 100%);
 
 /* Mozilla Firefox */ 
-background-image: -moz-linear-gradient(top left, #496D89 0%, #3A576E 100%);
+background-image: -moz-linear-gradient(top, #9F9F9F 0%, #8D8D8D 100%);
 
 /* Opera */ 
-background-image: -o-linear-gradient(top left, #496D89 0%, #3A576E 100%);
+background-image: -o-linear-gradient(top, #9F9F9F 0%, #8D8D8D 100%);
 
 /* Webkit (Safari/Chrome 10) */ 
-background-image: -webkit-gradient(linear, left top, right bottom, color-stop(0, #496D89), color-stop(1, #3A576E));
+background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #9F9F9F), color-stop(1, #8D8D8D));
 
 /* Webkit (Chrome 11+) */ 
-background-image: -webkit-linear-gradient(top left, #496D89 0%, #3A576E 100%);
+background-image: -webkit-linear-gradient(top, #9F9F9F 0%, #8D8D8D 100%);
 
 /* W3C Markup, IE10 Release Preview */ 
-background-image: linear-gradient(to bottom right, #496D89 0%, #3A576E 100%);
+background-image: linear-gradient(to bottom, #9F9F9F 0%, #8D8D8D 100%);
+}
+
+.header-button {
+     /* IE10 Consumer Preview */ 
+background-image: -ms-linear-gradient(top, #9F9F9F 0%, #8D8D8D 100%);
+
+/* Mozilla Firefox */ 
+background-image: -moz-linear-gradient(top, #9F9F9F 0%, #8D8D8D 100%);
+
+/* Opera */ 
+background-image: -o-linear-gradient(top, #9F9F9F 0%, #8D8D8D 100%);
+
+/* Webkit (Safari/Chrome 10) */ 
+background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #9F9F9F), color-stop(1, #8D8D8D));
+
+/* Webkit (Chrome 11+) */ 
+background-image: -webkit-linear-gradient(top, #9F9F9F 0%, #8D8D8D 100%);
+
+/* W3C Markup, IE10 Release Preview */ 
+background-image: linear-gradient(to bottom, #9F9F9F 0%, #8D8D8D 100%);
+}
+
+.header-button:hover {
+    background: #808080;
 }
 
 .account-user:hover {
-    background: #5D7793;
+    background: #808080;
 }
 
 .account-option {
-    background: #7B98AE;
+    background: #A9A9A9;
 }
 
 .account-option:hover{
-    background:#85A2B8;
+    background:#808080;
 }
 /*modal*/
 .modal-window {
@@ -481,4 +510,16 @@ background-image: linear-gradient(to bottom right, #CFCF00 0%, #B8B800 100%);
 
 .market-order-header {
     background: #78909c;
+}
+
+.server-notification.technical {
+    background: linear-gradient(rgb(5, 60, 218), rgb(0, 40, 155));
+}
+
+.server-notification.announcement {
+    background: linear-gradient(#279B04, #1E8300);
+}
+
+.server-notification-dismisser {
+    background: linear-gradient(#F00, #740000);
 }

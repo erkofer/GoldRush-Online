@@ -1,6 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props')" />
+  <PropertyGroup>
+    <CopyAllFilesToSingleFolderForPackageDependsOn>
+    CustomCollectFiles;
+    $(CopyAllFilesToSingleFolderForPackageDependsOn);
+  </CopyAllFilesToSingleFolderForPackageDependsOn>
+  </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -223,6 +229,8 @@
     <Compile Include="Areas\Api\Models\AccountViewModel.cs" />
     <Compile Include="Areas\Api\Models\SuccessViewModel.cs" />
     <Compile Include="Connections\KomodoConnection.cs" />
+    <Compile Include="Controllers\AdminController.cs" />
+    <Compile Include="Controllers\ApiController.cs" />
     <Compile Include="Controllers\GameController.cs" />
     <Compile Include="Areas\Api\Controllers\StatsController.cs" />
     <Compile Include="Controllers\VersionController.cs" />
@@ -231,6 +239,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\AccountViewModels.cs" />
+    <Compile Include="Models\AdminViewModels.cs" />
     <Compile Include="Models\AnonymousUserCookie.cs" />
     <Compile Include="Models\LeaderboardEntry.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
@@ -239,6 +248,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\background.png" />
+    <Content Include="Content\favicon.ico" />
     <Content Include="Content\Rock.png" />
     <Content Include="Content\Sprites\Achievements.png" />
     <Content Include="Content\Sprites\Alchemy_Potion.png" />
@@ -262,12 +272,12 @@
     <Content Include="Content\Sprites\Empty_vial.png" />
     <Content Include="Content\Sprites\Equipment.png" />
     <Content Include="Content\Sprites\Excavator.png" />
-    <Content Include="Content\Sprites\Export.png" />
     <Content Include="Content\Sprites\Furnace.png" />
     <Content Include="Content\Sprites\Gold.png" />
     <Content Include="Content\Sprites\Gold_bar.png" />
     <Content Include="Content\Sprites\Gunpowder.png" />
     <Content Include="Content\Sprites\hack.png" />
+    <Content Include="Content\Sprites\History.png" />
     <Content Include="Content\Sprites\Inventory.png" />
     <Content Include="Content\Sprites\Iron.png" />
     <Content Include="Content\Sprites\Iron_bar.png" />
@@ -281,14 +291,14 @@
     <Content Include="Content\Sprites\Oil.png" />
     <Content Include="Content\Sprites\Onyx.png" />
     <Content Include="Content\Sprites\Opal.png" />
+    <Content Include="Content\Sprites\Players.png" />
     <Content Include="Content\Sprites\Prestige.png" />
     <Content Include="Content\Sprites\Pumpjack.png" />
     <Content Include="Content\Sprites\Quartz.png" />
-    <Content Include="Content\Sprites\Reset.png" />
     <Content Include="Content\Sprites\Rock.png" />
     <Content Include="Content\Sprites\Ruby.png" />
     <Content Include="Content\Sprites\Sapphire.png" />
-    <Content Include="Content\Sprites\Save.png" />
+    <Content Include="Content\Sprites\Scores.png" />
     <Content Include="Content\Sprites\Silver.png" />
     <Content Include="Content\Sprites\Silver_bar.png" />
     <Content Include="Content\Sprites\Smelting_Potion.png" />
@@ -341,6 +351,9 @@
     <Content Include="Content\themes\base\tabs.css" />
     <Content Include="Content\themes\base\theme.css" />
     <Content Include="Content\themes\base\tooltip.css" />
+    <Content Include="Content\Tutorial\buying.png" />
+    <Content Include="Content\Tutorial\mining.PNG" />
+    <Content Include="Content\Tutorial\selling.PNG" />
     <Content Include="Content\version.css" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
@@ -353,6 +366,7 @@
     <Content Include="Areas\Api\Views\web.config" />
     <None Include="Properties\PublishProfiles\GoldRush.pubxml" />
     <None Include="Scripts\jquery-1.10.2-vsdoc.js" />
+    <Content Include="Players.png" />
     <Content Include="Scripts\ByteBufferAB.js" />
     <Content Include="Scripts\ByteBufferAB.min.js" />
     <Content Include="Content\game.css" />
@@ -417,6 +431,12 @@
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
     <Content Include="Scripts\ProtoBuf.min.map" />
     <Content Include="Views\Version\Index.cshtml" />
+    <Content Include="Views\Admin\Index.cshtml" />
+    <Content Include="Views\Admin\Error.cshtml" />
+    <Content Include="Views\Admin\Account.cshtml" />
+    <Content Include="Views\Admin\AccessDenied.cshtml" />
+    <Content Include="Views\Admin\Success.cshtml" />
+    <Content Include="Views\Admin\Notifications.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -439,6 +459,10 @@
     <ProjectReference Include="..\Caroline.App\Caroline.App.csproj">
       <Project>{76f98e8c-c705-4c5a-a4de-d12628c1fdcb}</Project>
       <Name>Caroline.App</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Caroline.Domain.Models\Caroline.Domain.Models.csproj">
+      <Project>{7c642add-543a-4232-b21e-d823e3a3b81c}</Project>
+      <Name>Caroline.Domain.Models</Name>
     </ProjectReference>
     <ProjectReference Include="..\Caroline.Domain\Caroline.Domain.csproj">
       <Project>{2738A071-8130-4896-BF3C-26338B85D0CF}</Project>
@@ -497,6 +521,22 @@
   <Target Name="MvcBuildViews" AfterTargets="AfterBuild" Condition="'$(MvcBuildViews)'=='true'">
     <AspNetCompiler VirtualPath="temp" PhysicalPath="$(WebProjectOutputDir)" />
   </Target>
+  <Target Name="CustomCollectFiles">
+    <!-- Copy minified JavaScript files -->
+    <ItemGroup>
+      <CompressedScripts Include="Scripts\*.min.js" />
+      <FilesForPackagingFromProject Include="%(CompressedScripts.Identity)">
+        <DestinationRelativePath>Scripts\%(RecursiveDir)%(Filename)%(Extension)</DestinationRelativePath>
+      </FilesForPackagingFromProject>
+    </ItemGroup>
+    <!-- Copy minified stylesheets -->
+    <ItemGroup>
+      <CompressedStylesheets Include="Content\*.min.css" />
+      <FilesForPackagingFromProject Include="%(CompressedStylesheets.Identity)">
+        <DestinationRelativePath>Content\%(RecursiveDir)%(Filename)%(Extension)</DestinationRelativePath>
+      </FilesForPackagingFromProject>
+    </ItemGroup>
+  </Target>
   <ProjectExtensions>
     <VisualStudio>
       <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
@@ -527,6 +567,18 @@
     <Message Importance="high" Text="Executing tsc $(TypeScriptSourceMap) @(TypeScriptCompile ->'&quot;%(fullpath)&quot;', ' ')" />
     <Exec Command="tsc$(TypeScriptSourceMap) -target ES5 --module amd --out Scripts/game.js" />
     <Exec Command="java -jar &quot;$(SolutionDir)Build\compiler.jar&quot; --js &quot;$(SolutionDir)Caroline\Scripts\game.js&quot; --js_output_file &quot;$(SolutionDir)Caroline\Scripts\game.min.js&quot;" />
+    <Exec Command="&quot;$(SolutionDir)Build\Microsoft Ajax Minifier\AjaxMin.exe&quot; &quot;$(SolutionDir)Caroline\Content\game.css&quot; -out &quot;$(SolutionDir)Caroline\Content\game.min.css&quot;" />
+    <Exec Command="&quot;$(SolutionDir)Build\Microsoft Ajax Minifier\AjaxMin.exe&quot; &quot;$(SolutionDir)Caroline\Content\sprites.css&quot; -out &quot;$(SolutionDir)Caroline\Content\sprites.min.css&quot;" />
+    <Exec Command="&quot;$(SolutionDir)Build\Microsoft Ajax Minifier\AjaxMin.exe&quot; &quot;$(SolutionDir)Caroline\Content\theme-classic.css&quot; -out &quot;$(SolutionDir)Caroline\Content\theme-classic.min.css&quot;" />
+    <Exec Command="&quot;$(SolutionDir)Build\Python27\Scripts\glue.exe&quot; --source &quot;$(SolutionDir)Caroline\Content\Sprites&quot; --output &quot;$(SolutionDir)Caroline\Content&quot; --css=&quot;$(SolutionDir)Caroline\Content&quot; --sprite-namespace= --namespace= --force">
+      <Output TaskParameter="ExitCode" PropertyName="TestGlueExitCode" />
+    </Exec>
+    <Exec Command="&quot;$(SolutionDir)Build\SpriteRatio.exe&quot; -source &quot;$(SolutionDir)Caroline\Content\sprites.css&quot; -out &quot;$(SolutionDir)Caroline\Content\sprites.css&quot; -ratio 1,0.5,0.35,0.25 -rnames ,Half,Third,Quarter">
+      <Output TaskParameter="ExitCode" PropertyName="TestExitCode" />
+    </Exec>
+    <Exec Command="&quot;$(SolutionDir)Build\pngquant.exe&quot; &quot;$(SolutionDir)Caroline\Content\sprites.png&quot; --ext .png --force">
+      <Output TaskParameter="ExitCode" PropertyName="TestPNGExitCode" />
+    </Exec>
     <Message Importance="high" Text="Building spritesheet." />
     <Message Importance="high" Text="$(TestGlueExitCode)" />
     <Message Importance="high" Text="$(TestExitCode)" />

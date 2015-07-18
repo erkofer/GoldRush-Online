@@ -91,6 +91,7 @@
     <Compile Include="CarolineRedisDb.cs" />
     <Compile Include="Extensions\EnumerableEx.cs" />
     <Compile Include="Extensions\MongoCollectionEx.cs" />
+    <Compile Include="NotificationManager.cs" />
     <Compile Include="RedisUserStore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

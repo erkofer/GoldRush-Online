@@ -145,20 +145,49 @@ namespace Caroline.Persistence
         #endregion
 
         #region IUserClaimStore Implementation
+        /*public async Task AddLoginAsync(User user, UserLoginInfo login)
+        {
+            Check(user, login);
+            var userLogin = new UserLogin { LoginProvider = login.LoginProvider, ProviderKey = login.ProviderKey };
+            user.Logins.Add(userLogin);
 
+            var dbUser = await _users.Get(user.Id);
+            dbUser.Logins.Add(userLogin);
+            await _users.Set(dbUser);
+            await _loginsLookup.Set(GetLoginKey(login), dbUser.Id.ToStringInvariant());
+        }*/
         public Task<IList<Claim>> GetClaimsAsync(User user)
         {
+           /* Check(user);
+            var messedClaims = new List<Claim>();
+            foreach (var claim in user.Claims)
+            {
+                messedClaims.Add(new Claim(claim.ClaimType,claim.ClaimValue));
+            }
+            
+            //var claims = user.Claims.Cast<Claim>().ToList();
+            return Task.FromResult((IList<Claim>)messedClaims);*/
             return Task.FromResult<IList<Claim>>(new List<Claim>(0));
         }
 
-        public Task AddClaimAsync(User user, Claim claim)
+        public async Task AddClaimAsync(User user, Claim claim)
         {
-            return Task.FromResult(0);
+            /*Check(user);
+            user.Claims.Add(new UserClaim() {ClaimType = claim.Type, ClaimValue = claim.Value});
+
+            var dbUser = await _users.Get(user.Id);
+            dbUser.Claims.Add(new UserClaim() { ClaimType = claim.Type, ClaimValue = claim.Value });
+            await _users.Set(dbUser);*/
         }
 
-        public Task RemoveClaimAsync(User user, Claim claim)
+        public async Task RemoveClaimAsync(User user, Claim claim)
         {
-            return Task.FromResult(0);
+            /*Check(user);
+            user.Claims.Remove(new UserClaim() { ClaimType = claim.Type, ClaimValue = claim.Value });
+
+            var dbUser = await _users.Get(user.Id);
+            dbUser.Claims.Remove(new UserClaim() { ClaimType = claim.Type, ClaimValue = claim.Value });
+            await _users.Set(dbUser);*/
         }
 
         #endregion

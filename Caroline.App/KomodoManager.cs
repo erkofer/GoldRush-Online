@@ -5,6 +5,7 @@ using Caroline.Domain;
 using Caroline.Persistence.Models;
 using GoldRush.APIs;
 using Caroline.App.Models;
+using Caroline.Persistence;
 
 namespace Caroline.App
 {
@@ -12,18 +13,34 @@ namespace Caroline.App
     {
         readonly KomodoSessionFactory _sessionFactory = new KomodoSessionFactory();
 
-        public async Task<GameState> Update(GameSessionEndpoint endpoint, ClientActions input = null)
+        public async Task<GameState> Update(GameSessionEndpoint endpoint, ClientActions input = null, bool clearSession = false)
         {
             var userId = endpoint.GameId;
             var manager = await UserManager.CreateAsync();
             var userDto = await manager.GetUser(userId);
+            var db = await CarolineRedisDb.CreateAsync();
 
             // get connection session, check for rate limiting
-            var session = await userDto.GetSession(endpoint.EndPoint);
+            GameSession session;
+            if (!clearSession)
+                session = await userDto.GetSession(endpoint.EndPoint);
+            else
+            {
+                session = new GameSession(new GameSessionEndpoint(endpoint.EndPoint, userId));
+            }
             if (IsRateLimited(session))
                 return new GameState { IsError = true, IsRateLimited = true };
 
             var user = await userDto.GetUser();
+            /* If the user has not already been tagged
+             * as an alpha player then we'll tag them now.
+             * Remove this when we exit alpha.
+             */
+            if (!UserAuthorizer.IsAlphaVeteran(user))
+            {
+                var authorizer = new UserAuthorizer(db);
+                await authorizer.AddClaim(user, new UserClaim { ClaimType = "Veteran", ClaimValue = "Alpha" });
+            }
 
             // get game save
             var save = await userDto.GetGame();
@@ -42,6 +59,7 @@ namespace Caroline.App
             var messages = await chat.GetRecentMessages(session.LastChatMessageRecieved);
             updateDto.GameState.Messages.AddRange(errors);
             updateDto.GameState.Messages.AddRange(messages.Item1);
+
             session.LastChatMessageRecieved = messages.Item2;
 
             // save to the database
@@ -77,6 +95,8 @@ namespace Caroline.App
                 return new List<GameState.ChatMessage>();
 
             var ret = new List<GameState.ChatMessage>();
+            var db = await CarolineRedisDb.CreateAsync();
+            var disciplinarian = new UserDisciplinarian(db);
             for (var i = 0; i < actions.SocialActions.Count; i++)
             {
                 var action = actions.SocialActions[i];
@@ -87,7 +107,13 @@ namespace Caroline.App
 
                 if (!user.IsAnonymous)
                 {
-                    await manager.SendMessage(action.Chat.GlobalMessage, user);
+                    if (!await disciplinarian.IsMuted(user))
+                        await manager.SendMessage(action.Chat.GlobalMessage, user);
+                    else
+                    {
+                        var completionTime = disciplinarian.GetMuteCompletionTime(user);
+                        ret.Add(BuildServerMessage("You are muted until " + completionTime.ToShortDateString() + " " + completionTime.ToShortTimeString() + "."));
+                    }
                 }
                 else
                     ret.Add(BuildServerMessage("You must be registered to send chat messages."));
@@ -109,6 +135,6 @@ namespace Caroline.App
 
     public interface IGameManager
     {
-        Task<GameState> Update(GameSessionEndpoint endpoint, ClientActions input = null);
+        Task<GameState> Update(GameSessionEndpoint endpoint, ClientActions input = null, bool clearSession=false);
     }
 }

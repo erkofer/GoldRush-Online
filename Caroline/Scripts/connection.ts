@@ -28,32 +28,54 @@ module Connection {
     var playerCounter;
     var currentTab: Tabs;
     import Long = dcodeIO.Long;
+    var sessionId = null;
 
     export enum Tabs {
-        Inventory=1,
-		Statistics=2,
-		Equipment=3,
-		Store=4,
-		Crafting=5,
-		Achievements=6,
-		Market=7
-	};
-    
+        Inventory= 1,
+        Statistics= 2,
+        Equipment= 3,
+        Store= 4,
+        Crafting= 5,
+        Achievements= 6,
+        Market= 7
+    };
+
     function init() {
         var headerLinks = document.getElementsByClassName('header-links')[0];
+        var versionContainer = document.createElement('div');
+        versionContainer.classList.add('header-button');
         var versionHistory = document.createElement('div');
         versionHistory.style.display = 'inline-block';
-        versionHistory.textContent = 'Version History';
-        versionHistory.addEventListener('click', function () {
+        versionHistory.classList.add('History');
+        versionHistory.style.position = 'absolute';
+        versionHistory.style.top = '2px';
+        versionHistory.style.left = '2px';
+        versionContainer.addEventListener('click', function () {
             window.open('/version');
         });
+        tooltip.create(versionContainer, "Version history");
         versionHistory.style.cursor = 'pointer';
-        headerLinks.appendChild(versionHistory);
+        versionContainer.appendChild(versionHistory);
+        headerLinks.appendChild(versionContainer);
+
+        var playerCounterContainer = document.createElement('div');
+        playerCounterContainer.style.position = 'relative';
+        playerCounterContainer.style.display = 'inline-block';
+        playerCounterContainer.style.width = '36px';
+        var playerCounterImage = document.createElement('div');
+        playerCounterImage.classList.add('Players');
+        playerCounterContainer.appendChild(playerCounterImage);
+        tooltip.create(playerCounterContainer, "Active players");
 
         playerCounter = document.createElement('div');
         playerCounter.style.display = 'inline-block';
-        playerCounter.textContent = 'There are 0 players mining.';
-        headerLinks.appendChild(playerCounter);
+        playerCounter.style.textAlign = 'center';
+        playerCounter.style.width = '36px';
+        playerCounter.textContent = '0';
+        playerCounter.style.position = 'absolute';
+        playerCounter.style.bottom = '1px';
+        playerCounterContainer.appendChild(playerCounter);
+        headerLinks.appendChild(playerCounterContainer);
 
         notificationElm = document.createElement('div');
         notificationElm.classList.add('error-notification-tray');
@@ -120,7 +142,7 @@ module Connection {
             antiCheat(msg.AntiCheatCoordinates);
         }
         // Buffs
-        if(msg.Buffs != null){
+        if (msg.Buffs != null) {
             updateBuffs(msg.Buffs);
         }
         if (msg.IsRateLimited != null) {
@@ -130,13 +152,13 @@ module Connection {
             updateGatherers(msg.Gatherers);
         }
         if (msg.ConnectedUsers) {
-            playerCounter.textContent = 'There are ' + msg.ConnectedUsers + ' players mining.';
+            playerCounter.textContent = msg.ConnectedUsers;
         }
         if (msg.Achievements) {
             updateAchievements(msg.Achievements);
         }
         if (msg.Orders) {
-            if(msg.OrdersSent == true)
+            if (msg.OrdersSent == true)
                 Market.updateOrders(msg.Orders);
         }
         if (msg.Notifications) {
@@ -147,8 +169,15 @@ module Connection {
         }
         if (msg.CurrentTutorial) {
             Tutorial.activateStage(msg.CurrentTutorial);
-            console.log(msg.CurrentTutorial);
         }
+        if (msg.SessionId) {
+            sessionId = msg.SessionId;
+        }
+        if (msg.OfflineRecord) {
+            console.log(msg.OfflineRecord);
+            Offline.display(msg.OfflineRecord);
+        }
+        Store.update();
     });
 
     export function restart() {
@@ -171,7 +200,7 @@ module Connection {
         }
     });
 
-    export function changeSelectedTab(selected:Tabs) {
+    export function changeSelectedTab(selected: Tabs) {
         currentTab = selected;
     }
 
@@ -205,19 +234,20 @@ module Connection {
                 Inventory.addItem(schema.Items[i].Id, schema.Items[i].Name, schema.Items[i].Worth, schema.Items[i].Category);
                 Statistics.addItem(schema.Items[i].Id, schema.Items[i].Name);
             }
+
         }
 
         if (schema.StoreItems) {
             for (var i = 0; i < schema.StoreItems.length; i++) {
                 var item = schema.StoreItems[i];
-                Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.MaxQuantity,item.Tooltip);
+                Store.addItem(item.Id, item.Category, item.Price, item.Factor, item.Name, item.MaxQuantity, item.Tooltip);
             }
         }
 
         if (schema.Processors) {
             for (var i = 0; i < schema.Processors.length; i++) {
                 var processor = schema.Processors[i];
-                Crafting.addProcessor(processor.Id, processor.Name,processor.RequiredId);
+                Crafting.addProcessor(processor.Id, processor.Name, processor.RequiredId);
                 for (var r = 0; r < processor.Recipes.length; r++) {
                     Crafting.addProcessorRecipe(processor.Id, processor.Recipes[r].Ingredients, processor.Recipes[r].Resultants);
                 }
@@ -240,8 +270,9 @@ module Connection {
                 var achievement = schema.Achievements[i];
                 Achievements.register(achievement.Id, achievement.Name, achievement.RequiredId, achievement.Goal, achievement.Category);
             }
+
+            Market.init();
         }
-        Market.init();
     }
 
     export function placeOrder(id: number, quantity: number, value: number, isSelling: boolean) {
@@ -299,7 +330,7 @@ module Connection {
     }
 
     function updateBuffs(buffs: any) {
-        for (var i = 0; i < buffs.length; i++){
+        for (var i = 0; i < buffs.length; i++) {
             var buff = buffs[i];
             Buffs.update(buff.Id, buff.TimeActive);
         }
@@ -353,7 +384,7 @@ module Connection {
         actions.PotionActions.push(potionAction);
     }
 
-    export function claim(slot: number,coins:boolean) {
+    export function claim(slot: number, coins: boolean) {
         var claimAction = new Komodo.ClientActions.OrderClaim();
         claimAction.Slot = slot;
         claimAction.Coins = coins;
@@ -367,7 +398,7 @@ module Connection {
         actions.MiningActions.push(miningAction);
     }
 
-    export function sellItem(id: number, quantity: number) {
+    export function sellItem(id: number, quantity: Long) {
         var inventoryAction = new Komodo.ClientActions.InventoryAction();
         var sellAction = new Komodo.ClientActions.InventoryAction.SellAction();
         sellAction.Id = id;
@@ -443,6 +474,9 @@ module Connection {
         if (message.encode64) { // if this message is a protobuf object.
             if (message.SelectedTab) { // if this is a clientactions message.
                 message.SelectedTab = currentTab;
+
+                if (sessionId != null)
+                    message.SessionId = sessionId;
             }
             var encoded = message.encode64();
             Chat.log("Sent " + roughSizeOfObject(encoded) + " bytes to komodo.");
@@ -456,8 +490,8 @@ module Connection {
             Komodo.send(message);
         }
     }
-    
-    function roughSizeOfObject(object:any) {
+
+    function roughSizeOfObject(object: any) {
 
         var objectList = [];
         var stack = [object];
@@ -488,5 +522,62 @@ module Connection {
             }
         }
         return bytes;
+    }
+}
+
+module Offline {
+    import Long = dcodeIO.Long;
+
+    export function display(message: any) {
+        var window = new modal.Window();
+        window.title = "Offline Progression";
+        var content = document.createElement("div");
+        var timeGone = document.createElement("div");
+        timeGone.textContent = message.SecondsGone;
+        content.appendChild(timeGone);
+        content.style.maxHeight = "500px";
+        content.style.overflowY = "auto";
+        var resourcesCollected = document.createElement("div");
+        content.appendChild(resourcesCollected);
+        var table = document.createElement("table");
+        table.style.color = "black";
+        table.style.margin = "0 auto";
+        table.style.boxShadow = "none";
+        var totalResources: Long = Long.fromNumber(0);
+        for (var i = 0; i < message.Items.length; i++) {
+            var item = message.Items[i];
+            if (item.Change == null) continue;
+
+            totalResources = totalResources.add(item.Change);
+            var name = Objects.lookupName(item.Id);
+
+            var tableRow = (<HTMLTableElement>table).insertRow(table.rows.length);
+
+            var tableCellImage = (<HTMLTableRowElement>tableRow).insertCell(0);
+            var tableCellChange = (<HTMLTableRowElement>tableRow).insertCell(0);
+
+            var imageCell = document.createElement("div");
+            imageCell.style.display = "inline-block";
+            imageCell.style.verticalAlign = "bottom";
+            imageCell.classList.add("Third-" + Utils.cssifyName(name));
+            tableCellImage.appendChild(imageCell);
+
+            var nameCell = document.createElement("div");
+            nameCell.textContent = name;
+            nameCell.style.display = "inline-block";
+            nameCell.style.paddingLeft = "5px";
+            tableCellImage.appendChild(nameCell);
+
+            tableCellChange.textContent = Utils.formatNumber(item.Change);
+        }
+
+        content.appendChild(table);
+        resourcesCollected.textContent = Utils.formatNumber((<any>totalResources)) + " resources were collected while you were away!";
+
+        window.addElement(content);
+        window.addOption("Awesome!").addEventListener("click", function () {
+            modal.close();
+        }, false);
+        window.show();
     }
 }

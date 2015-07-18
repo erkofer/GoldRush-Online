@@ -35,6 +35,7 @@ namespace GoldRush
                     }
                 }
                 public long Worth;
+                public bool Tradeable = true;
                 public GoldRush.Items.Category Category;
             }
 
@@ -44,40 +45,40 @@ namespace GoldRush
                 public int Probability;
             }
 
-            public static ResourceConfig Stone = new ResourceConfig { Name = "Stone", Worth = 1, Probability = 3500000, Category = GoldRush.Items.Category.ORE };
-            public static ResourceConfig Copper = new ResourceConfig { Name = "Copper", Worth = 5, Probability = 2000000, Category = GoldRush.Items.Category.ORE };
-            public static ResourceConfig Iron = new ResourceConfig { Name = "Iron", Worth = 20, Probability = 1500000, Category = GoldRush.Items.Category.ORE };
-            public static ResourceConfig Silver = new ResourceConfig { Name = "Silver", Worth = 100, Probability = 1000000, Category = GoldRush.Items.Category.ORE };
-            public static ResourceConfig Gold = new ResourceConfig { Name = "Gold", Worth = 1000, Probability = 500000, Category = GoldRush.Items.Category.ORE };
-            public static ResourceConfig Uranium = new ResourceConfig { Name = "Uranium", Worth = 5000, Probability = 5000, Category = GoldRush.Items.Category.ORE };
+            public static ResourceConfig Stone = new ResourceConfig { Name = "Stone", Worth = 1, Probability = 1000*1000*10, Category = GoldRush.Items.Category.ORE };
+            public static ResourceConfig Copper = new ResourceConfig { Name = "Copper", Worth = 5, Probability = 1000*1000*2, Category = GoldRush.Items.Category.ORE };
+            public static ResourceConfig Iron = new ResourceConfig { Name = "Iron", Worth = 20, Probability = (1000*1000)+(500*1000), Category = GoldRush.Items.Category.ORE };
+            public static ResourceConfig Silver = new ResourceConfig { Name = "Silver", Worth = 100, Probability = 1000*1000, Category = GoldRush.Items.Category.ORE };
+            public static ResourceConfig Gold = new ResourceConfig { Name = "Gold", Worth = 1000, Probability = 500*1000, Category = GoldRush.Items.Category.ORE };
+            public static ResourceConfig Uranium = new ResourceConfig { Name = "Uranium", Worth = 5000, Probability = 1000*5, Category = GoldRush.Items.Category.ORE };
             public static ResourceConfig Titanium = new ResourceConfig { Name = "Titanium", Worth = 1000000, Probability = 25, Category = GoldRush.Items.Category.ORE };
-            public static ResourceConfig Opal = new ResourceConfig { Name = "Opal", Worth = 2000, Probability = 25000, Category = GoldRush.Items.Category.GEM };
-            public static ResourceConfig Jade = new ResourceConfig { Name = "Jade", Worth = 5000, Probability = 20000, Category = GoldRush.Items.Category.GEM };
-            public static ResourceConfig Topaz = new ResourceConfig { Name = "Topaz", Worth = 10000, Probability = 15000, Category = GoldRush.Items.Category.GEM };
-            public static ResourceConfig Sapphire = new ResourceConfig { Name = "Sapphire", Worth = 25000, Probability = 10000, Category = GoldRush.Items.Category.GEM };
-            public static ResourceConfig Emerald = new ResourceConfig { Name = "Emerald", Worth = 50000, Probability = 5000, Category = GoldRush.Items.Category.GEM };
-            public static ResourceConfig Ruby = new ResourceConfig { Name = "Ruby", Worth = 100000, Probability = 2500, Category = GoldRush.Items.Category.GEM };
+            public static ResourceConfig Opal = new ResourceConfig { Name = "Opal", Worth = 2000, Probability = 25*1000, Category = GoldRush.Items.Category.GEM };
+            public static ResourceConfig Jade = new ResourceConfig { Name = "Jade", Worth = 5000, Probability = 20*1000, Category = GoldRush.Items.Category.GEM };
+            public static ResourceConfig Topaz = new ResourceConfig { Name = "Topaz", Worth = 10000, Probability = 15*1000, Category = GoldRush.Items.Category.GEM };
+            public static ResourceConfig Sapphire = new ResourceConfig { Name = "Sapphire", Worth = 25000, Probability = 10*1000, Category = GoldRush.Items.Category.GEM };
+            public static ResourceConfig Emerald = new ResourceConfig { Name = "Emerald", Worth = 50000, Probability = 5*1000, Category = GoldRush.Items.Category.GEM };
+            public static ResourceConfig Ruby = new ResourceConfig { Name = "Ruby", Worth = 100000, Probability = (2*1000)+500, Category = GoldRush.Items.Category.GEM };
             public static ResourceConfig Onyx = new ResourceConfig { Name = "Onyx", Worth = 250000, Probability = 1000, Category = GoldRush.Items.Category.GEM };
             public static ResourceConfig Quartz = new ResourceConfig { Name = "Quartz", Worth = 500000, Probability = 50, Category = GoldRush.Items.Category.GEM };
-            public static ResourceConfig Diamond = new ResourceConfig { Name = "Diamond", Worth = 5000000, Probability = 20, Category = GoldRush.Items.Category.GEM };
+            public static ResourceConfig Diamond = new ResourceConfig { Name = "Diamond", Worth = 5000000, Probability = 5, Category = GoldRush.Items.Category.GEM };
             public static ItemConfig BronzeBar = new ItemConfig { Name = "Bronze bar", Worth = 250, Category = GoldRush.Items.Category.CRAFTING };
             public static ItemConfig IronBar = new ItemConfig { Name = "Iron bar", Worth = 1000, Category = GoldRush.Items.Category.CRAFTING };
             public static ItemConfig SilverBar = new ItemConfig { Name = "Silver bar", Worth = 2500, Category = GoldRush.Items.Category.CRAFTING };
             public static ItemConfig SteelBar = new ItemConfig { Name = "Steel bar", Worth = 5000, Category = GoldRush.Items.Category.CRAFTING };
             public static ItemConfig GoldBar = new ItemConfig { Name = "Gold bar", Worth = 25000, Category = GoldRush.Items.Category.CRAFTING };
-            public static ItemConfig TitaniumBar = new ItemConfig { Name = "Titanium bar", Worth = 5000000, Category = GoldRush.Items.Category.CRAFTING };
+            public static ItemConfig TitaniumBar = new ItemConfig { Name = "Titanium bar", Worth = 1000*1000*5, Category = GoldRush.Items.Category.CRAFTING };
             public static ResourceConfig BitterRoot = new ResourceConfig { Name = "Bitter root", Worth = 10000, Probability = 2000, Category = GoldRush.Items.Category.INGREDIENT };
             public static ResourceConfig Cubicula = new ResourceConfig { Name = "Cubicula", Worth = 25000, Probability = 1500, Category = GoldRush.Items.Category.INGREDIENT };
-            public static ResourceConfig IronFlower = new ResourceConfig { Name = "Iron flower", Worth = 500000, Probability = 250, Category = GoldRush.Items.Category.INGREDIENT };
-            public static ResourceConfig TongtwistaFlower = new ResourceConfig { Name = "Tongtwista flower", Worth = 1000000, Probability = 100, Category = GoldRush.Items.Category.INGREDIENT };
+            public static ResourceConfig IronFlower = new ResourceConfig { Name = "Iron flower", Worth = 1000*500, Probability = 250, Category = GoldRush.Items.Category.INGREDIENT };
+            public static ResourceConfig TongtwistaFlower = new ResourceConfig { Name = "Tongtwista flower", Worth = 1000*1000, Probability = 100, Category = GoldRush.Items.Category.INGREDIENT };
             public static ResourceConfig Thornberries = new ResourceConfig { Name = "Thornberries", Worth = 1000, Probability = 2000, Category = GoldRush.Items.Category.INGREDIENT };
             public static ResourceConfig Transfruit = new ResourceConfig { Name = "Transfruit", Worth = 5000, Probability = 1000, Category = GoldRush.Items.Category.INGREDIENT };
             public static ResourceConfig MeltingNuts = new ResourceConfig { Name = "Melting nuts", Worth = 10000, Probability = 500, Category = GoldRush.Items.Category.INGREDIENT };
             public static ItemConfig EmptyVial = new ItemConfig { Name = "Empty vial", Worth = 500, Category = GoldRush.Items.Category.CRAFTING };
             public static ItemConfig Gunpowder = new ItemConfig { Name = "Gunpowder", Worth = 1250, Category = GoldRush.Items.Category.CRAFTING };
-            public static ResourceConfig Logs = new ResourceConfig { Name = "Logs", Worth = 250, Probability = 0, Category = GoldRush.Items.Category.CRAFTING };
+            public static ResourceConfig Logs = new ResourceConfig { Name = "Logs", Worth = 5, Probability = 0, Category = GoldRush.Items.Category.CRAFTING };
             public static ResourceConfig Oil = new ResourceConfig { Name = "Oil", Worth = 0, Probability = 0, Category = GoldRush.Items.Category.NOTFORSALE };
-            public static ItemConfig Coins = new ItemConfig { Name = "Coins", Worth = 0, Category = GoldRush.Items.Category.NOTFORSALE };
+            public static ItemConfig Coins = new ItemConfig { Name = "Coins", Tradeable = false, Worth = 0, Category = GoldRush.Items.Category.NOTFORSALE };
             public static ItemConfig ClickingPotion = new ItemConfig { Name = "Clicking Potion", Worth = 25000, Category = GoldRush.Items.Category.POTION };
             public static ItemConfig SmeltingPotion = new ItemConfig { Name = "Smelting Potion", Worth = 50000, Category = GoldRush.Items.Category.POTION };
             public static ItemConfig SpeechPotion = new ItemConfig { Name = "Speech Potion", Worth = 100000, Category = GoldRush.Items.Category.POTION };
@@ -106,7 +107,7 @@ namespace GoldRush
 
             public static GathererConfig Player = new GathererConfig() { Name = "Player", BaseResourcesPerSecond = 1 };
             public static GathererConfig Miner = new GathererConfig() { Name = "Miner", BaseResourcesPerSecond = 0.5 };
-            public static GathererConfig Lumberjack = new GathererConfig() { Name = "Lumberjack", BaseResourcesPerSecond = 0.5 };
+            public static GathererConfig Lumberjack = new GathererConfig() { Name = "Lumberjack", BaseResourcesPerSecond = 0.25 };
             public static GathererConfig Drill = new GathererConfig() { Name = "Drill", BaseResourcesPerSecond = 2.5, FuelConsumption = 1 };
             public static GathererConfig Crusher = new GathererConfig() { Name = "Crusher", BaseResourcesPerSecond = 5, FuelConsumption = 2 };
             public static GathererConfig Excavator = new GathererConfig() { Name = "Excavator", BaseResourcesPerSecond = 10, FuelConsumption = 4 };
@@ -189,6 +190,8 @@ namespace GoldRush
 
             public static StoreItemConfig Furnace = new StoreItemConfig() { BasePrice = 1000 * 1000, Category = Store.Category.PROCESSING };
             public static StoreItemConfig Cauldron = new StoreItemConfig() { BasePrice = 1000 * 1000 * 25, Category = Store.Category.PROCESSING };
+
+            public static StoreItemConfig Geologist = new StoreItemConfig() { BasePrice = 1000 * 1000 * 100, Category = Store.Category.GATHERING };
         }
         // 300-600
         public static class Upgrades
@@ -244,6 +247,8 @@ namespace GoldRush
 
             public static UpgradeConfig Furnace = new UpgradeConfig() { Name = "Furnace Unlock" };
             public static UpgradeConfig Cauldron = new UpgradeConfig() { Name = "Cauldron Unlock" };
+
+            public static UpgradeConfig Geologist = new UpgradeConfig() { Name = "Geologist" };
         }
         //1200-1500
         public static class Achievements
@@ -278,10 +283,10 @@ namespace GoldRush
             public static AchievementConfig MinerT2 = new AchievementConfig() { Name = "Click Cave In", Type = GoldRush.Achievements.AchievementType.RockClicks, Goal = 1000, Points = 1 };
             public static AchievementConfig MinerT3 = new AchievementConfig() { Name = "Carpal Tunneling", Type = GoldRush.Achievements.AchievementType.RockClicks, Goal = 1000 * 10, Points = 2 };
 
-            public static AchievementConfig OilT1 = new AchievementConfig() { Name = "Eminent Domain", Type=GoldRush.Achievements.AchievementType.Oil, Goal = 1, Points = 1 };
+            public static AchievementConfig OilT1 = new AchievementConfig() { Name = "Eminent Domain", Type = GoldRush.Achievements.AchievementType.Oil, Goal = 1, Points = 1 };
 
             //Tutorial achievements. 
-             
+
             // Click the rock a couple of times to gather some resources!
             public static AchievementConfig TutorialMining = new AchievementConfig() { Goal = 10 };
             // Sell enough resources to earn 1,000 coins.

@@ -203,5 +203,18 @@ message GameState {
 	optional bool OrdersSent=17;
 
 	optional string CurrentTutorial=18;
+
+	optional string SessionId =19;
+
+	message ProgressRecord {
+		message ProgressItem {
+			optional int32 Id=1;
+			optional int64 Change=2;
+		}
+		repeated ProgressItem Items=1;
+
+		optional string SecondsGone = 2;
+	}
+	optional ProgressRecord OfflineRecord = 20;
 } 
 

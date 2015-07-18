@@ -15,6 +15,8 @@ message User
 	repeated UserLogin Logins = 7;
 	optional bool EmailConfirmed = 8;
 	repeated UserClaim Claims = 9;
+	repeated UserPunishment Punishments = 10;
+	optional int64 LastActive = 11;
 	
 	// repeated long RetiredGameIds
 }
@@ -29,4 +31,10 @@ message UserClaim
 {
 	optional string ClaimType = 1;
 	optional string ClaimValue = 2;
+}
+
+message UserPunishment
+{
+	optional string PunishmentType=1;
+	optional int64 PunishmentExpiry=2;
 }

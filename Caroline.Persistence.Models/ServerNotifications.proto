@@ -1,0 +1,16 @@
+package Caroline.Persistence.Models;
+
+import "csharp_options.proto";
+option (google.protobuf.csharp_file_options).namespace = "Caroline.Persistence.Models";
+
+option optimize_for = SPEED;
+
+message ServerNotifications
+{
+	message Notification
+	{
+		optional string Message = 1;
+		optional string Type = 2;
+	}
+	repeated Notification Notifications = 1;
+}

@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Antlr.Runtime.Misc;
+using Caroline.Persistence.Models;
 
 namespace Caroline.Models
 {
@@ -112,5 +114,36 @@ namespace Caroline.Models
         [EmailAddress]
         [Display(Name = "UserName")]
         public string Email { get; set; }
+    }
+
+    public class UserAdministrationViewModel
+    {
+        public UserAdministrationViewModel()
+        {
+            Claims=new List<AdminstrationUserClaim>();
+            Punishments = new List<AdministrationUserPunishment>();
+        }
+
+        public string UserName { get; set; }
+        public long Id { get; set; }
+        public List<AdminstrationUserClaim> Claims { get; set; }
+        public List<AdministrationUserPunishment> Punishments { get; set; }
+        public bool IsBanned { get; set; }
+        public bool IsMuted { get; set; }
+        public bool IsAdministrator { get; set; }
+        public string LastActive { get; set; }
+    }
+
+    public class AdminstrationUserClaim
+    {
+        public string ClaimType { get; set; }
+	    public string ClaimValue { get; set; }
+    }
+
+    public class AdministrationUserPunishment
+    {
+        public string Type { get; set; }
+        public string Expiry { get; set; }
+        public string TimeRemaining { get; set; }
     }
 }

@@ -29,10 +29,10 @@ namespace GoldRush
         }
 
         public GameObjects objs;
-        private long lastUpdate;
+        public long LastUpdate;
         public long Score;
 
-        public long UnixTimeNow()
+        private long UnixTimeNow()
         {
             var timeSpan = (DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0));
             return (long) timeSpan.TotalSeconds;
@@ -45,12 +45,12 @@ namespace GoldRush
             objs.Items.User = user;
 
             var currentTime = UnixTimeNow();
-            if (lastUpdate == 0) lastUpdate = currentTime;
+            if (LastUpdate == 0) LastUpdate = currentTime;
 
-            var timeSinceLastUpdate = currentTime - lastUpdate;
+            var timeSinceLastUpdate = currentTime - LastUpdate;
             if (timeSinceLastUpdate > 0)
             {
-                lastUpdate = currentTime;
+                LastUpdate = currentTime;
                 await objs.Update(timeSinceLastUpdate);
             }
             objs.Statistics.TimePlayed.Value += timeSinceLastUpdate;
@@ -347,8 +347,25 @@ namespace GoldRush
             WriteBuffData(state);
             WriteGathererData(state);
             WriteAchievementData(state);
-            WriteMarketData(state);
+            WriteMarketData(state); 
             WriteNotificationData(state);
+            WriteRecordData(state);
+        } 
+
+        private void WriteRecordData(GameState state)
+        {
+            if (objs.OfflineRecord == null) return;
+
+            state.OfflineRecord = new GameState.ProgressRecord();
+            state.OfflineRecord.SecondsGone = objs.OfflineRecord.FormattedTimeGone;
+            foreach (var item in objs.OfflineRecord.Items)
+            {
+                state.OfflineRecord.Items.Add(new GameState.ProgressRecord.ProgressItem()
+                {
+                    Id = item.Key,
+                    Change = item.Value.Change
+                });
+            }
         }
 
         private void WriteNotificationData(GameState state)
@@ -519,7 +536,7 @@ namespace GoldRush
             var saveState = new SaveState();
 
             // Save last update time
-            saveState.LastUpdate = lastUpdate;
+            saveState.LastUpdate = LastUpdate;
 
             SaveInventoryData(saveState);
             SaveGathererData(saveState);
@@ -665,7 +682,7 @@ namespace GoldRush
             if (save.ItemConfigs != null) LoadItemConfigData(save);
             if (save.Gatherers != null) LoadGathererData(save);
             if (save.LastUpdate != null) 
-                if (save.LastUpdate != null) lastUpdate = save.LastUpdate;
+                if (save.LastUpdate != null) LastUpdate = save.LastUpdate;
             if (save.Processors != null) LoadProcessorData(save);
             if (save.AntiCheatCoordinates != null) LoadAntiCheatData(save);
             if (save.StoreItems != null) LoadStoreData(save);

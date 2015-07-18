@@ -140,7 +140,9 @@
             container.appendChild(bottomContainer);
 
             window.addElement(container);
-            window.addOption('Close');
+            window.addOption('Close').addEventListener('click',function() {
+                modal.close();
+            });
             window.addNegativeOption('Cancel Order').addEventListener('click',function() {
                 Connection.cancelOrder(slot);
             });
@@ -214,12 +216,12 @@
         if (marketPane) return;
 
         marketPane = document.createElement('DIV');
-        var refresh = Utils.createButton('Refresh', '');
+        /*var refresh = Utils.createButton('Refresh', '');
         refresh.style.cssFloat = 'right';
         refresh.addEventListener('click', function() {
             Connection.requestOrders();
         });
-        marketPane.appendChild(refresh);
+        marketPane.appendChild(refresh);*/
         document.getElementById('paneContainer').appendChild(marketPane);
         Tabs.registerGameTab(marketPane, Connection.Tabs.Market, 'Market');
 

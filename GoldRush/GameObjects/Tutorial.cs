@@ -46,7 +46,7 @@ namespace GoldRush
             var storeTutorial = new TutorialStage
             {
                 CompletionTrigger = storeTutorialTrigger,
-                Title = "StoreTutorial"
+                Title = "BuyingTutorial"
             };
             stages.Add(storeTutorial);
         }
@@ -55,9 +55,8 @@ namespace GoldRush
 
         public string GetActiveTutorialTitle()
         {
-            for (var i = 0; i < stages.Count; i++)
+            foreach (var stage in stages)
             {
-                var stage = stages[i];
                 if(stage.Completed) continue;
 
                 return stage.Title;

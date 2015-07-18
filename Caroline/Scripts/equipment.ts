@@ -1,5 +1,7 @@
 
 module Equipment {
+    import Long = dcodeIO.Long;
+
     var gatherers = new Array<Gatherer>();
     var equipmentPane: HTMLElement;
     var gathererCategory: HTMLElement;
@@ -13,7 +15,7 @@ module Equipment {
         enabled: boolean;
         toggleElm: HTMLElement;
 
-        quantity: number;
+        quantity: Long;
         quantityElm: HTMLElement;
 
         maxQuantity: number;
@@ -106,14 +108,14 @@ module Equipment {
         gatherer.toggleElm.textContent = enabled ? 'Disable' : 'Enable';
     }
 
-    export function changeQuantity(id: number, quantity: number) {
+    export function changeQuantity(id: number, quantity: Long) {
         Utils.ifNotDefault(quantity, function() {
             var gatherer = gatherers[id];
             if (!gatherer) return;
 
             gatherer.quantity = quantity;
-            gatherer.container.style.display = (quantity > -1) ? 'inline-block' : 'none';
-            gatherer.quantityElm.textContent = Utils.formatNumber(quantity);
+            gatherer.container.style.display = quantity.greaterThan(Long.fromNumber(-1)) ? 'inline-block' : 'none';
+            gatherer.quantityElm.textContent = Utils.formatNumber(quantity.toNumber());
         });
     }
 

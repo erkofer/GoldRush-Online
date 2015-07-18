@@ -80,7 +80,8 @@ namespace Caroline.Persistence
                 ChatroomInvitations = db.SetHashStringLong<ChatroomInvitation>("ci"),
                 ChatroomOptions = db.SetString<ChatroomOptions>("co"),
                 UserChatroomSubscriptions = db.SetHashLongString<ChatroomSubscription>("ucs"),
-                UserChatroomNotifications = db.SetListLong<ChatroomNotification>("ucn")
+                UserChatroomNotifications = db.SetListLong<ChatroomNotification>("ucn"),
+                ServerNotifications = db.SetString<ServerNotifications>("sn")
             };
             return ret;
         }
@@ -113,6 +114,8 @@ namespace Caroline.Persistence
         public IStringTable UserIds { get; private set; }
         public IStringTable Logins { get; private set; }
         public IStringTable Emails { get; private set; }
+
+        public IEntityTable<ServerNotifications, string> ServerNotifications { get; private set; }
 
         static readonly ScoreUserIdSerializer ScoreIdSerializer = new ScoreUserIdSerializer();
         class ScoreUserIdSerializer : ISerializer<ScoreEntry>

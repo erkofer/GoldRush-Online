@@ -11,4 +11,10 @@ namespace Caroline.Areas.Api.Models
         public bool Anonymous { get; set; }
         public bool SignedIn { get; set; }
     }
+
+    public class AccountActionModel
+    {
+        public bool Banned { get; set; }
+        public string EndsAt { get; set; }
+    }
 }

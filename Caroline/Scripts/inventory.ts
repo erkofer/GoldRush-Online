@@ -3,6 +3,7 @@
 ///<reference path="tabs.ts"/>
 ///<reference path="objects.ts"/>
 module Inventory {
+    import Long = dcodeIO.Long;
     export var items = new Array<Item>();
     export var configClickers = new Array<HTMLElement>();
     var inventoryPane: HTMLElement;
@@ -19,6 +20,8 @@ module Inventory {
     var configNames = new Array<HTMLElement>();
     var configImages = new Array<HTMLElement>();
 
+    var coinId;
+
     export class MarketItem {
         id: number;
         label: string;
@@ -32,7 +35,7 @@ module Inventory {
     export class Item {
         id: number;
         name: string;
-        quantity: number;
+        quantity: Long;
         worth: number;
         category: Category;
 
@@ -57,8 +60,8 @@ module Inventory {
         POTION = 5
     };
 
-    export function getSelectedItemQuantity(): number {
-        return selectedItem ? selectedItem.quantity: 0;
+    export function getSelectedItemQuantity(): Long {
+        return selectedItem ? selectedItem.quantity: Long.fromNumber(0);
     }
 
     export function selectItem(id?: number) {
@@ -83,8 +86,8 @@ module Inventory {
         selectedItemPane.style.display = selectedItem == null ? 'none' : 'block';
     }
 
-    export function sellSelectedItem(quantity?: number) {
-        Connection.sellItem(selectedItem.id, quantity ? quantity : 1);
+    export function sellSelectedItem(quantity?: Long) {
+        Connection.sellItem(selectedItem.id, quantity ? quantity : Long.fromNumber(1));
     }
 
     export function sellAllSelectedItem() {
@@ -95,7 +98,7 @@ module Inventory {
         var textbox = <HTMLInputElement>document.getElementById('selecteditemquantity');
         var quantity = +textbox.value;
         if (Utils.isNumber(quantity)) {
-            if (quantity > Inventory.getSelectedItemQuantity()) {
+            if (Long.fromNumber(quantity).greaterThan(Inventory.getSelectedItemQuantity())) {
                 textbox.value = Inventory.getSelectedItemQuantity().toString();
             }
         }
@@ -157,7 +160,7 @@ module Inventory {
             var textbox = <HTMLInputElement>document.getElementById('selecteditemquantity');
             var quantity = +textbox.value;
             if (Utils.isNumber(quantity)) {
-                Inventory.sellSelectedItem(quantity);
+                Inventory.sellSelectedItem(Long.fromNumber(quantity));
             }
             limitTextQuantity();
         });
@@ -237,6 +240,10 @@ module Inventory {
         Equipment.draw();
     }
 
+    export function getCoins(): Long {
+        return Objects.getQuantity(coinId);
+    }
+
     export function modifyConfig(id: number, enabled: boolean) {
         (<HTMLInputElement>configClickers[id]).checked = enabled;
     }
@@ -252,6 +259,11 @@ module Inventory {
     function drawHeaderItem(item: Item): HTMLElement {
         var itemElement = document.createElement('DIV');
         item.container = itemElement;
+
+        if (item.name == "Coins") {
+            itemElement.classList.add('tutorial-buying');
+            coinId = item.id;
+        }
 
         itemElement.classList.add('header-item');
 
@@ -432,16 +444,16 @@ module Inventory {
         });
     }
 
-    export function changeQuantity(id: number, quantity: number) {
+    export function changeQuantity(id: number, quantity: Long) {
         Utils.ifNotDefault(quantity, function () {
             Objects.setQuantity(id, quantity);
             Crafting.update();
-            items[id].quantityElm.textContent = Utils.formatNumber(quantity);
+            items[id].quantityElm.textContent = Utils.formatNumber(quantity.toNumber());
             items[id].quantity = quantity;
             if (items[id].category != Category.NFS && items[id].category != null)
-                items[id].container.style.display = quantity == 0 ? 'none' : 'inline-block';
+                items[id].container.style.display = quantity.equals(Long.fromNumber(0)) ? 'none' : 'inline-block';
             else
-                items[id].container.style.display = (Objects.getLifeTimeTotal(id) == 0 && quantity == 0) ? 'none' : 'inline-block';
+                items[id].container.style.display = (Objects.getLifeTimeTotal(id) == 0 && quantity.equals(Long.fromNumber(0))) ? 'none' : 'inline-block';
             limitTextQuantity();
         });
     }

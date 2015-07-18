@@ -106,11 +106,13 @@ namespace GoldRush
             var bigTexan = new StoreItem(game.Gatherers.BigTexan, GameConfig.StoreItems.BigTexan);
             All.Add(bigTexan.Item.Id, bigTexan);
 
+            var geologist = new StoreItem(game.Upgrades.Geologist, GameConfig.StoreItems.Geologist);
+            All.Add(geologist.Item.Id, geologist);
+
 
             // If you want an item to be purchased with a different currency define it above.
-            foreach (var storeItem in All)
+            foreach (var storeItem in All.Where(storeItem => storeItem.Value.Currency == null))
             {
-                if (storeItem.Value.Currency != null) continue;
                 storeItem.Value.Currency = coins;
             }
         }

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Data.Odbc;
 using System.Net.Mime;
+using System.Runtime.InteropServices;
 
 namespace Caroline.Persistence.Models
 {
@@ -80,6 +81,21 @@ namespace Caroline.Persistence.Models
                     if (schema != null)
                     {
                         newState._GameSchema = schema;
+                    }
+                }
+            }
+
+            if (_OfflineRecord != null)
+            {
+                var oldRecord = oldState._OfflineRecord;
+                if (oldRecord == null)
+                    newState._OfflineRecord = _OfflineRecord;
+                else
+                {
+                    var record = _OfflineRecord.Compress(oldRecord);
+                    if (record != null)
+                    {
+                        newState._OfflineRecord = record;
                     }
                 }
             }
@@ -258,6 +274,35 @@ namespace Caroline.Persistence.Models
                     processor._Capacity = _Capacity;
                 }
                 return processor;
+            }
+        }
+
+        public partial class ProgressRecord : ICompressable<ProgressRecord>
+        {
+            public ProgressRecord Compress(ProgressRecord oldRecord)
+            {
+                var record = new ProgressRecord();
+                CompressableHelpers.CompressList(_Items, oldRecord._Items, record._Items);
+                if (record.SecondsGone != SecondsGone)
+                {
+                    record.SecondsGone = SecondsGone;
+                }
+                return record;
+            }
+
+            public partial class ProgressItem : ICompressable<ProgressItem>, IIdentifiableObject
+            {
+                public ProgressItem Compress(ProgressItem oldItem)
+                {
+                    ProgressItem item = null;
+                    if (oldItem._Change != _Change)
+                    {
+                        if(item == null)
+                            item = new ProgressItem(){_Id=_Id};
+                        item._Change = _Change;
+                    }
+                    return item;
+                }
             }
         }
 

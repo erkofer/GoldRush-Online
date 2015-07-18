@@ -27,7 +27,7 @@ namespace GoldRush
             Player.Quantity = 1;
             Player.PossibleResources.AddRange(baseResources);
 
-            Miner = new Gatherer(game,GameConfig.Gatherers.Miner);
+            Miner = new Gatherer(game, GameConfig.Gatherers.Miner);
             Miner.PossibleResources.AddRange(baseResources);
             All.Add(Miner.Id, Miner);
 
@@ -69,7 +69,7 @@ namespace GoldRush
             List<Gatherer> fuelConsumingGatherers = new List<Gatherer>();
             foreach (var gatherer in All)// gatherer with machines that do not consume fuel first.
             {
-                if(gatherer.Value.Fuel != null) fuelConsumingGatherers.Add(gatherer.Value);
+                if (gatherer.Value.Fuel != null) fuelConsumingGatherers.Add(gatherer.Value);
                 else gatherer.Value.Mine(seconds);
             }
 
@@ -89,7 +89,7 @@ namespace GoldRush
                 AntiCheatNextChange--;
             }
 
-            if(AntiCheatNextChange <= 0)
+            if (AntiCheatNextChange <= 0)
                 ScrambleAntiCheat();
         }
 
@@ -105,7 +105,7 @@ namespace GoldRush
             AntiCheatNextChange = 25;
         }
 
-        public Dictionary<int,Gatherer> All = new Dictionary<int,Gatherer>();
+        public Dictionary<int, Gatherer> All = new Dictionary<int, Gatherer>();
 
         public Gatherer Player;
         public Gatherer Miner;
@@ -122,7 +122,8 @@ namespace GoldRush
 
         internal class Gatherer : GameObjects.GameObject
         {
-            public Gatherer(GameObjects game, GameConfig.Gatherers.GathererConfig config):base(config)
+            public Gatherer(GameObjects game, GameConfig.Gatherers.GathererConfig config)
+                : base(config)
             {
                 PossibleResources = new List<Items.Resource>();
                 GuaranteedResources = new List<Items.Resource>();
@@ -142,42 +143,55 @@ namespace GoldRush
 
             public double FuelConsumption { get { return _config.FuelConsumption * Quantity; } }
 
-            private double resourcesPerSecondEfficiency=1;
+            private double resourcesPerSecondEfficiency = 1;
             /// <summary>
             /// The percentage increase of resources gathered per second by upgrades.
             /// </summary>
-            public double ResourcesPerSecondEfficiency { get { return resourcesPerSecondEfficiency; } 
-                set { resourcesPerSecondEfficiency = value; RecalculateMiningStuff(); } }
+            public double ResourcesPerSecondEfficiency
+            {
+                get { return resourcesPerSecondEfficiency; }
+                set { resourcesPerSecondEfficiency = value; RecalculateMiningStuff(); }
+            }
 
             private double resourcesPerSecondBaseIncrease;
             /// <summary>
             /// The flat increase of resources gathered per second by upgrades.
             /// </summary>
-            public double ResourcesPerSecondBaseIncrease { get { return resourcesPerSecondBaseIncrease; } 
-                set { resourcesPerSecondBaseIncrease = value; RecalculateMiningStuff(); } }
+            public double ResourcesPerSecondBaseIncrease
+            {
+                get { return resourcesPerSecondBaseIncrease; }
+                set { resourcesPerSecondBaseIncrease = value; RecalculateMiningStuff(); }
+            }
 
             /// <summary>
             /// The base quantity of resources gathered per second.
             /// </summary>
             public double BaseResourcesPerSecond { get { return _config.BaseResourcesPerSecond; } }
 
-            public double TotalBaseResourcesPerSecond { get { 
-                return BaseResourcesPerSecond + ResourcesPerSecondBaseIncrease;
-            } }
+            public double TotalBaseResourcesPerSecond
+            {
+                get
+                {
+                    return BaseResourcesPerSecond + ResourcesPerSecondBaseIncrease;
+                }
+            }
 
             public bool Enabled = true;
 
-            private double probabilityModifier=1;
+            private double probabilityModifier = 1;
             /// <summary>
             /// The increased chance of finding rarer ores.
             /// </summary>
-            public double ProbabilityModifier { get { return probabilityModifier; } 
-                set { probabilityModifier = value; RecalculateMiningStuff(); } }
+            public double ProbabilityModifier
+            {
+                get { return probabilityModifier; }
+                set { probabilityModifier = value; RecalculateMiningStuff(); }
+            }
 
             /// <summary>
             /// The quantity of resources gathered per second.
             /// </summary>
-            public double ResourcesPerSecond { get { return (TotalBaseResourcesPerSecond * (ResourcesPerSecondEfficiency))*Quantity; } }
+            public double ResourcesPerSecond { get { return (TotalBaseResourcesPerSecond * (ResourcesPerSecondEfficiency)) * Quantity; } }
 
             /// <summary>
             /// A buffer to hold left over efficiency.
@@ -191,12 +205,15 @@ namespace GoldRush
             /// </summary>
             public List<Items.Resource> GuaranteedResources { get; set; }
 
-            private List<Items.Resource> possibleResources; 
+            private List<Items.Resource> possibleResources;
             /// <summary>
             /// The resources the Gatherer can collect.
             /// </summary>
-            public List<Items.Resource> PossibleResources { get { return possibleResources; } 
-                set { possibleResources = value; } }
+            public List<Items.Resource> PossibleResources
+            {
+                get { return possibleResources; }
+                set { possibleResources = value; }
+            }
 
             /// <summary>
             /// The total probability of all possible resources.
@@ -211,7 +228,7 @@ namespace GoldRush
             /// <summary>
             /// Determines when we must recalculate mining stuff.
             /// </summary>
-            private bool recalculate=true;
+            private bool recalculate = true;
 
             long factorial(long i)
             {
@@ -252,14 +269,14 @@ namespace GoldRush
                 }
 
                 if (ProbabilityModifier <= 0) return;
-                
+
                 for (var i = 0; i < totalProbability.Count; i++)
-                    if (totalProbability[i] < (total/2))
-                        totalProbability[i] *= (int) Math.Floor(ProbabilityModifier);
+                    if (totalProbability[i] < (total / 2))
+                        totalProbability[i] *= (int)Math.Floor(ProbabilityModifier);
                     else
-                        totalProbability[i] /= (int) Math.Floor(ProbabilityModifier);
+                        totalProbability[i] /= (int)Math.Floor(ProbabilityModifier);
             }
-             
+
 
             /// <summary>
             /// Gathers resources based on time.
@@ -269,7 +286,7 @@ namespace GoldRush
             {
                 if (!Enabled) return;
 
-                if(ResourcesPerSecond<=0) return;
+                if (ResourcesPerSecond <= 0) return;
 
                 if (recalculate)
                 {
@@ -277,27 +294,29 @@ namespace GoldRush
                     recalculate = false;
                 }
 
-                var fuelEfficiency=1.0;
+                var fuelEfficiency = 1.0;
+                var adjustedFuelConsumption = FuelConsumption * seconds;
                 if (Fuel != null)
                 {
-                    var fuelToConsume = Math.Min(Fuel.Quantity, FuelConsumption);
+                    var fuelToConsume = Math.Min(Fuel.Quantity, adjustedFuelConsumption);
                     Fuel.Quantity -= (long)fuelToConsume;
 
-                    fuelEfficiency = fuelToConsume/FuelConsumption;
+                    fuelEfficiency = fuelToConsume / adjustedFuelConsumption;
                 }
 
                 var resourcesGained = ResourcesPerSecond;
                 resourcesGained *= fuelEfficiency;
+                resourcesGained *= seconds; // gathers resources based on time passed.
 
                 resourcesGained += resourceBuffer;
-                resourcesGained *= seconds; // gathers resources based on time passed.
+                
                 // Stores excess resources in the resource buffer.
                 resourceBuffer = resourcesGained - Math.Floor(resourcesGained);
                 resourcesGained = Math.Floor(resourcesGained);
 
                 if (GuaranteedResources.Count > 0)
                     foreach (var resource in GuaranteedResources)
-                        resource.Quantity += (int) resourcesGained;
+                        resource.Quantity += (int)resourcesGained;
 
                 if (PossibleResources.Count <= 0) return;
 
@@ -319,18 +338,18 @@ namespace GoldRush
                 }
                 else
                 {
-                    for (var i = 0; i < PossibleResources.Count; i++)
+                    foreach (Items.Resource resource in PossibleResources)
                     {
                         double ticks = seconds;
 
-                        double chance = ((double)PossibleResources[i].Probability / totaledProbability);
+                        double chance = ((double)resource.Probability / totaledProbability);
                         double r = chance * resourcesGained;
                         double luck = ((double)_game.Random.Next(0, 11) / 10);
-                        double probability = 1 / Math.Pow(2.71828, r);
                         long resourcesToGain = 0;
-                        
-                        if(r < 10)
+
+                        if (r < 10)
                         {
+                            double probability = 1 / Math.Pow(2.71828, r);
                             while (luck > probability)
                             {
                                 resourcesToGain++;
@@ -339,13 +358,13 @@ namespace GoldRush
                         }
                         else
                         {
-                            double expectedOutput = ticks*chance;
+                            double expectedOutput = ticks * chance;
                             bool increase = _game.Random.NextDouble() >= 0.5;
-                            double change = (double) _game.Random.Next(1, 3)/10;
-                            
-                            resourcesToGain = (long)Math.Floor(increase ? (1+change) * expectedOutput : (1-change)*expectedOutput);
+                            double change = (double)_game.Random.Next(1, 3) / 10;
+
+                            resourcesToGain = (long)Math.Floor(increase ? (1 + change) * expectedOutput : (1 - change) * expectedOutput);
                         }
-                        PossibleResources[i].Quantity+=resourcesToGain;
+                        resource.Quantity += resourcesToGain;
                     }
                 }
             }

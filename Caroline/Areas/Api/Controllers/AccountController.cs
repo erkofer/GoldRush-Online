@@ -10,6 +10,7 @@ using Caroline.Persistence;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Newtonsoft.Json;
+using Caroline.Persistence.Models;
 
 namespace Caroline.Areas.Api.Controllers
 {
@@ -58,8 +59,21 @@ namespace Caroline.Areas.Api.Controllers
             }
             // This doesn't count login failures towards account lockout
             // To enable password failures to trigger account lockout, change to shouldLockout: true
-            var result = await SignInManager.PasswordSignInAsync(model.UserName, model.Password, model.RememberMe, shouldLockout: false);
+
             IdentityResult ret;
+
+            var user = await UserManager.FindAsync(model.UserName, model.Password);
+            if (user != null)
+            {
+                var banInfo = await IsBanned(user);
+                if (banInfo.Banned)
+                {
+                    ret = new IdentityResult("You are banned until " + banInfo.EndsAt + ".");
+                    return JsonConvert.SerializeObject(ret);
+                }
+            }
+
+            var result = await SignInManager.PasswordSignInAsync(model.UserName, model.Password, model.RememberMe, shouldLockout: false);
             switch (result)
             {
                 case SignInStatus.Success:
@@ -77,6 +91,22 @@ namespace Caroline.Areas.Api.Controllers
                     break;
             }
             return JsonConvert.SerializeObject(ret);
+        }
+
+        private async Task<AccountActionModel> IsBanned(User user)
+        {
+            var db = await CarolineRedisDb.CreateAsync();
+            var disciplinarian = new UserDisciplinarian(db);
+
+            var isBanned = await disciplinarian.IsBanned(user);
+            if (!isBanned) return new AccountActionModel() { Banned = false };
+
+            var completion = disciplinarian.GetBanCompletionTime(user);
+            return new AccountActionModel()
+            {
+                Banned = true,
+                EndsAt = completion.ToShortDateString() + " " + completion.ToShortTimeString()
+            };
         }
 
         // /hyper/seecret/adventure

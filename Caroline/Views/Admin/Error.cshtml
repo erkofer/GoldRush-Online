@@ -1,0 +1,29 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title></title>
+</head>
+<body>
+    <div style="text-align: center; font-size: 20px; font-weight: bold;">
+        Error
+    </div>
+    <div style="text-align: center;">
+        @if (ViewBag.Message == null)
+        {
+            <p>
+                Opps. Something went wrong.
+            </p>
+        }
+        else
+        {
+            @Html.Raw(ViewBag.Message)
+        }
+    </div>
+</body>
+</html>

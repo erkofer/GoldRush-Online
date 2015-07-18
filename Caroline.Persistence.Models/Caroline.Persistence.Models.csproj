@@ -69,6 +69,7 @@
     <Compile Include="IIdentifiableObject.cs" />
     <Compile Include="IpEndpoint.cs" />
     <Compile Include="GameSession.cs" />
+    <Compile Include="ServerNotifications.cs" />
     <Compile Include="StaleOrder.cs" />
     <Compile Include="Pair.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -78,6 +79,7 @@
     <Compile Include="User.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProtoBuf Include="ServerNotifications.proto" />
     <ProtoBuf Include="SaveState.proto" />
     <ProtoBuf Include="csharp_options.proto" />
     <ProtoBuf Include="descriptor.proto" />
@@ -95,7 +97,9 @@
       <Name>Caroline.Persistence.Redis</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="obj\Release\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

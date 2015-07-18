@@ -1,0 +1,219 @@
+﻿@using System.Diagnostics
+@model Caroline.Models.UserAdministrationViewModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<style>
+    button {
+        width: 100%;
+    }
+</style>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title></title>
+</head>
+<body>
+    <script>
+        function claim(isAdding, type, value) {
+            var xmlhttp = new XMLHttpRequest();
+
+            if (type == null || value == null) {
+                type = document.getElementById('claimType').value;
+                value = document.getElementById('claimValue').value;
+            }
+
+            xmlhttp.onreadystatechange = function () {
+                if (xmlhttp.readyState == XMLHttpRequest.DONE) {
+                    if (xmlhttp.status == 200) {
+                        location.reload();
+                    } else if (xmlhttp.status == 400) {
+                        document.getElementById("errors").innerHTML = xmlhttp.responseText;
+                    } else {
+                        document.getElementById("errors").innerHTML = xmlhttp.responseText;
+                    }
+                }
+            }
+
+            xmlhttp.open("GET", '@Model.UserName' + (isAdding ? "/add-claim" : "/remove-claim") + "?type=" + type + "&value=" + value, true);
+            xmlhttp.send();
+        }
+    </script>
+    @if (!Model.IsBanned)
+    {
+        <script>
+            function ban() {
+                var xmlhttp = new XMLHttpRequest();
+                var banDuration = document.getElementById('banDuration');
+                var duration = banDuration.value;
+
+                xmlhttp.onreadystatechange = function () {
+                    if (xmlhttp.readyState == XMLHttpRequest.DONE) {
+                        if (xmlhttp.status == 200) {
+                            location.reload();
+                        } else if (xmlhttp.status == 400) {
+                            document.getElementById("errors").innerHTML = xmlhttp.responseText;
+                        } else {
+                            document.getElementById("errors").innerHTML = xmlhttp.responseText;
+                        }
+                    }
+                }
+
+                xmlhttp.open("GET", '@Model.UserName' + "/ban?duration=" + duration, true);
+                xmlhttp.send();
+            }
+        </script>
+    }
+    else
+    {
+        <script>
+            function ban() {
+                var xmlhttp = new XMLHttpRequest();
+
+
+                xmlhttp.onreadystatechange = function () {
+                    if (xmlhttp.readyState == XMLHttpRequest.DONE) {
+                        if (xmlhttp.status == 200) {
+                            location.reload();
+                        } else if (xmlhttp.status == 400) {
+                            document.getElementById("errors").innerHTML = xmlhttp.responseText;
+                        } else {
+                            document.getElementById("errors").innerHTML = xmlhttp.responseText;
+                        }
+                    }
+                }
+                console.log("unban");
+                xmlhttp.open("GET", '@Model.UserName' + "/unban", true);
+                xmlhttp.send();
+            }
+        </script>
+    }
+    @if (!Model.IsMuted)
+    {
+        <script>
+            function mute() {
+                var xmlhttp = new XMLHttpRequest();
+                var banDuration = document.getElementById('muteDuration');
+                var duration = banDuration.value;
+
+                xmlhttp.onreadystatechange = function () {
+                    if (xmlhttp.readyState == XMLHttpRequest.DONE) {
+                        if (xmlhttp.status == 200) {
+                            location.reload();
+                        } else if (xmlhttp.status == 400) {
+                            document.getElementById("errors").innerHTML = xmlhttp.responseText;
+                        } else {
+                            document.getElementById("errors").innerHTML = xmlhttp.responseText;
+                        }
+                    }
+                }
+
+                xmlhttp.open("GET", '@Model.UserName' + "/mute?duration=" + duration, true);
+                xmlhttp.send();
+            }
+        </script>
+    }
+    else
+    {
+        <script>
+            function mute() {
+                var xmlhttp = new XMLHttpRequest();
+
+                xmlhttp.onreadystatechange = function () {
+                    if (xmlhttp.readyState == XMLHttpRequest.DONE) {
+                        if (xmlhttp.status == 200) {
+                            location.reload();
+                        } else if (xmlhttp.status == 400) {
+                            document.getElementById("errors").innerHTML = xmlhttp.responseText;
+                        } else {
+                            document.getElementById("errors").innerHTML = xmlhttp.responseText;
+                        }
+                    }
+                }
+                xmlhttp.open("GET", '@Model.UserName' + "/unmute", true);
+                xmlhttp.send();
+            }
+        </script>
+    }
+
+    <table>
+        <tr id="username" style="text-align: center;">
+            <td colspan="4" style="font-weight: bolder;">@Model.UserName</td>
+        </tr>
+        <!--<tr style="font-weight: bold"><td>Last active</td></tr>
+        <tr><td>@Model.LastActive</td></tr>-->
+        <tr style="font-weight: bold">
+            <td>Claims</td>
+            <td>
+                <input type="button" onclick="claim(true,null,null)" value="Add Claim"/>
+            </td>
+            <td>
+                <input type="TEXT" id="claimType" placeholder="type"/>
+            </td>
+            <td>
+                <input type="TEXT" id="claimValue" placeholder="value" />
+            </td>
+        </tr>
+        @foreach (var claim in Model.Claims)
+        {
+            <tr>
+                <td>
+                    <span style="min-width: 120px; display: inline-block;">@claim.ClaimType</span> 
+                    <span style="min-width: 120px; display: inline-block;">@claim.ClaimValue</span>
+                </td>
+                <td>
+                    <button onclick="claim(false,'@claim.ClaimType','@claim.ClaimValue')">Revoke</button>
+                </td>
+            </tr>
+        }
+        <tr style="font-weight: bold"><td>Punishments</td></tr>
+        @foreach (var punishment in Model.Punishments)
+        {
+            <tr><td style="max-width: 250px;">@punishment.Type until @punishment.Expiry <br/> (@punishment.TimeRemaining)</td></tr>
+        }
+        <tr style="font-weight: bold"><td>Banned?</td></tr>
+        <tr>
+            <td>@(Model.IsBanned ? "Y" : "N")</td>
+            <td>
+                <button id="banButton">@(Model.IsBanned ? "Unban" : "Ban")</button>
+            </td>
+            @if (!Model.IsBanned)
+            {
+                <td>
+                    <input type="TEXT" id="banDuration" placeholder="duration"/>
+                </td>
+            }
+        </tr>
+        <tr style="font-weight: bold"><td>Muted?</td></tr>
+        <tr>
+            <td>@(Model.IsMuted ? "Y" : "N")</td>
+            <td>
+                <button id="muteButton">@(Model.IsMuted ? "Unmute" : "Mute")</button>
+            </td>
+            @if (!Model.IsMuted)
+            {
+                <td>
+                    <input type="TEXT" id="muteDuration" placeholder="duration"/>
+                </td>
+            }
+        </tr>
+        <tr>
+            <td>
+                Generated at @DateTime.UtcNow.ToShortDateString() @DateTime.UtcNow.ToLongTimeString().
+            </td>
+        </tr>
+    </table>
+    <div id="errors"></div>
+    <script>
+        document.getElementById("banButton").addEventListener("click", function () {
+            ban();
+        });
+        document.getElementById("muteButton").addEventListener("click", function () {
+            mute();
+        });
+        var user = document.getElementById("username");
+    </script>
+</body>
+</html>

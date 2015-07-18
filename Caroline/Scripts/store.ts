@@ -1,22 +1,24 @@
 ﻿module Store {
-    var storePane:HTMLElement;
+    import Long = dcodeIO.Long;
+
+    var storePane: HTMLElement;
     var items = new Array<StoreItem>();
     var categories = new Array<HTMLElement>();
     export enum Category {
-        MINING=1,
-		MACHINES=2,
-		GATHERING=3,
-		PROCESSING=4,
-		ITEMS=5,
-		CRAFTING=6
+        MINING= 1,
+        MACHINES= 2,
+        GATHERING= 3,
+        PROCESSING= 4,
+        ITEMS= 5,
+        CRAFTING= 6
     };
 
     class StoreItem {
         id: number;
         category: Category;
-        price: number;
+        price: Long;
         factor: number;
-        quantity: number;
+        quantity: Long;
         maxQuantity: number;
         name: string;
         tooltip: string;
@@ -25,7 +27,7 @@
         container: HTMLElement;
         quantityElm: HTMLElement;
         maxQuantityElm: HTMLElement;
-        
+        button: HTMLElement;
 
         constructor() {
 
@@ -35,7 +37,7 @@
     function draw() {
         storePane = document.createElement('div');
         document.getElementById('paneContainer').appendChild(storePane);
-        Tabs.registerGameTab(storePane, Connection.Tabs.Store,'Store');
+        Tabs.registerGameTab(storePane, Connection.Tabs.Store, 'Store');
 
         for (var enumMember in Category) {
             var isValueProperty = parseInt(enumMember, 10) >= 0;
@@ -47,6 +49,22 @@
             }
         }
     }
+
+    export function update() {
+        var coins = Inventory.getCoins();
+        items.forEach(function (item) {
+            if (!item.button) return;
+
+            if (item.price.greaterThan(coins)) {
+                if (!item.button.classList.contains('inactive'))
+                    item.button.classList.add('inactive');
+            } else {
+                if (item.button.classList.contains('inactive'))
+                    item.button.classList.remove('inactive');
+            }
+        });
+    }
+
 
     function drawCategory(name: string) {
         var categoryContainer = document.createElement('div');
@@ -64,7 +82,7 @@
         draw();
     }
 
-    export function addItem(id: number, category: Category, price: number, factor: number, name: string, maxQuantity:number, tooltip:string) {
+    export function addItem(id: number, category: Category, price: Long, factor: number, name: string, maxQuantity: number, tooltip: string) {
         if (!storePane)
             draw();
 
@@ -91,14 +109,14 @@
             if (categoryContainer == null) {
                 categoryContainer = categories["MINING"];
             }
-            if(item.category != Category.CRAFTING)
+            if (item.category != Category.CRAFTING)
                 categoryContainer.appendChild(drawItem(item));
 
             items[id] = item;
         }
     }
 
-    export function changeQuantity(id: number, quantity: number, maxQuantity: number,price:number) {
+    export function changeQuantity(id: number, quantity: Long, maxQuantity: number, price: Long) {
         var item = items[id];
 
         Utils.ifNotDefault(maxQuantity, function () {
@@ -107,9 +125,9 @@
                     Equipment.changeMaxQuantity(id, maxQuantity);
                     item.maxQuantity = maxQuantity;
                     item.maxQuantityElm.textContent = maxQuantity.toString();
-                   
+
                 } catch (err) {
-                    
+
                 }
             }
         });
@@ -123,7 +141,7 @@
             if (maxQuantity != 0) {
                 if (item.category == Category.CRAFTING) return;
 
-                item.container.style.display = (item.quantity <= -1 || item.quantity >= item.maxQuantity && item.maxQuantity > 0) ? 'none' : 'inline-block';
+                item.container.style.display = (item.quantity.lessThanOrEqual(Long.fromNumber(-1)) || item.quantity.greaterThanOrEqual(Long.fromNumber(item.maxQuantity)) && item.maxQuantity > 0) ? 'none' : 'inline-block';
                 if (item.maxQuantity && item.maxQuantity > 1) {
                     item.quantityElm.textContent = quantity.toString();
                 }
@@ -131,9 +149,9 @@
         });
 
         Utils.ifNotDefault(price, function () {
-            if(item.priceElm) {
+            if (item.priceElm) {
                 item.price = price;
-                item.priceElm.textContent = Utils.formatNumber(price);
+                item.priceElm.textContent = Utils.formatNumber(price.toNumber());
             }
         });
     }
@@ -142,7 +160,7 @@
 
     }
 
-    function drawItem(item: StoreItem):HTMLElement {
+    function drawItem(item: StoreItem): HTMLElement {
         var itemContainer = document.createElement('div');
         if (item.tooltip != "undefined") {
             tooltip.create(itemContainer, item.tooltip);
@@ -177,7 +195,7 @@
         item.maxQuantityElm = headerMaxQuantity;
         item.quantityElm = headerQuantity;
 
-       
+
         item.nameElm = headerText;
         itemContainer.appendChild(header);
         // IMAGE
@@ -197,7 +215,7 @@
         var priceContainer = document.createElement('div');
         priceContainer.classList.add('item-text');
         var price = document.createElement('div');
-        price.textContent = Utils.formatNumber(item.price);
+        price.textContent = Utils.formatNumber(item.price.toNumber());
         price.style.display = 'inline-block';
         price.style.verticalAlign = 'top';
         item.priceElm = price;
@@ -209,6 +227,7 @@
 
         var buttonContainer = document.createElement('div');
         var button = Utils.createButton('Buy', '');
+        item.button = button;
         var id = item.id;
         if (item.category != Category.ITEMS) {
             button.addEventListener('click', function () {
@@ -221,8 +240,8 @@
             quantityInput.style.height = '15px';
             buttonContainer.appendChild(quantityInput);
             button.addEventListener('click', function () {
-                if(Utils.isNumber(quantityInput.value))
-                    Connection.purchaseItem(id,+quantityInput.value);
+                if (Utils.isNumber(quantityInput.value))
+                    Connection.purchaseItem(id, +quantityInput.value);
             });
         }
 
@@ -231,7 +250,7 @@
         footer.appendChild(buttonContainer);
         footer.appendChild(priceContainer);
 
-        
+
 
         itemContainer.appendChild(footer);
 

@@ -1,0 +1,70 @@
+﻿@model Caroline.Models.NotificationsViewModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title></title>
+</head>
+<body>
+<script>
+    function modify(adding, message, type) {
+        var xmlhttp = new XMLHttpRequest();
+
+        if (message == null || type == null) {
+            
+        }
+
+        xmlhttp.onreadystatechange = function () {
+            if (xmlhttp.readyState == XMLHttpRequest.DONE) {
+                if (xmlhttp.status == 200) {
+                    location.reload();
+                } else if (xmlhttp.status == 400) {
+                    document.getElementById("errors").innerHTML = xmlhttp.responseText;
+                } else {
+                    document.getElementById("errors").innerHTML = xmlhttp.responseText;
+                }
+            }
+        }
+
+        xmlhttp.open("GET", "notifications"+(adding?"/add":"/remove")+"?message=" + message + "&type=" + type, true);
+        xmlhttp.send();
+    }
+</script>
+<div>
+    <table>
+        <tr>
+            <td>
+                <input type="text" id="messageText" placeholder="message"/>
+            </td>
+            <td>
+                <select id="typeText">
+                    <option>Technical</option>
+                    <option>Announcement</option>
+                </select>
+            </td>
+            <td>
+                <input type="button" value="Add" onclick=" modify(true, document.getElementById('messageText').value, document.getElementById('typeText').value) "/>
+            </td>
+        </tr>
+        @foreach (var notification in Model.Notifications)
+        {
+            <tr>
+                <td>@notification.Message</td>
+                <td>@notification.Type</td>
+                <td>
+                    <input type="button" value="Remove" onclick=" modify(false, '@notification.Message', '@notification.Type') "/>
+                </td>
+            </tr>
+        }
+    </table>
+    <div id="errors">
+        
+    </div>
+    </div>
+</body>
+</html>
